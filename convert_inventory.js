@@ -47,7 +47,10 @@ try {
         const description = cols[5] || '';
 
         const category = cols[9] || 'Uncategorized';
-        const image = cols[2] || '';
+
+        // Check if local image exists
+        const localImagePath = path.join(__dirname, 'public', 'images', 'products', `${id}.jpg`);
+        const image = fs.existsSync(localImagePath) ? `/images/products/${id}.jpg` : (cols[2] || '');
 
         let priceStr = cols[12] || '0';
         priceStr = priceStr.replace(/[$,]/g, '');

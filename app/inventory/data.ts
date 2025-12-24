@@ -27,7 +27,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1266.jpg",
         "description": ""
     },
     {
@@ -42,7 +42,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1595.jpg",
         "description": ""
     },
     {
@@ -57,7 +57,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1596.jpg",
         "description": ""
     },
     {
@@ -252,7 +252,7 @@ export const inventoryData: Product[] = [
         "stock": 8,
         "price": 3125.76,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1834.jpg",
         "description": ""
     },
     {
@@ -267,7 +267,7 @@ export const inventoryData: Product[] = [
         "stock": 4,
         "price": 1651.68,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1916.jpg",
         "description": ""
     },
     {
@@ -282,7 +282,7 @@ export const inventoryData: Product[] = [
         "stock": 4,
         "price": 1651.68,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/2456.jpg",
         "description": ""
     },
     {
@@ -372,7 +372,7 @@ export const inventoryData: Product[] = [
         "stock": 6,
         "price": 1740.48,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1835.jpg",
         "description": ""
     },
     {
@@ -402,7 +402,7 @@ export const inventoryData: Product[] = [
         "stock": 4,
         "price": 3090.24,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1846.jpg",
         "description": ""
     },
     {
@@ -462,7 +462,7 @@ export const inventoryData: Product[] = [
         "stock": 10,
         "price": 532.8,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1270.jpg",
         "description": ""
     },
     {
@@ -522,7 +522,7 @@ export const inventoryData: Product[] = [
         "stock": 6,
         "price": 355.2,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1847.jpg",
         "description": ""
     },
     {
@@ -567,7 +567,7 @@ export const inventoryData: Product[] = [
         "stock": 2,
         "price": 6695.52,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1894.jpg",
         "description": ""
     },
     {
@@ -582,7 +582,7 @@ export const inventoryData: Product[] = [
         "stock": 2,
         "price": 6695.52,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1895.jpg",
         "description": ""
     },
     {
@@ -627,7 +627,7 @@ export const inventoryData: Product[] = [
         "stock": 5,
         "price": 1687.2,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1913.jpg",
         "description": ""
     },
     {
@@ -642,7 +642,7 @@ export const inventoryData: Product[] = [
         "stock": 3,
         "price": 15309.12,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1926.jpg",
         "description": ""
     },
     {
@@ -672,7 +672,7 @@ export const inventoryData: Product[] = [
         "stock": 5,
         "price": 888,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1037.jpg",
         "description": ""
     },
     {
@@ -687,7 +687,7 @@ export const inventoryData: Product[] = [
         "stock": 3,
         "price": 1172.16,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1938.jpg",
         "description": ""
     },
     {
@@ -702,7 +702,7 @@ export const inventoryData: Product[] = [
         "stock": 2,
         "price": 1243.2,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1915.jpg",
         "description": ""
     },
     {
@@ -747,7 +747,7 @@ export const inventoryData: Product[] = [
         "stock": 3,
         "price": 3996,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1897.jpg",
         "description": ""
     },
     {
@@ -777,7 +777,7 @@ export const inventoryData: Product[] = [
         "stock": 2,
         "price": 8453.76,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1841.jpg",
         "description": ""
     },
     {
@@ -807,7 +807,7 @@ export const inventoryData: Product[] = [
         "stock": 6,
         "price": 1260.96,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1845.jpg",
         "description": ""
     },
     {
@@ -837,7 +837,7 @@ export const inventoryData: Product[] = [
         "stock": 3,
         "price": 1651.68,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1914.jpg",
         "description": ""
     },
     {
@@ -867,7 +867,7 @@ export const inventoryData: Product[] = [
         "stock": 6,
         "price": 4759.68,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1980.jpg",
         "description": ""
     },
     {
@@ -882,7 +882,7 @@ export const inventoryData: Product[] = [
         "stock": 1,
         "price": 7743.36,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1937.jpg",
         "description": ""
     },
     {
@@ -912,7 +912,7 @@ export const inventoryData: Product[] = [
         "stock": 1,
         "price": 34999.63,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/2004.jpg",
         "description": ""
     },
     {
@@ -957,7 +957,7 @@ export const inventoryData: Product[] = [
         "stock": 2,
         "price": 9252.96,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1844.jpg",
         "description": ""
     },
     {
@@ -987,7 +987,7 @@ export const inventoryData: Product[] = [
         "stock": 2,
         "price": 10158.72,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1768.jpg",
         "description": ""
     },
     {
@@ -1002,7 +1002,7 @@ export const inventoryData: Product[] = [
         "stock": 5,
         "price": 781.44,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1036.jpg",
         "description": ""
     },
     {
@@ -1047,7 +1047,7 @@ export const inventoryData: Product[] = [
         "stock": 1,
         "price": 8205.12,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1838.jpg",
         "description": ""
     },
     {
@@ -1122,7 +1122,7 @@ export const inventoryData: Product[] = [
         "stock": 5,
         "price": 8453.76,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1836.jpg",
         "description": ""
     },
     {
@@ -1137,7 +1137,7 @@ export const inventoryData: Product[] = [
         "stock": 2,
         "price": 11437.44,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1831.jpg",
         "description": ""
     },
     {
@@ -1167,7 +1167,7 @@ export const inventoryData: Product[] = [
         "stock": 5,
         "price": 710.4,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1035.jpg",
         "description": ""
     },
     {
@@ -1182,7 +1182,7 @@ export const inventoryData: Product[] = [
         "stock": 10,
         "price": 355.2,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1979.jpg",
         "description": ""
     },
     {
@@ -1287,7 +1287,7 @@ export const inventoryData: Product[] = [
         "stock": 5,
         "price": 888,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1038.jpg",
         "description": ""
     },
     {
@@ -1362,7 +1362,7 @@ export const inventoryData: Product[] = [
         "stock": 8,
         "price": 1918.08,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1256.jpg",
         "description": ""
     },
     {
@@ -1452,7 +1452,7 @@ export const inventoryData: Product[] = [
         "stock": 5,
         "price": 1012.32,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1040.jpg",
         "description": ""
     },
     {
@@ -1482,7 +1482,7 @@ export const inventoryData: Product[] = [
         "stock": 5,
         "price": 888,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1039.jpg",
         "description": ""
     },
     {
@@ -1527,7 +1527,7 @@ export const inventoryData: Product[] = [
         "stock": 10,
         "price": 1154.4,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1920.jpg",
         "description": ""
     },
     {
@@ -1542,7 +1542,7 @@ export const inventoryData: Product[] = [
         "stock": 3,
         "price": 2113.44,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1730.jpg",
         "description": ""
     },
     {
@@ -1662,7 +1662,7 @@ export const inventoryData: Product[] = [
         "stock": 3,
         "price": 2291.04,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1732.jpg",
         "description": ""
     },
     {
@@ -1677,7 +1677,7 @@ export const inventoryData: Product[] = [
         "stock": 1,
         "price": 16676.64,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1825.jpg",
         "description": ""
     },
     {
@@ -1722,7 +1722,7 @@ export const inventoryData: Product[] = [
         "stock": 3,
         "price": 4475.52,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1854.jpg",
         "description": ""
     },
     {
@@ -1797,7 +1797,7 @@ export const inventoryData: Product[] = [
         "stock": 3,
         "price": 9999.95,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1435.jpg",
         "description": "MANGUERA 4 CAPAS 5\"\"x4m MET. BOQUILLA DOBLE"
     },
     {
@@ -1827,7 +1827,7 @@ export const inventoryData: Product[] = [
         "stock": 3,
         "price": 2930.4,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1824.jpg",
         "description": ""
     },
     {
@@ -1842,7 +1842,7 @@ export const inventoryData: Product[] = [
         "stock": 1,
         "price": 19145.28,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1826.jpg",
         "description": ""
     },
     {
@@ -1872,7 +1872,7 @@ export const inventoryData: Product[] = [
         "stock": 3,
         "price": 674.88,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1862.jpg",
         "description": ""
     },
     {
@@ -1887,7 +1887,7 @@ export const inventoryData: Product[] = [
         "stock": 2,
         "price": 4617.6,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1827.jpg",
         "description": ""
     },
     {
@@ -1947,7 +1947,7 @@ export const inventoryData: Product[] = [
         "stock": 4,
         "price": 1420.8,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1947.jpg",
         "description": ""
     },
     {
@@ -2067,7 +2067,7 @@ export const inventoryData: Product[] = [
         "stock": 10,
         "price": 923.52,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1919.jpg",
         "description": ""
     },
     {
@@ -2172,7 +2172,7 @@ export const inventoryData: Product[] = [
         "stock": 6,
         "price": 2468.64,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1992.jpg",
         "description": ""
     },
     {
@@ -2277,7 +2277,7 @@ export const inventoryData: Product[] = [
         "stock": 3,
         "price": 10034.4,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/2457.jpg",
         "description": ""
     },
     {
@@ -2352,7 +2352,7 @@ export const inventoryData: Product[] = [
         "stock": 2,
         "price": 4582.08,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1896.jpg",
         "description": ""
     },
     {
@@ -2502,7 +2502,7 @@ export const inventoryData: Product[] = [
         "stock": 2,
         "price": 2504.16,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1855.jpg",
         "description": ""
     },
     {
@@ -2532,7 +2532,7 @@ export const inventoryData: Product[] = [
         "stock": 3,
         "price": 2610.72,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1783.jpg",
         "description": ""
     },
     {
@@ -2637,7 +2637,7 @@ export const inventoryData: Product[] = [
         "stock": 6,
         "price": 390.72,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1849.jpg",
         "description": ""
     },
     {
@@ -2772,7 +2772,7 @@ export const inventoryData: Product[] = [
         "stock": 4,
         "price": 4138.08,
         "status": "low-stock",
-        "image": "",
+        "image": "/images/products/1238.jpg",
         "description": ""
     },
     {
@@ -2907,7 +2907,7 @@ export const inventoryData: Product[] = [
         "stock": 4,
         "price": 923.52,
         "status": "low-stock",
-        "image": "\\\\MCA-S\\mk\\2_BM\\0_BMat\\08_PYM\\Inventario\\excel\\Imagen de refacciones\\Putzmeister\\Relevador 24VDC",
+        "image": "/images/products/1949.jpg",
         "description": ""
     },
     {
@@ -2952,7 +2952,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1005.jpg",
         "description": ""
     },
     {
@@ -2967,7 +2967,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1007.jpg",
         "description": ""
     },
     {
@@ -2982,7 +2982,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1012.jpg",
         "description": ""
     },
     {
@@ -2997,7 +2997,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1020.jpg",
         "description": ""
     },
     {
@@ -3012,7 +3012,7 @@ export const inventoryData: Product[] = [
         "stock": 5,
         "price": 0,
         "status": "in-stock",
-        "image": "",
+        "image": "/images/products/1021.jpg",
         "description": ""
     },
     {
@@ -3027,7 +3027,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1023.jpg",
         "description": ""
     },
     {
@@ -3042,7 +3042,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1024.jpg",
         "description": ""
     },
     {
@@ -3057,7 +3057,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1025.jpg",
         "description": ""
     },
     {
@@ -3072,7 +3072,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1026.jpg",
         "description": ""
     },
     {
@@ -3087,7 +3087,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1027.jpg",
         "description": ""
     },
     {
@@ -3102,7 +3102,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1028.jpg",
         "description": ""
     },
     {
@@ -3117,7 +3117,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1029.jpg",
         "description": ""
     },
     {
@@ -3132,7 +3132,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1030.jpg",
         "description": ""
     },
     {
@@ -3147,7 +3147,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1031.jpg",
         "description": ""
     },
     {
@@ -3162,7 +3162,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1032.jpg",
         "description": ""
     },
     {
@@ -3177,7 +3177,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1033.jpg",
         "description": ""
     },
     {
@@ -3192,7 +3192,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1034.jpg",
         "description": ""
     },
     {
@@ -3207,7 +3207,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1041.jpg",
         "description": ""
     },
     {
@@ -3222,7 +3222,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1042.jpg",
         "description": ""
     },
     {
@@ -3237,7 +3237,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1043.jpg",
         "description": ""
     },
     {
@@ -3252,7 +3252,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1044.jpg",
         "description": ""
     },
     {
@@ -3267,7 +3267,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1045.jpg",
         "description": ""
     },
     {
@@ -3282,7 +3282,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1046.jpg",
         "description": ""
     },
     {
@@ -3297,7 +3297,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1047.jpg",
         "description": ""
     },
     {
@@ -3312,7 +3312,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1048.jpg",
         "description": ""
     },
     {
@@ -3327,7 +3327,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1049.jpg",
         "description": ""
     },
     {
@@ -3342,7 +3342,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1050.jpg",
         "description": ""
     },
     {
@@ -3357,7 +3357,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1051.jpg",
         "description": ""
     },
     {
@@ -3372,7 +3372,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1052.jpg",
         "description": ""
     },
     {
@@ -3387,7 +3387,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1053.jpg",
         "description": ""
     },
     {
@@ -3402,7 +3402,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1054.jpg",
         "description": ""
     },
     {
@@ -3417,7 +3417,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1055.jpg",
         "description": ""
     },
     {
@@ -3432,7 +3432,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1056.jpg",
         "description": ""
     },
     {
@@ -3447,7 +3447,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1058.jpg",
         "description": ""
     },
     {
@@ -3462,7 +3462,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1059.jpg",
         "description": ""
     },
     {
@@ -3477,7 +3477,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1062.jpg",
         "description": ""
     },
     {
@@ -3492,7 +3492,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1065.jpg",
         "description": ""
     },
     {
@@ -3507,7 +3507,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1069.jpg",
         "description": ""
     },
     {
@@ -3522,7 +3522,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1070.jpg",
         "description": ""
     },
     {
@@ -3537,7 +3537,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1082.jpg",
         "description": ""
     },
     {
@@ -3552,7 +3552,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1085.jpg",
         "description": ""
     },
     {
@@ -3582,7 +3582,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1097.jpg",
         "description": ""
     },
     {
@@ -3597,7 +3597,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1098.jpg",
         "description": ""
     },
     {
@@ -3612,7 +3612,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1099.jpg",
         "description": ""
     },
     {
@@ -3627,7 +3627,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1100.jpg",
         "description": ""
     },
     {
@@ -3642,7 +3642,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1101.jpg",
         "description": ""
     },
     {
@@ -4272,7 +4272,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1236.jpg",
         "description": ""
     },
     {
@@ -4287,7 +4287,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1271.jpg",
         "description": ""
     },
     {
@@ -4317,7 +4317,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1273.jpg",
         "description": ""
     },
     {
@@ -4347,7 +4347,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1275.jpg",
         "description": ""
     },
     {
@@ -5052,7 +5052,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1431.jpg",
         "description": ""
     },
     {
@@ -5067,7 +5067,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1432.jpg",
         "description": ""
     },
     {
@@ -5082,7 +5082,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1436.jpg",
         "description": ""
     },
     {
@@ -5097,7 +5097,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1437.jpg",
         "description": ""
     },
     {
@@ -5112,7 +5112,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1438.jpg",
         "description": ""
     },
     {
@@ -5127,7 +5127,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1441.jpg",
         "description": ""
     },
     {
@@ -5142,7 +5142,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1442.jpg",
         "description": ""
     },
     {
@@ -5157,7 +5157,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1443.jpg",
         "description": ""
     },
     {
@@ -5172,7 +5172,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1444.jpg",
         "description": ""
     },
     {
@@ -5187,7 +5187,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1445.jpg",
         "description": ""
     },
     {
@@ -5202,7 +5202,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1446.jpg",
         "description": ""
     },
     {
@@ -5217,7 +5217,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1447.jpg",
         "description": ""
     },
     {
@@ -5232,7 +5232,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1448.jpg",
         "description": ""
     },
     {
@@ -5247,7 +5247,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1449.jpg",
         "description": ""
     },
     {
@@ -5262,7 +5262,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1450.jpg",
         "description": ""
     },
     {
@@ -5277,7 +5277,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1451.jpg",
         "description": ""
     },
     {
@@ -5292,7 +5292,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1452.jpg",
         "description": ""
     },
     {
@@ -5307,7 +5307,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1453.jpg",
         "description": ""
     },
     {
@@ -5337,7 +5337,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1455.jpg",
         "description": ""
     },
     {
@@ -5352,7 +5352,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1456.jpg",
         "description": ""
     },
     {
@@ -5367,7 +5367,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1457.jpg",
         "description": ""
     },
     {
@@ -5382,7 +5382,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1458.jpg",
         "description": ""
     },
     {
@@ -5397,7 +5397,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1459.jpg",
         "description": ""
     },
     {
@@ -5412,7 +5412,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1460.jpg",
         "description": ""
     },
     {
@@ -5427,7 +5427,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1461.jpg",
         "description": ""
     },
     {
@@ -5442,7 +5442,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1462.jpg",
         "description": ""
     },
     {
@@ -5457,7 +5457,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1463.jpg",
         "description": ""
     },
     {
@@ -5472,7 +5472,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1464.jpg",
         "description": ""
     },
     {
@@ -5487,7 +5487,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1465.jpg",
         "description": ""
     },
     {
@@ -5502,7 +5502,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1466.jpg",
         "description": ""
     },
     {
@@ -5517,7 +5517,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1467.jpg",
         "description": ""
     },
     {
@@ -5532,7 +5532,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1468.jpg",
         "description": ""
     },
     {
@@ -5547,7 +5547,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1469.jpg",
         "description": ""
     },
     {
@@ -5562,7 +5562,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1470.jpg",
         "description": ""
     },
     {
@@ -5577,7 +5577,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1471.jpg",
         "description": ""
     },
     {
@@ -5592,7 +5592,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1472.jpg",
         "description": ""
     },
     {
@@ -5607,7 +5607,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1473.jpg",
         "description": ""
     },
     {
@@ -5622,7 +5622,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1474.jpg",
         "description": ""
     },
     {
@@ -5637,7 +5637,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1475.jpg",
         "description": ""
     },
     {
@@ -5652,7 +5652,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1476.jpg",
         "description": ""
     },
     {
@@ -5667,7 +5667,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1477.jpg",
         "description": ""
     },
     {
@@ -5682,7 +5682,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1478.jpg",
         "description": ""
     },
     {
@@ -5697,7 +5697,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1479.jpg",
         "description": ""
     },
     {
@@ -5712,7 +5712,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1483.jpg",
         "description": ""
     },
     {
@@ -5727,7 +5727,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1485.jpg",
         "description": ""
     },
     {
@@ -5742,7 +5742,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1486.jpg",
         "description": ""
     },
     {
@@ -5757,7 +5757,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1487.jpg",
         "description": ""
     },
     {
@@ -5772,7 +5772,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1488.jpg",
         "description": ""
     },
     {
@@ -5787,7 +5787,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1489.jpg",
         "description": ""
     },
     {
@@ -5802,7 +5802,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1490.jpg",
         "description": ""
     },
     {
@@ -5817,7 +5817,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1491.jpg",
         "description": ""
     },
     {
@@ -5832,7 +5832,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1492.jpg",
         "description": ""
     },
     {
@@ -5862,7 +5862,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1494.jpg",
         "description": ""
     },
     {
@@ -5877,7 +5877,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1501.jpg",
         "description": ""
     },
     {
@@ -5892,7 +5892,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1502.jpg",
         "description": ""
     },
     {
@@ -5907,7 +5907,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1504.jpg",
         "description": ""
     },
     {
@@ -5922,7 +5922,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1505.jpg",
         "description": ""
     },
     {
@@ -5937,7 +5937,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1506.jpg",
         "description": ""
     },
     {
@@ -5952,7 +5952,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1508.jpg",
         "description": ""
     },
     {
@@ -5967,7 +5967,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1509.jpg",
         "description": ""
     },
     {
@@ -5982,7 +5982,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1510.jpg",
         "description": ""
     },
     {
@@ -5997,7 +5997,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1511.jpg",
         "description": ""
     },
     {
@@ -6012,7 +6012,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1514.jpg",
         "description": ""
     },
     {
@@ -6027,7 +6027,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1516.jpg",
         "description": ""
     },
     {
@@ -6042,7 +6042,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1518.jpg",
         "description": ""
     },
     {
@@ -6057,7 +6057,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1519.jpg",
         "description": ""
     },
     {
@@ -6072,7 +6072,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1520.jpg",
         "description": ""
     },
     {
@@ -6087,7 +6087,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1521.jpg",
         "description": ""
     },
     {
@@ -6102,7 +6102,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1522.jpg",
         "description": ""
     },
     {
@@ -6117,7 +6117,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1523.jpg",
         "description": ""
     },
     {
@@ -6132,7 +6132,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1524.jpg",
         "description": ""
     },
     {
@@ -6147,7 +6147,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1526.jpg",
         "description": ""
     },
     {
@@ -6162,7 +6162,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1529.jpg",
         "description": ""
     },
     {
@@ -6177,7 +6177,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1530.jpg",
         "description": ""
     },
     {
@@ -6192,7 +6192,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1533.jpg",
         "description": ""
     },
     {
@@ -6207,7 +6207,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1534.jpg",
         "description": ""
     },
     {
@@ -6222,7 +6222,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1537.jpg",
         "description": ""
     },
     {
@@ -6237,7 +6237,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1538.jpg",
         "description": ""
     },
     {
@@ -6252,7 +6252,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1540.jpg",
         "description": ""
     },
     {
@@ -6267,7 +6267,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1541.jpg",
         "description": ""
     },
     {
@@ -6282,7 +6282,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1542.jpg",
         "description": ""
     },
     {
@@ -6297,7 +6297,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1543.jpg",
         "description": ""
     },
     {
@@ -6312,7 +6312,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1547.jpg",
         "description": ""
     },
     {
@@ -6327,7 +6327,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1548.jpg",
         "description": ""
     },
     {
@@ -6342,7 +6342,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1549.jpg",
         "description": ""
     },
     {
@@ -6357,7 +6357,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1550.jpg",
         "description": ""
     },
     {
@@ -6372,7 +6372,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1551.jpg",
         "description": ""
     },
     {
@@ -6387,7 +6387,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1552.jpg",
         "description": ""
     },
     {
@@ -6402,7 +6402,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1553.jpg",
         "description": ""
     },
     {
@@ -6417,7 +6417,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1554.jpg",
         "description": ""
     },
     {
@@ -6432,7 +6432,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1556.jpg",
         "description": ""
     },
     {
@@ -6447,7 +6447,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1557.jpg",
         "description": ""
     },
     {
@@ -6462,7 +6462,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1558.jpg",
         "description": ""
     },
     {
@@ -6477,7 +6477,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1562.jpg",
         "description": ""
     },
     {
@@ -6492,7 +6492,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1564.jpg",
         "description": ""
     },
     {
@@ -6507,7 +6507,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1568.jpg",
         "description": ""
     },
     {
@@ -6522,7 +6522,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1569.jpg",
         "description": ""
     },
     {
@@ -6537,7 +6537,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1571.jpg",
         "description": ""
     },
     {
@@ -6552,7 +6552,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1573.jpg",
         "description": ""
     },
     {
@@ -6567,7 +6567,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1575.jpg",
         "description": ""
     },
     {
@@ -6582,7 +6582,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1576.jpg",
         "description": ""
     },
     {
@@ -6597,7 +6597,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1577.jpg",
         "description": ""
     },
     {
@@ -6612,7 +6612,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1581.jpg",
         "description": ""
     },
     {
@@ -6627,7 +6627,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1582.jpg",
         "description": ""
     },
     {
@@ -6642,7 +6642,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1583.jpg",
         "description": ""
     },
     {
@@ -6657,7 +6657,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1585.jpg",
         "description": ""
     },
     {
@@ -6672,7 +6672,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1586.jpg",
         "description": ""
     },
     {
@@ -6687,7 +6687,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1587.jpg",
         "description": ""
     },
     {
@@ -6702,7 +6702,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1588.jpg",
         "description": ""
     },
     {
@@ -6717,7 +6717,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1589.jpg",
         "description": ""
     },
     {
@@ -6732,7 +6732,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1593.jpg",
         "description": ""
     },
     {
@@ -6747,7 +6747,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1594.jpg",
         "description": ""
     },
     {
@@ -6762,7 +6762,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1599.jpg",
         "description": ""
     },
     {
@@ -6777,7 +6777,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1601.jpg",
         "description": ""
     },
     {
@@ -6792,7 +6792,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1602.jpg",
         "description": ""
     },
     {
@@ -6807,7 +6807,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1603.jpg",
         "description": ""
     },
     {
@@ -6822,7 +6822,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1604.jpg",
         "description": ""
     },
     {
@@ -6837,7 +6837,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1605.jpg",
         "description": ""
     },
     {
@@ -6852,7 +6852,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1607.jpg",
         "description": ""
     },
     {
@@ -6867,7 +6867,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1608.jpg",
         "description": ""
     },
     {
@@ -6882,7 +6882,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1610.jpg",
         "description": ""
     },
     {
@@ -6897,7 +6897,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1611.jpg",
         "description": ""
     },
     {
@@ -6912,7 +6912,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1615.jpg",
         "description": ""
     },
     {
@@ -6927,7 +6927,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1619.jpg",
         "description": ""
     },
     {
@@ -6942,7 +6942,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1620.jpg",
         "description": ""
     },
     {
@@ -6957,7 +6957,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1623.jpg",
         "description": ""
     },
     {
@@ -6972,7 +6972,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1624.jpg",
         "description": ""
     },
     {
@@ -6987,7 +6987,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1625.jpg",
         "description": ""
     },
     {
@@ -7002,7 +7002,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1626.jpg",
         "description": ""
     },
     {
@@ -7017,7 +7017,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1627.jpg",
         "description": ""
     },
     {
@@ -7032,7 +7032,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1628.jpg",
         "description": ""
     },
     {
@@ -7062,7 +7062,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1630.jpg",
         "description": ""
     },
     {
@@ -7077,7 +7077,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1631.jpg",
         "description": ""
     },
     {
@@ -7092,7 +7092,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1632.jpg",
         "description": ""
     },
     {
@@ -7107,7 +7107,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1633.jpg",
         "description": ""
     },
     {
@@ -7122,7 +7122,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1634.jpg",
         "description": ""
     },
     {
@@ -7137,7 +7137,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1635.jpg",
         "description": ""
     },
     {
@@ -7152,7 +7152,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1636.jpg",
         "description": ""
     },
     {
@@ -7167,7 +7167,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1637.jpg",
         "description": ""
     },
     {
@@ -7182,7 +7182,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1638.jpg",
         "description": ""
     },
     {
@@ -7197,7 +7197,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1639.jpg",
         "description": ""
     },
     {
@@ -7212,7 +7212,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1640.jpg",
         "description": ""
     },
     {
@@ -7227,7 +7227,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1642.jpg",
         "description": ""
     },
     {
@@ -7242,7 +7242,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1643.jpg",
         "description": ""
     },
     {
@@ -7257,7 +7257,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1644.jpg",
         "description": ""
     },
     {
@@ -7272,7 +7272,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1645.jpg",
         "description": ""
     },
     {
@@ -7287,7 +7287,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1646.jpg",
         "description": ""
     },
     {
@@ -7302,7 +7302,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1647.jpg",
         "description": ""
     },
     {
@@ -7317,7 +7317,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1648.jpg",
         "description": ""
     },
     {
@@ -7332,7 +7332,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1657.jpg",
         "description": ""
     },
     {
@@ -7347,7 +7347,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1658.jpg",
         "description": ""
     },
     {
@@ -7362,7 +7362,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1659.jpg",
         "description": ""
     },
     {
@@ -7377,7 +7377,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1660.jpg",
         "description": ""
     },
     {
@@ -7392,7 +7392,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1661.jpg",
         "description": ""
     },
     {
@@ -7407,7 +7407,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1663.jpg",
         "description": ""
     },
     {
@@ -7422,7 +7422,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1664.jpg",
         "description": ""
     },
     {
@@ -7437,7 +7437,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1665.jpg",
         "description": ""
     },
     {
@@ -7452,7 +7452,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1666.jpg",
         "description": ""
     },
     {
@@ -7467,7 +7467,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1667.jpg",
         "description": ""
     },
     {
@@ -7482,7 +7482,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1668.jpg",
         "description": ""
     },
     {
@@ -7497,7 +7497,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1669.jpg",
         "description": ""
     },
     {
@@ -7512,7 +7512,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1670.jpg",
         "description": ""
     },
     {
@@ -7527,7 +7527,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1671.jpg",
         "description": ""
     },
     {
@@ -7542,7 +7542,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1672.jpg",
         "description": ""
     },
     {
@@ -7557,7 +7557,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1673.jpg",
         "description": ""
     },
     {
@@ -7572,7 +7572,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1674.jpg",
         "description": ""
     },
     {
@@ -7587,7 +7587,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1675.jpg",
         "description": ""
     },
     {
@@ -7602,7 +7602,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1676.jpg",
         "description": ""
     },
     {
@@ -7617,7 +7617,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1677.jpg",
         "description": ""
     },
     {
@@ -7632,7 +7632,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1678.jpg",
         "description": ""
     },
     {
@@ -7647,7 +7647,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1679.jpg",
         "description": ""
     },
     {
@@ -7662,7 +7662,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1680.jpg",
         "description": ""
     },
     {
@@ -7677,7 +7677,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1681.jpg",
         "description": ""
     },
     {
@@ -7692,7 +7692,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1689.jpg",
         "description": ""
     },
     {
@@ -7707,7 +7707,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1691.jpg",
         "description": ""
     },
     {
@@ -7722,7 +7722,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1694.jpg",
         "description": ""
     },
     {
@@ -7737,7 +7737,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1695.jpg",
         "description": ""
     },
     {
@@ -7752,7 +7752,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1696.jpg",
         "description": ""
     },
     {
@@ -7767,7 +7767,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1698.jpg",
         "description": ""
     },
     {
@@ -7782,7 +7782,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1699.jpg",
         "description": ""
     },
     {
@@ -7797,7 +7797,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1700.jpg",
         "description": ""
     },
     {
@@ -7812,7 +7812,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1701.jpg",
         "description": ""
     },
     {
@@ -7827,7 +7827,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1702.jpg",
         "description": ""
     },
     {
@@ -7842,7 +7842,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1703.jpg",
         "description": ""
     },
     {
@@ -7857,7 +7857,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1710.jpg",
         "description": ""
     },
     {
@@ -7872,7 +7872,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1711.jpg",
         "description": ""
     },
     {
@@ -7887,7 +7887,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1712.jpg",
         "description": ""
     },
     {
@@ -7902,7 +7902,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1713.jpg",
         "description": ""
     },
     {
@@ -7917,7 +7917,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1714.jpg",
         "description": ""
     },
     {
@@ -7932,7 +7932,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1715.jpg",
         "description": ""
     },
     {
@@ -7947,7 +7947,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1716.jpg",
         "description": ""
     },
     {
@@ -7962,7 +7962,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1717.jpg",
         "description": ""
     },
     {
@@ -7977,7 +7977,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1719.jpg",
         "description": ""
     },
     {
@@ -7992,7 +7992,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1722.jpg",
         "description": ""
     },
     {
@@ -8007,7 +8007,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1723.jpg",
         "description": ""
     },
     {
@@ -8022,7 +8022,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1724.jpg",
         "description": ""
     },
     {
@@ -8037,7 +8037,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1725.jpg",
         "description": ""
     },
     {
@@ -8052,7 +8052,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1726.jpg",
         "description": ""
     },
     {
@@ -8067,7 +8067,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1727.jpg",
         "description": ""
     },
     {
@@ -8082,7 +8082,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1728.jpg",
         "description": ""
     },
     {
@@ -8097,7 +8097,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1735.jpg",
         "description": ""
     },
     {
@@ -8112,7 +8112,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1736.jpg",
         "description": ""
     },
     {
@@ -8127,7 +8127,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1738.jpg",
         "description": ""
     },
     {
@@ -8142,7 +8142,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1739.jpg",
         "description": ""
     },
     {
@@ -8157,7 +8157,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1742.jpg",
         "description": ""
     },
     {
@@ -8172,7 +8172,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1743.jpg",
         "description": ""
     },
     {
@@ -8187,7 +8187,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1744.jpg",
         "description": ""
     },
     {
@@ -8202,7 +8202,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1746.jpg",
         "description": ""
     },
     {
@@ -8217,7 +8217,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1747.jpg",
         "description": ""
     },
     {
@@ -8232,7 +8232,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1750.jpg",
         "description": ""
     },
     {
@@ -8247,7 +8247,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1751.jpg",
         "description": ""
     },
     {
@@ -8262,7 +8262,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1753.jpg",
         "description": ""
     },
     {
@@ -8277,7 +8277,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1754.jpg",
         "description": ""
     },
     {
@@ -8292,7 +8292,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1755.jpg",
         "description": ""
     },
     {
@@ -8307,7 +8307,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1756.jpg",
         "description": ""
     },
     {
@@ -8322,7 +8322,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1757.jpg",
         "description": ""
     },
     {
@@ -8337,7 +8337,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1758.jpg",
         "description": ""
     },
     {
@@ -8352,7 +8352,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1759.jpg",
         "description": ""
     },
     {
@@ -8367,7 +8367,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1760.jpg",
         "description": ""
     },
     {
@@ -8382,7 +8382,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1762.jpg",
         "description": ""
     },
     {
@@ -8397,7 +8397,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1766.jpg",
         "description": ""
     },
     {
@@ -8412,7 +8412,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1782.jpg",
         "description": ""
     },
     {
@@ -8427,7 +8427,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1786.jpg",
         "description": ""
     },
     {
@@ -8442,7 +8442,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1820.jpg",
         "description": ""
     },
     {
@@ -13332,7 +13332,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1000.jpg",
         "description": ""
     },
     {
@@ -13347,7 +13347,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1001.jpg",
         "description": ""
     },
     {
@@ -13362,7 +13362,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1002.jpg",
         "description": ""
     },
     {
@@ -13377,7 +13377,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1003.jpg",
         "description": ""
     },
     {
@@ -13392,7 +13392,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1004.jpg",
         "description": ""
     },
     {
@@ -13407,7 +13407,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1006.jpg",
         "description": ""
     },
     {
@@ -13422,7 +13422,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1008.jpg",
         "description": ""
     },
     {
@@ -13437,7 +13437,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1009.jpg",
         "description": ""
     },
     {
@@ -13452,7 +13452,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1010.jpg",
         "description": ""
     },
     {
@@ -13467,7 +13467,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1011.jpg",
         "description": ""
     },
     {
@@ -13482,7 +13482,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1013.jpg",
         "description": ""
     },
     {
@@ -13497,7 +13497,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1014.jpg",
         "description": ""
     },
     {
@@ -13512,7 +13512,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1015.jpg",
         "description": ""
     },
     {
@@ -13527,7 +13527,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1016.jpg",
         "description": ""
     },
     {
@@ -13542,7 +13542,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1017.jpg",
         "description": ""
     },
     {
@@ -13557,7 +13557,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1018.jpg",
         "description": ""
     },
     {
@@ -13572,7 +13572,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1019.jpg",
         "description": ""
     },
     {
@@ -13587,7 +13587,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1057.jpg",
         "description": ""
     },
     {
@@ -13602,7 +13602,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1060.jpg",
         "description": ""
     },
     {
@@ -13617,7 +13617,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1061.jpg",
         "description": ""
     },
     {
@@ -13632,7 +13632,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1063.jpg",
         "description": ""
     },
     {
@@ -13647,7 +13647,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1064.jpg",
         "description": ""
     },
     {
@@ -13662,7 +13662,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1066.jpg",
         "description": ""
     },
     {
@@ -13677,7 +13677,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1067.jpg",
         "description": ""
     },
     {
@@ -13692,7 +13692,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1068.jpg",
         "description": ""
     },
     {
@@ -13707,7 +13707,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1071.jpg",
         "description": ""
     },
     {
@@ -13722,7 +13722,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1072.jpg",
         "description": ""
     },
     {
@@ -13737,7 +13737,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1073.jpg",
         "description": ""
     },
     {
@@ -13752,7 +13752,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1074.jpg",
         "description": ""
     },
     {
@@ -13767,7 +13767,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1075.jpg",
         "description": ""
     },
     {
@@ -13782,7 +13782,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1076.jpg",
         "description": ""
     },
     {
@@ -13797,7 +13797,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1077.jpg",
         "description": ""
     },
     {
@@ -13812,7 +13812,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1078.jpg",
         "description": ""
     },
     {
@@ -13827,7 +13827,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1079.jpg",
         "description": ""
     },
     {
@@ -13842,7 +13842,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1080.jpg",
         "description": ""
     },
     {
@@ -13857,7 +13857,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1081.jpg",
         "description": ""
     },
     {
@@ -13872,7 +13872,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1083.jpg",
         "description": ""
     },
     {
@@ -13887,7 +13887,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1084.jpg",
         "description": ""
     },
     {
@@ -13902,7 +13902,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1086.jpg",
         "description": ""
     },
     {
@@ -13917,7 +13917,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1087.jpg",
         "description": ""
     },
     {
@@ -13932,7 +13932,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1088.jpg",
         "description": ""
     },
     {
@@ -13947,7 +13947,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1089.jpg",
         "description": ""
     },
     {
@@ -13962,7 +13962,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1090.jpg",
         "description": ""
     },
     {
@@ -13977,7 +13977,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1091.jpg",
         "description": ""
     },
     {
@@ -13992,7 +13992,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1092.jpg",
         "description": ""
     },
     {
@@ -14007,7 +14007,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1093.jpg",
         "description": ""
     },
     {
@@ -14022,7 +14022,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1094.jpg",
         "description": ""
     },
     {
@@ -14037,7 +14037,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1095.jpg",
         "description": ""
     },
     {
@@ -14097,7 +14097,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1139.jpg",
         "description": ""
     },
     {
@@ -14112,7 +14112,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1141.jpg",
         "description": ""
     },
     {
@@ -14142,7 +14142,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1143.jpg",
         "description": ""
     },
     {
@@ -14157,7 +14157,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1144.jpg",
         "description": ""
     },
     {
@@ -14217,7 +14217,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1148.jpg",
         "description": ""
     },
     {
@@ -15252,7 +15252,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1237.jpg",
         "description": ""
     },
     {
@@ -15267,7 +15267,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1239.jpg",
         "description": ""
     },
     {
@@ -15282,7 +15282,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1240.jpg",
         "description": ""
     },
     {
@@ -15297,7 +15297,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1241.jpg",
         "description": ""
     },
     {
@@ -15312,7 +15312,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1242.jpg",
         "description": ""
     },
     {
@@ -15327,7 +15327,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1243.jpg",
         "description": ""
     },
     {
@@ -15342,7 +15342,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1244.jpg",
         "description": ""
     },
     {
@@ -15357,7 +15357,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1245.jpg",
         "description": ""
     },
     {
@@ -15372,7 +15372,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1246.jpg",
         "description": ""
     },
     {
@@ -15387,7 +15387,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1247.jpg",
         "description": ""
     },
     {
@@ -15402,7 +15402,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1248.jpg",
         "description": ""
     },
     {
@@ -15417,7 +15417,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1249.jpg",
         "description": ""
     },
     {
@@ -15432,7 +15432,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1250.jpg",
         "description": ""
     },
     {
@@ -15447,7 +15447,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1251.jpg",
         "description": ""
     },
     {
@@ -15462,7 +15462,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1252.jpg",
         "description": ""
     },
     {
@@ -15477,7 +15477,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1253.jpg",
         "description": ""
     },
     {
@@ -15492,7 +15492,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1254.jpg",
         "description": ""
     },
     {
@@ -15507,7 +15507,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1255.jpg",
         "description": ""
     },
     {
@@ -15522,7 +15522,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1259.jpg",
         "description": ""
     },
     {
@@ -15537,7 +15537,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1260.jpg",
         "description": ""
     },
     {
@@ -15552,7 +15552,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1261.jpg",
         "description": ""
     },
     {
@@ -15567,7 +15567,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1262.jpg",
         "description": ""
     },
     {
@@ -15582,7 +15582,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1263.jpg",
         "description": ""
     },
     {
@@ -15597,7 +15597,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1264.jpg",
         "description": ""
     },
     {
@@ -15612,7 +15612,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1265.jpg",
         "description": ""
     },
     {
@@ -15627,7 +15627,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1267.jpg",
         "description": ""
     },
     {
@@ -15642,7 +15642,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1268.jpg",
         "description": ""
     },
     {
@@ -15657,7 +15657,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1269.jpg",
         "description": ""
     },
     {
@@ -15717,7 +15717,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1280.jpg",
         "description": ""
     },
     {
@@ -15732,7 +15732,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1281.jpg",
         "description": ""
     },
     {
@@ -15747,7 +15747,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1282.jpg",
         "description": ""
     },
     {
@@ -15762,7 +15762,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1285.jpg",
         "description": ""
     },
     {
@@ -15777,7 +15777,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1286.jpg",
         "description": ""
     },
     {
@@ -15792,7 +15792,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1287.jpg",
         "description": ""
     },
     {
@@ -15807,7 +15807,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1288.jpg",
         "description": ""
     },
     {
@@ -15822,7 +15822,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1289.jpg",
         "description": ""
     },
     {
@@ -15837,7 +15837,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1290.jpg",
         "description": ""
     },
     {
@@ -15852,7 +15852,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1291.jpg",
         "description": ""
     },
     {
@@ -15867,7 +15867,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1293.jpg",
         "description": ""
     },
     {
@@ -15882,7 +15882,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1294.jpg",
         "description": ""
     },
     {
@@ -15897,7 +15897,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1295.jpg",
         "description": ""
     },
     {
@@ -15912,7 +15912,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1296.jpg",
         "description": ""
     },
     {
@@ -15927,7 +15927,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1297.jpg",
         "description": ""
     },
     {
@@ -15942,7 +15942,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1298.jpg",
         "description": ""
     },
     {
@@ -15957,7 +15957,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1299.jpg",
         "description": ""
     },
     {
@@ -15972,7 +15972,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1300.jpg",
         "description": ""
     },
     {
@@ -15987,7 +15987,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1301.jpg",
         "description": ""
     },
     {
@@ -16002,7 +16002,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1302.jpg",
         "description": ""
     },
     {
@@ -16017,7 +16017,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1305.jpg",
         "description": ""
     },
     {
@@ -16032,7 +16032,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1306.jpg",
         "description": ""
     },
     {
@@ -16047,7 +16047,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1307.jpg",
         "description": ""
     },
     {
@@ -16107,7 +16107,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1311.jpg",
         "description": ""
     },
     {
@@ -16122,7 +16122,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1312.jpg",
         "description": ""
     },
     {
@@ -16137,7 +16137,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1313.jpg",
         "description": ""
     },
     {
@@ -16152,7 +16152,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1314.jpg",
         "description": ""
     },
     {
@@ -17037,7 +17037,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1433.jpg",
         "description": ""
     },
     {
@@ -17052,7 +17052,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1498.jpg",
         "description": ""
     },
     {
@@ -17082,7 +17082,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1600.jpg",
         "description": ""
     },
     {
@@ -17097,7 +17097,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1612.jpg",
         "description": ""
     },
     {
@@ -17112,7 +17112,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1613.jpg",
         "description": ""
     },
     {
@@ -17127,7 +17127,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1614.jpg",
         "description": ""
     },
     {
@@ -17142,7 +17142,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1616.jpg",
         "description": ""
     },
     {
@@ -17157,7 +17157,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1617.jpg",
         "description": ""
     },
     {
@@ -17172,7 +17172,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1618.jpg",
         "description": ""
     },
     {
@@ -17187,7 +17187,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1649.jpg",
         "description": ""
     },
     {
@@ -17202,7 +17202,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1650.jpg",
         "description": ""
     },
     {
@@ -17217,7 +17217,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1651.jpg",
         "description": ""
     },
     {
@@ -17232,7 +17232,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1652.jpg",
         "description": ""
     },
     {
@@ -17247,7 +17247,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1653.jpg",
         "description": ""
     },
     {
@@ -17262,7 +17262,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1655.jpg",
         "description": ""
     },
     {
@@ -17277,7 +17277,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1656.jpg",
         "description": ""
     },
     {
@@ -17292,7 +17292,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1682.jpg",
         "description": ""
     },
     {
@@ -17307,7 +17307,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1683.jpg",
         "description": ""
     },
     {
@@ -17322,7 +17322,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1684.jpg",
         "description": ""
     },
     {
@@ -17337,7 +17337,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1685.jpg",
         "description": ""
     },
     {
@@ -17352,7 +17352,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1688.jpg",
         "description": ""
     },
     {
@@ -17367,7 +17367,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1693.jpg",
         "description": ""
     },
     {
@@ -17382,7 +17382,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1707.jpg",
         "description": ""
     },
     {
@@ -17397,7 +17397,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1734.jpg",
         "description": ""
     },
     {
@@ -17412,7 +17412,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1749.jpg",
         "description": ""
     },
     {
@@ -17427,7 +17427,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1752.jpg",
         "description": ""
     },
     {
@@ -17442,7 +17442,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1765.jpg",
         "description": ""
     },
     {
@@ -17457,7 +17457,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1767.jpg",
         "description": ""
     },
     {
@@ -17472,7 +17472,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1769.jpg",
         "description": ""
     },
     {
@@ -17487,7 +17487,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1770.jpg",
         "description": ""
     },
     {
@@ -17502,7 +17502,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1771.jpg",
         "description": ""
     },
     {
@@ -17517,7 +17517,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1772.jpg",
         "description": ""
     },
     {
@@ -17532,7 +17532,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1773.jpg",
         "description": ""
     },
     {
@@ -17547,7 +17547,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1774.jpg",
         "description": ""
     },
     {
@@ -17577,7 +17577,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1777.jpg",
         "description": ""
     },
     {
@@ -17592,7 +17592,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1778.jpg",
         "description": ""
     },
     {
@@ -17607,7 +17607,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1779.jpg",
         "description": ""
     },
     {
@@ -17622,7 +17622,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1780.jpg",
         "description": ""
     },
     {
@@ -17637,7 +17637,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1781.jpg",
         "description": ""
     },
     {
@@ -17652,7 +17652,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1784.jpg",
         "description": ""
     },
     {
@@ -17667,7 +17667,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1785.jpg",
         "description": ""
     },
     {
@@ -17727,7 +17727,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1790.jpg",
         "description": ""
     },
     {
@@ -17742,7 +17742,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1793.jpg",
         "description": ""
     },
     {
@@ -17757,7 +17757,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1795.jpg",
         "description": ""
     },
     {
@@ -17772,7 +17772,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1797.jpg",
         "description": ""
     },
     {
@@ -17787,7 +17787,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1798.jpg",
         "description": ""
     },
     {
@@ -17802,7 +17802,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1799.jpg",
         "description": ""
     },
     {
@@ -17817,7 +17817,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1800.jpg",
         "description": ""
     },
     {
@@ -17832,7 +17832,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1801.jpg",
         "description": ""
     },
     {
@@ -17847,7 +17847,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 372.96,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1803.jpg",
         "description": ""
     },
     {
@@ -17862,7 +17862,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 2024.64,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1805.jpg",
         "description": ""
     },
     {
@@ -17877,7 +17877,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1806.jpg",
         "description": ""
     },
     {
@@ -17892,7 +17892,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1807.jpg",
         "description": ""
     },
     {
@@ -17907,7 +17907,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1811.jpg",
         "description": ""
     },
     {
@@ -17922,7 +17922,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1812.jpg",
         "description": ""
     },
     {
@@ -17937,7 +17937,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1813.jpg",
         "description": ""
     },
     {
@@ -17952,7 +17952,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1814.jpg",
         "description": ""
     },
     {
@@ -17967,7 +17967,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 0,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1817.jpg",
         "description": ""
     },
     {
@@ -19062,7 +19062,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 355.2,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/2464.jpg",
         "description": ""
     },
     {
@@ -19077,7 +19077,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 532.8,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/2465.jpg",
         "description": ""
     },
     {
@@ -21102,7 +21102,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 12662.88,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1434.jpg",
         "description": "MANGUERA 4 CAPAS 5\"\"x4m MET. BOQUILLA SENCILLA"
     },
     {
@@ -21117,7 +21117,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 497.28,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1816.jpg",
         "description": ""
     },
     {
@@ -21132,7 +21132,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 19340.64,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1439.jpg",
         "description": "MANGUERA 4 CAPAS 5\"\"x7m MET. BOQUILLA SENCILLA"
     },
     {
@@ -21147,7 +21147,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 16999.87,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1440.jpg",
         "description": "MANGUERA 4 CAPAS 5\"\"x7m MET. BOQUILLA DOBLE"
     },
     {
@@ -21177,7 +21177,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 142.08,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1804.jpg",
         "description": ""
     },
     {
@@ -21222,7 +21222,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 1225.44,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1792.jpg",
         "description": ""
     },
     {
@@ -21237,7 +21237,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 177.6,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1794.jpg",
         "description": ""
     },
     {
@@ -21267,7 +21267,7 @@ export const inventoryData: Product[] = [
         "stock": 0,
         "price": 355.2,
         "status": "out-of-stock",
-        "image": "",
+        "image": "/images/products/1815.jpg",
         "description": ""
     },
     {
