@@ -60,48 +60,57 @@ export default function ProductDetailClient({ product, currentTheme }: { product
         }
     };
 
-    const [isUpdating, setIsUpdating] = useState(false);
-
-    const handleConfirmCount = async () => {
-        if (!physicalCount) return;
-        setIsUpdating(true);
-
-        try {
-            const response = await fetch('/api/inventory/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: product.id,
-                    quantity: parseInt(physicalCount),
-                    difference: parseInt(physicalCount) - product.stock,
-                    auditor: 'TEST' // Hardcoded as requested
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.warning) {
-                alert("⚠️ AVISO: El conteo se guardó en memoria pero NO en Excel.\n\nNecesitas configurar el Script de Google (ver instrucciones).");
-                router.push('/inventory');
-            } else if (response.ok && data.status === 'success') {
-                alert("✅ Éxito: Inventario actualizado en Google Sheet.");
-                router.push('/inventory');
-            } else {
-                throw new Error(data.message || 'Error desconocido');
-            }
-        } catch (error: any) {
-            alert(`❌ Error al guardar: ${error.message}`);
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
     const getStockColor = (status: string) => {
         switch (status) {
             case 'in-stock': return '#34C759'; // Apple Green
             case 'low-stock': return '#FF9500'; // Apple Orange
             case 'out-of-stock': return '#FF3B30'; // Apple Red
             default: return '#8E8E93'; // Apple Gray
+        }
+    };
+
+    const handleConfirmCount = async () => {
+        if (!physicalCount) return;
+        setIsUpdating(true);
+
+        const payload = {
+            id: product.id,
+            quantity: parseInt(physicalCount),
+            difference: parseInt(physicalCount) - product.stock,
+            auditor: 'TEST'
+        };
+
+        console.log("🚀 [CLIENT] Starting Write-Back", payload);
+
+        try {
+            console.log("📡 [CLIENT] Sending POST to /api/inventory/update...");
+            const response = await fetch('/api/inventory/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            console.log("📥 [CLIENT] Response Status:", response.status);
+            const data = await response.json();
+            console.log("📦 [CLIENT] Response Data:", data);
+
+            if (data.warning) {
+                console.warn("⚠️ [CLIENT] Warning:", data.warning);
+                alert("⚠️ AVISO: El conteo se guardó en memoria pero NO en Excel.\n\nNecesitas configurar el Script de Google (ver instrucciones).");
+                router.push('/inventory');
+            } else if (response.ok && data.status === 'success') {
+                console.log("✅ [CLIENT] Success!");
+                alert("✅ Éxito: Inventario actualizado en Google Sheet.");
+                router.push('/inventory');
+            } else {
+                console.error("❌ [CLIENT] Logical Error:", data);
+                throw new Error(data.message || 'Error desconocido');
+            }
+        } catch (error: any) {
+            console.error("🔥 [CLIENT] Exception:", error);
+            alert(`❌ Error al guardar: ${error.message}`);
+        } finally {
+            setIsUpdating(false);
         }
     };
 

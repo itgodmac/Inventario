@@ -13,12 +13,15 @@ export async function POST(request: Request) {
         }
 
         if (!APPS_SCRIPT_URL) {
-            console.warn("APPS_SCRIPT_URL is not configured.");
+            console.warn("⚠️ [API] APPS_SCRIPT_URL is not configured.");
             return NextResponse.json({
                 warning: 'Integration not yet configured.',
                 mock_success: true
             });
         }
+
+        console.log("📡 [API] Forwarding to Apps Script:", APPS_SCRIPT_URL);
+        console.log("📦 [API] Payload:", { id, quantity, difference, auditor });
 
         const response = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
@@ -26,15 +29,20 @@ export async function POST(request: Request) {
             body: JSON.stringify({ id, quantity, difference, auditor })
         });
 
+        console.log("📥 [API] Apps Script Status:", response.status);
+
         if (!response.ok) {
-            throw new Error(`Apps Script responded with ${response.status}`);
+            const text = await response.text();
+            console.error("🔥 [API] Apps Script Error Body:", text);
+            throw new Error(`Apps Script responded with ${response.status}: ${text}`);
         }
 
         const data = await response.json();
+        console.log("✅ [API] Apps Script Response:", data);
         return NextResponse.json(data);
 
-    } catch (error) {
-        console.error('Update error:', error);
-        return NextResponse.json({ error: 'Failed to update inventory' }, { status: 500 });
+    } catch (error: any) {
+        console.error('🔥 [API] Update error:', error);
+        return NextResponse.json({ error: 'Failed to update inventory', details: error.message }, { status: 500 });
     }
 }
