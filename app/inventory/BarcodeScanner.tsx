@@ -114,6 +114,9 @@ export default function BarcodeScanner({ onScanSuccess, onClose }: BarcodeScanne
                 <video
                     ref={videoRef}
                     className="w-full h-full object-cover"
+                    playsInline
+                    muted
+                    autoPlay
                 />
 
                 {/* Visual Guides */}
