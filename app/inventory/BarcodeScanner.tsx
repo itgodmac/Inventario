@@ -11,106 +11,125 @@ interface BarcodeScannerProps {
 
 export default function BarcodeScanner({ onScanSuccess, onClose }: BarcodeScannerProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const controlsRef = useRef<any>(null); // IScannerControls
+    const controlsRef = useRef<any>(null);
     const codeReader = useRef(new BrowserMultiFormatReader());
 
+    // UI States
+    const [isVideoStarted, setIsVideoStarted] = useState(false);
+    const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
     const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
-    const [videoInputDevices, setVideoInputDevices] = useState<MediaDeviceInfo[]>([]);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         let mounted = true;
 
-        const initScanner = async () => {
+        const startScanner = async () => {
             try {
-                // Use standard browser API instead of static library method
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter((d: MediaDeviceInfo) => d.kind === 'videoinput');
+                // 1. Force Request Permission by asking for a stream FIRST.
+                // This triggers the browser prompt on iOS/Android.
+                // We request "environment" (back camera) specifically.
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' }
+                });
 
-                if (mounted) {
-                    setVideoInputDevices(videoDevices);
-                    // Select back camera if available
-                    const backCamera = videoDevices.find((d: MediaDeviceInfo) => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('environment'));
-                    if (backCamera) {
-                        setSelectedDeviceId(backCamera.deviceId);
-                    } else if (videoDevices.length > 0) {
-                        setSelectedDeviceId(videoDevices[videoDevices.length - 1].deviceId);
-                    }
+                if (!mounted) {
+                    stream.getTracks().forEach(t => t.stop());
+                    return;
                 }
-            } catch (err) {
-                console.error("Error listing devices", err);
-                if (mounted) setError("Could not access cameras");
-            }
-        };
 
-        if (typeof window !== 'undefined') {
-            initScanner();
-        }
+                // 2. Assign stream to video element to verify it works
+                // Note: ZXing's decodeFromStream will handle this, but explicit request ensures permission.
 
-        return () => {
-            mounted = false;
-        };
-    }, []);
+                // 3. Now that we have permission, List Devices for the switcher
+                try {
+                    const allDevices = await navigator.mediaDevices.enumerateDevices();
+                    const videoInputs = allDevices.filter(d => d.kind === 'videoinput');
+                    if (mounted) setDevices(videoInputs);
+                } catch (e) {
+                    console.warn("Could not enumerate devices", e);
+                }
 
-    useEffect(() => {
-        if (!selectedDeviceId || !videoRef.current) return;
-
-        // Reset any existing reader
-        // @ts-ignore - Some versions might not have reset on instance or it behaves differently, but we try clean up
-        // codeReader.current.reset(); 
-
-        const startDecoding = async () => {
-            try {
-                // Using decodeFromVideoDevice from @zxing/browser returns Promise<IScannerControls>
-                const controls = await codeReader.current.decodeFromVideoDevice(
-                    selectedDeviceId,
+                // 4. Start Decoding from the stream
+                const controls = await codeReader.current.decodeFromStream(
+                    stream,
                     videoRef.current!,
                     (result, err) => {
                         if (result) {
                             onScanSuccess(result.getText());
-                            // Stop scanning after success
                             controls.stop();
-                        }
-                        // Ignore NotFoundException (no code in frame)
-                        if (err && !(err instanceof NotFoundException)) {
-                            // console.warn(err);
                         }
                     }
                 );
+
                 controlsRef.current = controls;
-            } catch (err) {
-                console.error("Error starting decoder", err);
-                setError("Failed to start scanner");
+                setIsVideoStarted(true);
+
+            } catch (err: any) {
+                console.error("Camera access error:", err);
+
+                let msg = "No se pudo acceder a la cámara.";
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    msg = "Permiso denegado. Habilita la cámara en tu navegador.";
+                } else if (err.name === 'NotFoundError') {
+                    msg = "No se encontró ninguna cámara.";
+                } else if (typeof window !== 'undefined' && !window.isSecureContext) {
+                    msg = "Error de seguridad: Necesitas HTTPS para usar la cámara.";
+                }
+
+                if (mounted) setError(msg);
             }
         };
 
-        startDecoding();
+        // Delay start slightly to ensure DOM is ready and prevent potential double-init issues
+        const timer = setTimeout(() => {
+            startScanner();
+        }, 100);
 
         return () => {
-            // Cleanup on unmount or device change
+            clearTimeout(timer);
+            mounted = false;
             if (controlsRef.current) {
                 controlsRef.current.stop();
             }
         };
-    }, [selectedDeviceId, onScanSuccess]);
+    }, [onScanSuccess]);
+
+    // Handle manual camera switch
+    const handleDeviceChange = async (newDeviceId: string) => {
+        setSelectedDeviceId(newDeviceId);
+        if (controlsRef.current) controlsRef.current.stop();
+
+        try {
+            const controls = await codeReader.current.decodeFromVideoDevice(
+                newDeviceId,
+                videoRef.current!,
+                (result, err) => {
+                    if (result) {
+                        onScanSuccess(result.getText());
+                        controls.stop();
+                    }
+                }
+            );
+            controlsRef.current = controls;
+        } catch (e) {
+            console.error("Failed to switch", e);
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center">
             {/* Header */}
-            <div className="absolute top-0 w-full p-4 flex justify-between items-center z-20 bg-gradient-to-b from-black/80 to-transparent">
-                <div className="text-white">
-                    <h3 className="font-bold text-lg">ZXing Scanner</h3>
-                </div>
+            <div className="absolute top-0 w-full p-4 flex justify-between items-center z-20">
+                <h3 className="text-white font-bold drop-shadow-md">Escanear</h3>
                 <button
                     onClick={onClose}
-                    className="p-2 bg-white/20 hover:bg-white/30 rounded-full text-white backdrop-blur-md transition-all active:scale-95"
+                    className="p-2 bg-black/40 text-white rounded-full backdrop-blur-md"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
 
-            {/* Viewport */}
-            <div className="relative w-full h-full bg-black flex items-center justify-center">
+            <div className="relative w-full h-full bg-black">
                 <video
                     ref={videoRef}
                     className="w-full h-full object-cover"
@@ -119,44 +138,46 @@ export default function BarcodeScanner({ onScanSuccess, onClose }: BarcodeScanne
                     autoPlay
                 />
 
-                {/* Visual Guides */}
-                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                    <div className="w-[85%] h-[150px] border-2 border-green-500/80 rounded-lg relative shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
-                        {/* Laser Scan Line */}
-                        <div className="absolute top-1/2 w-full h-0.5 bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-[pulse_1.5s_ease-in-out_infinite]"></div>
+                {/* Guide */}
+                {!error && (
+                    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                        <div className="w-[80%] aspect-square border-2 border-green-500 rounded-2xl relative shadow-[0_0_0_9999px_rgba(0,0,0,0.7)]">
+                            <div className="absolute top-1/2 w-full h-0.5 bg-red-500/80 animate-pulse"></div>
+                            <p className="absolute -bottom-10 w-full text-center text-white text-sm font-medium">Coloca el código aquí</p>
+                        </div>
                     </div>
-                </div>
+                )}
 
+                {/* Error Overlay */}
                 {error && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/90 p-6 text-center text-white z-30">
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/90 p-8 text-center z-50">
                         <div>
-                            <p className="text-red-400 font-bold mb-2">Error</p>
-                            <p>{error}</p>
-                            <button onClick={onClose} className="mt-4 px-4 py-2 bg-white text-black rounded-lg text-sm font-medium">Close</button>
+                            <div className="text-red-500 text-5xl mb-4">📷🚫</div>
+                            <p className="text-white text-lg font-bold mb-2">{error}</p>
+                            <p className="text-gray-400 text-sm mb-6">Revisa que estés en HTTPS y hayas dado permiso.</p>
+                            <button onClick={onClose} className="bg-white text-black px-6 py-2 rounded-full font-bold">Cerrar</button>
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Footer / Controls */}
-            <div className="absolute bottom-0 w-full p-6 bg-black/80 backdrop-blur-md pb-8 z-20">
-                {videoInputDevices.length > 1 && (
-                    <div className="flex justify-center">
-                        <select
-                            value={selectedDeviceId}
-                            onChange={(e) => setSelectedDeviceId(e.target.value)}
-                            className="bg-white/10 text-white text-sm py-2 px-4 rounded-lg border border-white/10 outline-none focus:border-green-500"
-                        >
-                            {videoInputDevices.map(device => (
-                                <option key={device.deviceId} value={device.deviceId}>
-                                    {device.label || `Camera ${device.deviceId.slice(0, 5)}...`}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                )}
-                <p className="text-center text-white/40 text-xs mt-4">Powered by ZXing</p>
-            </div>
+            {/* Camera Switcher */}
+            {devices.length > 1 && !error && (
+                <div className="absolute bottom-8 z-30 w-full flex justify-center">
+                    <select
+                        onChange={(e) => handleDeviceChange(e.target.value)}
+                        value={selectedDeviceId}
+                        className="bg-black/60 text-white border border-white/20 rounded-full px-4 py-2 text-sm backdrop-blur-md appearance-none text-center"
+                    >
+                        <option value="">Cambiar Cámara 📷</option>
+                        {devices.map(d => (
+                            <option key={d.deviceId} value={d.deviceId}>
+                                {d.label || `Cámara ${d.deviceId.slice(0, 4)}`}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
         </div>
     );
 }

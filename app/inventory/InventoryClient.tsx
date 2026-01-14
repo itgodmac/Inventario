@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useRef, useMemo, useEffect, Suspense, use } from 'react';
+import React, { useState, useRef, useMemo, useEffect, Suspense, use } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Product } from '../lib/google-sheets';
-import Loading from './loading'; // Use the skeleton we made
+import Loading from './loading';
 
 const BarcodeScanner = dynamic(() => import('./BarcodeScanner'), { ssr: false });
 
@@ -18,7 +18,17 @@ interface InventoryClientProps {
     productsPromise: Promise<Product[]>;
 }
 
-// INNER COMPONENT: Consumes the promise and renders the list
+// Error Boundary definition
+class ErrorBoundary extends React.Component<{ fallback: React.ReactNode, children: React.ReactNode }, { hasError: boolean }> {
+    constructor(props: any) { super(props); this.state = { hasError: false }; }
+    static getDerivedStateFromError() { return { hasError: true }; }
+    render() {
+        if (this.state.hasError) return this.props.fallback;
+        return this.props.children;
+    }
+}
+
+// INNER COMPONENT
 function InventoryList({ productsPromise, searchQuery, categoryFilter, sortBy, viewMode, onScanClick }: {
     productsPromise: Promise<Product[]>,
     searchQuery: string,
@@ -27,13 +37,11 @@ function InventoryList({ productsPromise, searchQuery, categoryFilter, sortBy, v
     viewMode: string,
     onScanClick: () => void
 }) {
-    // This will SUSPEND until the promise resolves
     const products = use(productsPromise);
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
 
-    // Pagination State
     const currentPage = Number(searchParams.get('page')) || 1;
     const [itemsPerPage] = useState(30);
 
@@ -243,7 +251,6 @@ function InventoryList({ productsPromise, searchQuery, categoryFilter, sortBy, v
                 </div>
             )}
 
-            {/* Scanner Button (Moved Here to have access to Scan Logic if needed, or pass prop) */}
             <button
                 onClick={onScanClick}
                 className="fixed bottom-8 right-8 w-14 h-14 bg-[#007AFF] text-white rounded-full shadow-lg shadow-blue-500/30 flex items-center justify-center hover:bg-[#0056b3] transition-all hover:scale-110 active:scale-95 z-50 md:hidden"
@@ -304,24 +311,23 @@ export default function InventoryClient({ productsPromise }: InventoryClientProp
 
     const handleScanSuccess = async (code: string) => {
         setShowScanner(false);
-        // We need to check if the product exists. 
-        // Since we are inside the Shell and the list is in a child, we can await the promise here too 
-        // OR just route to the ID directly if we trust the scan logic.
-        // Better: Wait for data.
-        const products = await productsPromise;
-        const product = products.find(p =>
-            (p.barcode && p.barcode === code) ||
-            (p.itemCode && p.itemCode === code) ||
-            (p.sku && p.sku === code) ||
-            // Try matching just the ID from the code if it's formatted that way?
-            // Fallback for EAN
-            (p.barcode && p.barcode.includes(code))
-        );
+        try {
+            const products = await productsPromise;
+            const product = products.find(p =>
+                (p.barcode && p.barcode === code) ||
+                (p.itemCode && p.itemCode === code) ||
+                (p.sku && p.sku === code) ||
+                (p.barcode && p.barcode.includes(code))
+            );
 
-        if (product) {
-            router.push(`/inventory/${product.id}`);
-        } else {
-            alert(`Product not found with code: ${code}`);
+            if (product) {
+                router.push(`/inventory/${product.id}`);
+            } else {
+                alert(`Product not found with code: ${code}`);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Please wait for data to load before confirming scan.");
         }
     };
 
@@ -397,16 +403,23 @@ export default function InventoryClient({ productsPromise }: InventoryClientProp
                 </div>
             </div>
 
-            <Suspense fallback={<Loading />}>
-                <InventoryList
-                    productsPromise={productsPromise}
-                    searchQuery={searchQuery}
-                    categoryFilter={categoryFilter}
-                    sortBy={sortBy}
-                    viewMode={viewMode}
-                    onScanClick={() => setShowScanner(true)}
-                />
-            </Suspense>
+            <ErrorBoundary fallback={
+                <div className="text-center py-10">
+                    <p className="text-red-500 font-medium">Failed to load inventory.</p>
+                    <button onClick={() => window.location.reload()} className="mt-2 text-[#007AFF] underline">Retry</button>
+                </div>
+            }>
+                <Suspense fallback={<Loading />}>
+                    <InventoryList
+                        productsPromise={productsPromise}
+                        searchQuery={searchQuery}
+                        categoryFilter={categoryFilter}
+                        sortBy={sortBy}
+                        viewMode={viewMode}
+                        onScanClick={() => setShowScanner(true)}
+                    />
+                </Suspense>
+            </ErrorBoundary>
 
             {/* Scanner Modal (Global) */}
             {showScanner && (
