@@ -20,7 +20,9 @@ const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQvsy3
 
 export async function fetchInventory(): Promise<Product[]> {
     try {
-        const response = await fetch(GOOGLE_SHEET_URL, { cache: 'no-store' });
+        const response = await fetch(GOOGLE_SHEET_URL, {
+            next: { revalidate: 60 } // Cache for 60 seconds
+        });
         const csvText = await response.text();
 
         return new Promise((resolve, reject) => {
