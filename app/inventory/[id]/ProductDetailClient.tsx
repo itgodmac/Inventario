@@ -69,6 +69,8 @@ export default function ProductDetailClient({ product, currentTheme }: { product
         }
     };
 
+    const [isUpdating, setIsUpdating] = useState(false);
+
     const handleConfirmCount = async () => {
         if (!physicalCount) return;
         setIsUpdating(true);
