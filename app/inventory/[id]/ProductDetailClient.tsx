@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import DashboardHeader from '../../components/DashboardHeader';
@@ -33,6 +33,40 @@ export default function ProductDetailClient({ product, currentTheme }: { product
     const [isEditing, setIsEditing] = useState(false);
     const [isFavorite, setIsFavorite] = useState(true);
 
+    // Inventory Count State
+    const [physicalCount, setPhysicalCount] = useState<string>(''); // String to allow empty state
+    const [countStatus, setCountStatus] = useState<'idle' | 'matching' | 'discrepancy'>('idle');
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    // Focus input on load for rapid scanning/entry
+    useEffect(() => {
+        // Only if not editing general info
+        if (!isEditing && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [isEditing]);
+
+    const handleCountChange = (val: string) => {
+        setPhysicalCount(val);
+        const count = parseInt(val);
+        if (isNaN(count)) {
+            setCountStatus('idle');
+            return;
+        }
+        if (count === product.stock) {
+            setCountStatus('matching');
+        } else {
+            setCountStatus('discrepancy');
+        }
+    };
+
+    const handleConfirmCount = () => {
+        // Logic to save would go here
+        alert(`Conteo confirmado: ${physicalCount}. (In a real app, this would update your Google Sheet or Database)`);
+        // Maybe go back to inventory to scan next?
+        router.push('/inventory');
+    };
+
     const getStockColor = (status: string) => {
         switch (status) {
             case 'in-stock': return '#34C759'; // Apple Green
@@ -43,22 +77,20 @@ export default function ProductDetailClient({ product, currentTheme }: { product
     };
 
     return (
-        <main className="min-h-screen bg-[#F2F2F7] text-[#1C1C1E] pb-20 font-sans selection:bg-blue-100 selection:text-blue-900">
-            <DashboardHeader appName="Inventory" />
-
+        <main className="min-h-screen bg-[#F2F2F7] text-[#1C1C1E] pb-24 font-sans selection:bg-blue-100 selection:text-blue-900">
             {/* Apple Style Sticky Navigation Bar with Blur */}
             <div className="sticky top-14 z-40 bg-white/75 backdrop-blur-xl border-b border-[#3C3C43]/10 transition-colors duration-500 supports-[backdrop-filter]:bg-white/60">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Link href="/inventory" className="flex items-center gap-1 text-[#007AFF] hover:opacity-70 transition-opacity">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                        <Link href="/inventory" className="flex-shrink-0 flex items-center gap-1 text-[#007AFF] hover:opacity-70 transition-opacity">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M15 18l-6-6 6-6" /></svg>
-                            <span className="text-[17px] font-medium tracking-tight">Inventory</span>
+                            <span className="hidden sm:inline text-[17px] font-medium tracking-tight">Inventory</span>
                         </Link>
-                        <span className="text-[#3C3C43]/30 text-[17px]">/</span>
-                        <span className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] truncate max-w-[200px]">{product.nameEs || product.name}</span>
+                        <span className="text-[#3C3C43]/30 text-[17px] hidden sm:inline">/</span>
+                        <span className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] truncate">{product.nameEs || product.name}</span>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-shrink-0">
                         {!isEditing ? (
                             <button
                                 onClick={() => setIsEditing(true)}
@@ -89,68 +121,114 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                 </div>
             </div>
 
-            {/* Action Sheet / Toolbar */}
-            <div className="bg-white border-b border-[#3C3C43]/10 px-4 py-3 flex gap-4 overflow-x-auto">
+            {/* Action Sheet */}
+            <div className="bg-white border-b border-[#3C3C43]/10 px-4 py-3 flex gap-3 overflow-x-auto no-scrollbar">
                 {['Update Quantity', 'Replenish', 'Print Labels'].map((action) => (
-                    <button key={action} className="flex-shrink-0 bg-[#767680]/10 hover:bg-[#767680]/20 active:bg-[#767680]/30 transition-colors px-4 py-1.5 rounded-lg text-[13px] font-medium text-[#1C1C1E]">
+                    <button key={action} className="flex-shrink-0 bg-[#767680]/10 hover:bg-[#767680]/20 active:bg-[#767680]/30 transition-colors px-4 py-2 rounded-lg text-[13px] font-medium text-[#1C1C1E] whitespace-nowrap active:scale-95 duration-100">
                         {action}
                     </button>
                 ))}
             </div>
 
-            {/* Main Content Area - iOS Grouped Inset Style */}
-            <div className="max-w-4xl mx-auto mt-8 px-4 sm:px-6">
+            {/* Main Content Area */}
+            <div className="max-w-4xl mx-auto mt-4 md:mt-8 px-4 sm:px-6 pb-20">
 
                 {/* Header Card */}
-                <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 p-6 mb-8 relative overflow-visible">
-                    {/* Smart Stat Buttons - iOS Widgets Style */}
-                    <div className="absolute top-0 right-0 p-6 flex gap-3">
-                        <div className="flex flex-col items-center bg-[#F2F2F7] px-4 py-2 rounded-xl min-w-[80px]">
-                            <span className="text-[17px] font-semibold text-[#1C1C1E]">0</span>
-                            <span className="text-[11px] font-medium text-[#8E8E93] uppercase tracking-wide">Sales</span>
+                <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 p-5 md:p-6 mb-6 relative overflow-hidden">
+                    <div className="flex flex-col-reverse md:block">
+                        <div className="md:pr-[200px] z-10 relative">
+                            <div className="flex items-center gap-2 mb-1.5">
+                                {isFavorite && <span className="text-[#FF9500] text-lg">★</span>}
+                                <span className="text-[12px] md:text-[13px] font-semibold text-[#8E8E93] tracking-wide uppercase">Product</span>
+                            </div>
+                            <h1 className="text-[26px] md:text-[34px] font-bold text-[#1C1C1E] tracking-tight leading-tight mb-2">{product.nameEs || product.name || 'Unnamed Product'}</h1>
+                            <h2 className="text-[17px] md:text-[20px] text-[#8E8E93] mb-4 md:mb-6">{product.sku}</h2>
                         </div>
-                        <div className="flex flex-col items-center bg-[#F2F2F7] px-4 py-2 rounded-xl min-w-[80px]">
-                            <span className="text-[17px] font-semibold text-[#34C759]">{product.stock}</span>
-                            <span className="text-[11px] font-medium text-[#8E8E93] uppercase tracking-wide">On Hand</span>
-                        </div>
-                    </div>
-
-                    <div className="pr-[200px]">
-                        <div className="flex items-center gap-2 mb-1">
-                            {isFavorite && <span className="text-[#FF9500] text-lg">★</span>}
-                            <span className="text-[13px] font-semibold text-[#8E8E93] tracking-wide uppercase">Product</span>
-                        </div>
-                        <h1 className="text-[34px] font-bold text-[#1C1C1E] tracking-tight leading-tight mb-2">{product.nameEs || product.name}</h1>
-                        <h2 className="text-[20px] text-[#8E8E93] mb-4">{product.nameEn}</h2>
-
-                        <div className="flex flex-wrap gap-4 mb-2">
-                            {['Can be sold', 'Can be purchased'].map((label) => (
-                                <label key={label} className="flex items-center gap-2 cursor-pointer group">
-                                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${true ? 'bg-[#007AFF] border-[#007AFF]' : 'border-[#C7C7CC] bg-white'}`}>
-                                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                    </div>
-                                    <span className="text-[15px] text-[#1C1C1E] group-hover:text-[#007AFF] transition-colors">{label}</span>
-                                </label>
-                            ))}
+                        {/* Stats - Standard View */}
+                        <div className="flex md:absolute md:top-0 md:right-0 p-0 md:p-6 gap-3 mb-6 md:mb-0">
+                            <div className="flex-1 md:flex-none flex flex-col items-center justify-center bg-[#F2F2F7] px-4 py-2.5 rounded-xl min-w-[80px]">
+                                <span className="text-[17px] font-semibold text-[#1C1C1E]">0</span>
+                                <span className="text-[11px] font-medium text-[#8E8E93] uppercase tracking-wide">Sales</span>
+                            </div>
+                            <div className="flex-1 md:flex-none flex flex-col items-center justify-center bg-[#F2F2F7] px-4 py-2.5 rounded-xl min-w-[80px]">
+                                <span className="text-[17px] font-semibold text-[#34C759]">{product.stock}</span>
+                                <span className="text-[11px] font-medium text-[#8E8E93] uppercase tracking-wide">System</span>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* Floating Product Image */}
-                    {product.image && (
-                        <div className="absolute top-24 right-6 w-32 h-32 bg-white rounded-2xl shadow-lg border border-[#3C3C43]/5 p-2 rotate-2 hover:rotate-0 transition-all duration-500 ease-out z-10">
-                            <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
+                {/* QUICK COUNT INTERFACE (Primary Action) */}
+                <div className="bg-white rounded-[20px] shadow-md border border-[#3C3C43]/5 overflow-hidden mb-8 ring-4 ring-[#007AFF]/10">
+                    <div className="px-5 py-3 border-b border-[#3C3C43]/5 bg-[#007AFF]/5 backdrop-blur-sm flex justify-between items-center">
+                        <h3 className="text-[16px] font-bold text-[#007AFF] flex items-center gap-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                            Conteo Rápido / Cycle Count
+                        </h3>
+                        <span className="text-[12px] font-medium text-[#007AFF]/70 uppercase tracking-wider">Ready to Scan</span>
+                    </div>
+                    <div className="p-5 md:p-6">
+                        <div className="grid grid-cols-2 gap-4 md:gap-8 items-center">
+                            {/* System Stock Display */}
+                            <div className="flex flex-col items-center p-4 rounded-2xl bg-[#F2F2F7] border border-[#3C3C43]/5 opacity-60">
+                                <span className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide mb-1">Teórico (System)</span>
+                                <span className="text-[32px] md:text-[40px] font-bold text-[#1C1C1E]">{product.stock}</span>
+                            </div>
+
+                            {/* Physical Input */}
+                            <div className="flex flex-col items-center p-4 rounded-2xl bg-white border-2 border-[#007AFF] shadow-lg shadow-[#007AFF]/10 relative">
+                                <span className="text-[13px] font-bold text-[#007AFF] uppercase tracking-wide mb-1">Físico (Real)</span>
+                                <input
+                                    ref={inputRef}
+                                    type="number"
+                                    value={physicalCount}
+                                    onChange={(e) => handleCountChange(e.target.value)}
+                                    placeholder="?"
+                                    className="w-full text-center text-[32px] md:text-[40px] font-bold text-[#1C1C1E] focus:outline-none placeholder-[#C7C7CC] py-0 leading-none bg-transparent"
+                                />
+                                {/* Status Indicator Dot */}
+                                {countStatus === 'matching' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#34C759] shadow-sm animate-pulse"></div>}
+                                {countStatus === 'discrepancy' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#FF3B30] shadow-sm animate-pulse"></div>}
+                            </div>
                         </div>
-                    )}
+
+                        {/* Feedback & Action */}
+                        <div className="mt-6">
+                            {countStatus === 'discrepancy' && (
+                                <div className="mb-4 p-3 rounded-xl bg-[#FF3B30]/10 border border-[#FF3B30]/20 flex items-center gap-3">
+                                    <svg className="w-5 h-5 text-[#FF3B30]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                    <span className="text-[14px] font-medium text-[#FF3B30]">Diferencia de {parseInt(physicalCount) - product.stock} unidades</span>
+                                </div>
+                            )}
+                            {countStatus === 'matching' && (
+                                <div className="mb-4 p-3 rounded-xl bg-[#34C759]/10 border border-[#34C759]/20 flex items-center gap-3">
+                                    <svg className="w-5 h-5 text-[#34C759]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                    <span className="text-[14px] font-medium text-[#34C759]">Stock coincide perfectamente</span>
+                                </div>
+                            )}
+
+                            <button
+                                onClick={handleConfirmCount}
+                                disabled={physicalCount === ''}
+                                className={`w-full py-3.5 rounded-xl font-bold text-[16px] shadow-sm transition-all active:scale-[0.98] ${physicalCount === ''
+                                        ? 'bg-[#F2F2F7] text-[#C7C7CC] cursor-not-allowed'
+                                        : 'bg-[#007AFF] text-white hover:bg-[#007AFF]/90 shadow-[#007AFF]/30'
+                                    }`}
+                            >
+                                Confirmar Conteo / Confirm Count
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Segmented Control / Tabs */}
-                <div className="mb-6 overflow-x-auto pb-2">
-                    <div className="inline-flex bg-[#767680]/10 p-1 rounded-xl">
+                <div className="mb-6 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto no-scrollbar">
+                    <div className="inline-flex bg-[#767680]/10 p-1 rounded-xl whitespace-nowrap">
                         {['General', 'Attributes', 'Sales', 'Purchase', 'Inventory'].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab.toLowerCase() as any)}
-                                className={`px-4 py-1.5 rounded-lg text-[13px] font-semibold transition-all duration-300 ${activeTab === tab.toLowerCase()
+                                className={`px-4 py-1.5 rounded-lg text-[13px] font-semibold transition-all duration-200 active:scale-95 ${activeTab === tab.toLowerCase()
                                     ? 'bg-white text-[#1C1C1E] shadow-sm'
                                     : 'text-[#8E8E93] hover:text-[#1C1C1E]'
                                     }`}
@@ -161,110 +239,49 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                     </div>
                 </div>
 
-                {/* Grouped Inset Forms */}
-                <div className="space-y-6">
+                {/* Grouped Inset Forms (Rest of content) */}
+                <div className="space-y-6 opacity-80 hover:opacity-100 transition-opacity">
                     {activeTab === 'general' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Left Group */}
+                            {/* Detailed form content same as before ... */}
                             <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 overflow-hidden">
-                                <div className="px-5 py-4 border-b border-[#3C3C43]/5 bg-[#F2F2F7]/50 backdrop-blur-sm">
-                                    <h3 className="text-[17px] font-semibold text-[#1C1C1E]">Basic details</h3>
+                                <div className="px-5 py-3 border-b border-[#3C3C43]/5 bg-[#F2F2F7]/50 backdrop-blur-sm">
+                                    <h3 className="text-[16px] font-semibold text-[#1C1C1E]">Basic details</h3>
                                 </div>
                                 <div className="divide-y divide-[#3C3C43]/5 px-5">
-                                    <div className="py-3 grid grid-cols-2 items-center gap-4">
-                                        <label className="text-[15px] text-[#1C1C1E]">Product Type</label>
-                                        <select disabled={!isEditing} className="appearance-none bg-transparent text-[15px] text-[#8E8E93] text-right focus:outline-none disabled:opacity-100">
-                                            <option>Storable Product</option>
-                                        </select>
+                                    <div className="py-3.5 grid grid-cols-1 md:grid-cols-2 items-center gap-2 md:gap-4">
+                                        <label className="text-[15px] text-[#1C1C1E] font-medium md:font-normal">Product Type</label>
+                                        <div className="md:text-left text-[#8E8E93] text-[15px]">Storable Product</div>
                                     </div>
-                                    <div className="py-3 grid grid-cols-2 items-center gap-4">
-                                        <label className="text-[15px] text-[#1C1C1E]">Invoicing Policy</label>
-                                        <select disabled={!isEditing} className="appearance-none bg-transparent text-[15px] text-[#8E8E93] text-right focus:outline-none">
-                                            <option>Ordered quantities</option>
-                                        </select>
-                                    </div>
-                                    <div className="py-3 grid grid-cols-2 items-center gap-4">
-                                        <label className="text-[15px] text-[#1C1C1E]">Unit of Measure</label>
-                                        <div className="text-right text-[15px] text-[#8E8E93]">Units</div>
+                                    <div className="py-3.5 grid grid-cols-1 md:grid-cols-2 items-center gap-2 md:gap-4">
+                                        <label className="text-[15px] text-[#1C1C1E] font-medium md:font-normal">Category</label>
+                                        <div className="md:text-left text-[#1C1C1E] text-[15px]">{product.category}</div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Right Group */}
                             <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 overflow-hidden">
-                                <div className="px-5 py-4 border-b border-[#3C3C43]/5 bg-[#F2F2F7]/50 backdrop-blur-sm">
-                                    <h3 className="text-[17px] font-semibold text-[#1C1C1E]">Pricing</h3>
+                                <div className="px-5 py-3 border-b border-[#3C3C43]/5 bg-[#F2F2F7]/50 backdrop-blur-sm">
+                                    <h3 className="text-[16px] font-semibold text-[#1C1C1E]">Pricing & Codes</h3>
                                 </div>
                                 <div className="divide-y divide-[#3C3C43]/5 px-5">
-                                    <div className="py-3 grid grid-cols-2 items-center gap-4">
-                                        <label className="text-[15px] text-[#1C1C1E]">Sales Price</label>
-                                        <div className="flex items-center justify-end gap-1">
-                                            <span className="text-[#8E8E93] text-[15px]">$</span>
-                                            <input
-                                                type="number"
-                                                defaultValue={product.price}
-                                                disabled={!isEditing}
-                                                className="text-right text-[15px] text-[#007AFF] font-medium bg-transparent border-none p-0 focus:ring-0 w-24"
-                                            />
-                                        </div>
+                                    <div className="py-3.5 grid grid-cols-2 items-center gap-4">
+                                        <label className="text-[15px] text-[#1C1C1E]">Price</label>
+                                        <div className="text-right text-[15px] text-[#007AFF] font-medium">${product.price.toLocaleString()}</div>
                                     </div>
-                                    <div className="py-3 grid grid-cols-2 items-center gap-4">
-                                        <label className="text-[15px] text-[#1C1C1E]">Customer Taxes</label>
-                                        <div className="flex justify-end">
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[13px] font-medium bg-[#AF52DE]/10 text-[#AF52DE]">
-                                                16% IVA
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="py-3 grid grid-cols-2 items-center gap-4">
-                                        <label className="text-[15px] text-[#1C1C1E]">Cost</label>
-                                        <div className="flex items-center justify-end gap-1">
-                                            <span className="text-[#8E8E93] text-[15px]">$</span>
-                                            <input
-                                                type="number"
-                                                defaultValue={0.00}
-                                                disabled={!isEditing}
-                                                className="text-right text-[15px] text-[#1C1C1E] bg-transparent border-none p-0 focus:ring-0 w-24"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Full Width Group for Codes */}
-                            <div className="md:col-span-2 bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 overflow-hidden">
-                                <div className="divide-y divide-[#3C3C43]/5 px-5">
-                                    <div className="py-3 grid grid-cols-3 items-center gap-4">
-                                        <label className="text-[15px] text-[#1C1C1E]">Internal Reference</label>
-                                        <div className="col-span-2 text-[15px] font-mono text-[#8E8E93]">{product.itemCode || '-'}</div>
-                                    </div>
-                                    <div className="py-3 grid grid-cols-3 items-center gap-4">
-                                        <label className="text-[15px] text-[#1C1C1E]">Barcode</label>
-                                        <div className="col-span-2 text-[15px] font-mono text-[#8E8E93]">{product.barcode || '-'}</div>
-                                    </div>
-                                    <div className="py-3 grid grid-cols-3 items-center gap-4">
-                                        <label className="text-[15px] text-[#1C1C1E]">Category</label>
-                                        <div className="col-span-2 text-[15px] text-[#1C1C1E]">{product.category}</div>
+                                    <div className="py-3.5 grid grid-cols-1 md:grid-cols-3 items-center gap-1 md:gap-4">
+                                        <label className="text-[15px] text-[#1C1C1E] font-medium md:font-normal">Barcode</label>
+                                        <div className="md:col-span-2 text-[15px] font-mono text-[#8E8E93] truncate text-right">{product.barcode || '-'}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     )}
-
                     {activeTab !== 'general' && (
-                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[20px] border border-[#3C3C43]/5 text-center">
-                            <div className="w-16 h-16 rounded-full bg-[#F2F2F7] flex items-center justify-center mb-4">
-                                <svg className="w-8 h-8 text-[#8E8E93]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-                            </div>
-                            <h3 className="text-[17px] font-semibold text-[#1C1C1E]">No content yet</h3>
-                            <p className="text-[15px] text-[#8E8E93] mt-1 max-w-xs">This section is currently under development for the Apple Design System update.</p>
+                        <div className="flex flex-col items-center justify-center py-10 bg-white rounded-[20px] border border-[#3C3C43]/5 text-center">
+                            <p className="text-[#8E8E93]">View only mode active.</p>
                         </div>
                     )}
-                </div>
-
-                {/* Footer Brand */}
-                <div className="mt-12 mb-8 text-center text-[#8E8E93]">
-                    <p className="text-[13px] font-medium uppercase tracking-wider">Big Machines de Mexico S de R.L. de C.V.</p>
                 </div>
             </div>
         </main>

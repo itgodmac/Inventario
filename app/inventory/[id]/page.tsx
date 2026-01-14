@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import ProductDetailClient from './ProductDetailClient';
+import { fetchInventory } from '../../lib/google-sheets';
 
 // Theme configurations (same as inventory)
 const themes = {
@@ -20,23 +21,23 @@ const themes = {
     }
 };
 
-// Sample product data (same as inventory)
-import { inventoryData } from '../data';
-
-const sampleProducts = inventoryData;
+export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const currentTheme = themes.bigm;
 
-    const product = sampleProducts.find(p => p.id === id);
+    // Fetch fresh data
+    const products = await fetchInventory();
+    const product = products.find(p => p.id === id);
 
     if (!product) {
         return (
             <main className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
-                    <Link href="/inventory" className="text-sm" style={{ color: currentTheme.primary }}>
+                    <Link href="/inventory" className="text-sm font-medium text-[#007AFF]">
                         ← Back to Inventory
                     </Link>
                 </div>

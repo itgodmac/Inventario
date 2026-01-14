@@ -1,33 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 @import "tailwindcss";
 
-/* Always show scrollbar and style it */
+/* Material Design Scrollbar */
 html {
     overflow-y: scroll;
 }
 
 ::-webkit-scrollbar {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 10px;
-    border: 4px solid #f1f1f1;
+    background: #bbb;
+    border-radius: 8px;
+    border: 3px solid transparent;
+    background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
+    background: #999;
+    border: 3px solid transparent;
+    background-clip: content-box;
 }
 
 @theme {
-    --font-sans: 'Google Sans', system-ui, -apple-system, sans-serif;
-    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', monospace;
+    --font-sans: 'Roboto', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Roboto Mono', monospace;
 
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -48,54 +51,84 @@ html {
     --color-border: var(--border);
     --color-input: var(--input);
     --color-ring: var(--ring);
-    --radius-lg: var(--radius);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-sm: calc(var(--radius) - 4px);
+    
+    /* Material 3 Radius Tokens */
+    --radius-lg: 1.5rem;   /* 24px */
+    --radius-md: 0.75rem;  /* 12px */
+    --radius-sm: 0.25rem;  /* 4px */
 }
 
+/* Material Design 3 (M3) Color Tokens - Baseline Purple/base theme */
 :root {
-    --background: 255 255 255;
-    --foreground: 32 33 36;
-    --card: 255 255 255;
-    --card-foreground: 32 33 36;
+    /* Surface / Background */
+    --background: 254 247 255; /* M3 Surface */
+    --foreground: 29 27 32;    /* M3 On Surface */
+
+    /* Cards / Surface Container */
+    --card: 255 255 255;       /* M3 Surface Container Low/Lowest */
+    --card-foreground: 29 27 32;
+
+    /* Popovers */
     --popover: 255 255 255;
-    --popover-foreground: 32 33 36;
-    --primary: 26 115 232;
+    --popover-foreground: 29 27 32;
+
+    /* Primary - M3 Purple */
+    --primary: 103 80 164;     /* #6750A4 */
     --primary-foreground: 255 255 255;
-    --secondary: 241 243 244;
-    --secondary-foreground: 32 33 36;
-    --muted: 241 243 244;
-    --muted-foreground: 95 99 104;
-    --accent: 232 240 254;
-    --accent-foreground: 26 115 232;
-    --destructive: 217 48 37;
+
+    /* Secondary */
+    --secondary: 232 222 248;  /* M3 Secondary Container */
+    --secondary-foreground: 29 25 43;
+
+    /* Muted / Surface Variant */
+    --muted: 244 239 244;
+    --muted-foreground: 73 69 79;
+
+    /* Accent / Tertiary */
+    --accent: 73 37 50;        /* Tertiary color seed equivalent area */
+    --accent-foreground: 255 255 255;
+
+    /* Destructive */
+    --destructive: 179 38 30;  /* M3 Error */
     --destructive-foreground: 255 255 255;
-    --border: 218 220 224;
-    --input: 218 220 224;
-    --ring: 26 115 232;
-    --radius: 0.5rem;
+
+    /* Borders & Inputs */
+    --border: 202 196 208;     /* M3 Outline */
+    --input: 202 196 208;
+    --ring: 103 80 164;        /* Primary */
+
+    --radius: 1.5rem;
 }
 
 .dark {
-    --background: 32 33 36;
-    --foreground: 232 234 237;
-    --card: 41 42 45;
-    --card-foreground: 232 234 237;
-    --popover: 41 42 45;
-    --popover-foreground: 232 234 237;
-    --primary: 138 180 248;
-    --primary-foreground: 32 33 36;
-    --secondary: 48 49 52;
-    --secondary-foreground: 232 234 237;
-    --muted: 48 49 52;
-    --muted-foreground: 154 160 166;
-    --accent: 48 49 52;
-    --accent-foreground: 138 180 248;
-    --destructive: 242 139 130;
-    --destructive-foreground: 32 33 36;
-    --border: 60 64 67;
-    --input: 60 64 67;
-    --ring: 138 180 248;
+    /* Dark Mode M3 Colors */
+    --background: 20 18 24;
+    --foreground: 230 225 229;
+
+    --card: 29 27 32;          /* Surface Container High */
+    --card-foreground: 230 225 229;
+
+    --popover: 29 27 32;
+    --popover-foreground: 230 225 229;
+
+    --primary: 208 188 255;    /* M3 Primary Dark */
+    --primary-foreground: 56 30 114;
+
+    --secondary: 74 68 88;
+    --secondary-foreground: 232 222 248;
+
+    --muted: 73 69 79;
+    --muted-foreground: 202 196 208;
+
+    --accent: 239 183 200;
+    --accent-foreground: 73 37 50;
+
+    --destructive: 242 184 181;
+    --destructive-foreground: 96 20 16;
+
+    --border: 73 69 79;        /* M3 Outline Variant */
+    --input: 73 69 79;
+    --ring: 208 188 255;
 }
 
 @layer base {
@@ -107,12 +140,16 @@ html {
         @apply bg-background text-foreground font-sans antialiased;
     }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-        @apply font-sans;
+    /* Typography Hierarchy */
+    h1 { @apply text-4xl md:text-5xl font-normal tracking-tight; }
+    h2 { @apply text-3xl md:text-4xl font-normal; }
+    h3 { @apply text-2xl md:text-3xl font-medium; }
+    h4 { @apply text-xl md:text-2xl font-medium; }
+    h5 { @apply text-lg md:text-xl font-medium; }
+    h6 { @apply text-base font-medium tracking-wide uppercase; }
+
+    /* Material Ripples (CSS Only Approximation for interactivity) */
+    button:not(:disabled), .clickable {
+        @apply active:opacity-80 transition-opacity duration-200;
     }
 }
