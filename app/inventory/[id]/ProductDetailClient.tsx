@@ -73,7 +73,8 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                 body: JSON.stringify({
                     id: product.id,
                     quantity: parseInt(physicalCount),
-                    difference: parseInt(physicalCount) - product.stock
+                    difference: parseInt(physicalCount) - product.stock,
+                    auditor: 'TEST' // Hardcoded as requested
                 })
             });
 

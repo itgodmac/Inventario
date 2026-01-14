@@ -6,17 +6,16 @@ const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL || 'https://script.google.co
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { id, quantity, difference } = body;
+        const { id, quantity, difference, auditor } = body;
 
         if (!id || quantity === undefined) {
             return NextResponse.json({ error: 'Missing ID or Quantity' }, { status: 400 });
         }
 
         if (!APPS_SCRIPT_URL) {
-            // Mock success for now if no URL is configured, but warn
-            console.warn("APPS_SCRIPT_URL is not configured. Request would have sent:", body);
+            console.warn("APPS_SCRIPT_URL is not configured.");
             return NextResponse.json({
-                warning: 'Integration not yet configured. Please deploy the Apps Script.',
+                warning: 'Integration not yet configured.',
                 mock_success: true
             });
         }
@@ -24,7 +23,7 @@ export async function POST(request: Request) {
         const response = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, quantity, difference })
+            body: JSON.stringify({ id, quantity, difference, auditor })
         });
 
         if (!response.ok) {
