@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 // This URL needs to be provided by the user after they deploy the script
-const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL || '';
+const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbwrrg2YWihU3ejhaVxaSb96a2IygLWPbfsaq7iyF-dwxxEFntYs6S9KbUnN58HSNoo/exec';
 
 export async function POST(request: Request) {
     try {
