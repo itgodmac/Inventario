@@ -3,8 +3,10 @@
 import React, { useState, useRef, useMemo, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 import { Product } from '../lib/google-sheets';
 import Loading from './loading';
+import toast from 'react-hot-toast';
 
 const BarcodeScanner = dynamic(() => import('./BarcodeScanner'), { ssr: false });
 
@@ -20,10 +22,20 @@ export default function InventoryClient() {
     const searchParams = useSearchParams();
     const pathname = usePathname();
 
-    // Data State
-    const [products, setProducts] = useState<Product[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(false);
+    // Data State (Managed by SWR now)
+    // const [products, setProducts] = useState<Product[]>([]); // Removed local state for products
+    // const [isLoading, setIsLoading] = useState(true);
+    // const [error, setError] = useState(false);
+
+    // SWR Hook for Realtime Updates
+    const fetcher = (url: string) => fetch(url).then((r) => r.json());
+    const { data: products, error, isLoading } = useSWR<Product[]>('/api/inventory', fetcher, {
+        refreshInterval: 2000, // Poll every 2s
+        revalidateOnFocus: true,
+        fallbackData: [], // Initial empty state
+    });
+
+    const [filteredProductsState, setFilteredProductsState] = useState<Product[]>([]);
 
     // UI state
     const [showScanner, setShowScanner] = useState(false);
@@ -37,23 +49,8 @@ export default function InventoryClient() {
     const currentPage = Number(searchParams.get('page')) || 1;
     const [itemsPerPage] = useState(30);
 
-    // Fetch Data on Mount
-    useEffect(() => {
-        const loadData = async () => {
-            try {
-                const res = await fetch('/api/inventory');
-                if (!res.ok) throw new Error('Failed to load');
-                const data = await res.json();
-                setProducts(data);
-            } catch (err) {
-                console.error(err);
-                setError(true);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        loadData();
-    }, []);
+    // Removed manual useEffect fetch
+
 
     // Pagination Logic
     const updatePage = (page: number) => {
@@ -76,6 +73,7 @@ export default function InventoryClient() {
     }, [searchQuery, categoryFilter, pathname, router]);
 
     const filteredProducts = useMemo(() => {
+        if (!products) return [];
         return products.filter(product => {
             const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -112,7 +110,7 @@ export default function InventoryClient() {
     const handleScanSuccess = async (code: string) => {
         setShowScanner(false);
         // Products are local state now, instant lookup
-        const product = products.find(p =>
+        const product = (products || []).find(p =>
             (p.barcode && p.barcode === code) ||
             (p.itemCode && p.itemCode === code) ||
             (p.sku && p.sku === code) ||
@@ -122,7 +120,7 @@ export default function InventoryClient() {
         if (product) {
             router.push(`/inventory/${product.id}`);
         } else {
-            alert(`Product not found with code: ${code}`);
+            toast.error(`Producto no encontrado: ${code}`);
         }
     };
 
@@ -190,7 +188,10 @@ export default function InventoryClient() {
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
                             </button>
                         </div>
-                        <button className="flex-1 md:flex-none px-4 py-2 bg-[#007AFF] hover:bg-[#007AFF]/90 text-white rounded-xl text-[15px] font-medium shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95">
+                        <button
+                            onClick={() => router.push('/inventory/new')}
+                            className="flex-1 md:flex-none px-4 py-2 bg-[#007AFF] hover:bg-[#007AFF]/90 text-white rounded-xl text-[15px] font-medium shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95"
+                        >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
                             <span className="md:inline">New Product</span>
                         </button>

@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import ProductDetailClient from './ProductDetailClient';
-import { fetchInventory } from '../../lib/google-sheets';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 // Theme configurations (same as inventory)
 const themes = {
@@ -22,15 +24,15 @@ const themes = {
 };
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 60;
+export const revalidate = 0; // No caching for detail page
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const currentTheme = themes.bigm;
 
-    // Fetch fresh data
-    const products = await fetchInventory();
-    const product = products.find(p => p.id === id);
+    // Fetch fresh data from DB
+    const product = await prisma.product.findUnique({
+        where: { id: id },
+    });
 
     if (!product) {
         return (
@@ -45,5 +47,5 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         );
     }
 
-    return <ProductDetailClient product={product} currentTheme={currentTheme} />;
+    return <ProductDetailClient product={product} currentTheme={themes.bigm} />;
 }

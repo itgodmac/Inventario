@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  // Identification
+  sku         String?  @unique
+  barcode     String?
+  itemCode    String?
+  uniCode     String?
+  
+  // Names
+  name        String
+  nameEn      String?
+  nameEs      String?
+  
+  // Metadata
+  uvaNombre   String?
+  category    String?
+  montaje     String?
+  tipo        String?
+  description String?
+  image       String?
+  
+  // Stats
+  stock       Int      @default(0)
+  price       Float    @default(0) // $ Venta (Calculated)
+  priceZG     Float    @default(0) // Input: Factory Price
+  priceOth    Float    @default(0) // Input: Competitor Price
+  status      String   @default("out-of-stock")
+  
+  // Audit
+  lastAuditor String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  // Indexes for faster search
+  @@index([name])
+  @@index([barcode])
+  @@index([sku])
+}
+
+model SystemSettings {
+  key         String   @id
+  value       Float
+  description String?
+  updatedAt   DateTime @updatedAt
+}

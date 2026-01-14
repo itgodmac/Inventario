@@ -4,21 +4,27 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import DashboardHeader from '../../components/DashboardHeader';
+import ImageUpload from '@/app/components/ImageUpload';
+import toast from 'react-hot-toast';
 
 interface Product {
     id: string;
     name: string;
-    nameEn: string;
-    nameEs: string;
-    sku: string;
-    barcode: string;
-    itemCode: string;
-    category: string;
+    nameEn: string | null;
+    nameEs: string | null;
+    sku: string | null;
+    barcode: string | null;
+    itemCode: string | null;
+    category: string | null;
     stock: number;
     price: number;
-    status: 'in-stock' | 'low-stock' | 'out-of-stock';
-    image: string;
-    description: string;
+    // Pricing Inputs
+    priceZG?: number;
+    priceOth?: number;
+
+    status: string; // Simplified to string to match Prisma
+    image: string | null;
+    description: string | null;
 }
 
 interface Theme {
@@ -33,14 +39,81 @@ export default function ProductDetailClient({ product, currentTheme }: { product
     const [isEditing, setIsEditing] = useState(false);
     const [isFavorite, setIsFavorite] = useState(true);
 
+    // Form State
+    const [formData, setFormData] = useState({
+        name: product.name,
+        nameEs: product.nameEs || '',
+        sku: product.sku || '',
+        barcode: product.barcode || '',
+        price: product.price,
+        category: product.category || '',
+        stock: product.stock,
+        status: product.status,
+        priceZG: product.priceZG || 0,
+        priceOth: product.priceOth || 0,
+        image: product.image || ''
+    });
+
+    // Sync form with product prop updates (e.g. from background refresh)
+    useEffect(() => {
+        if (!isEditing) {
+            setFormData({
+                name: product.name,
+                nameEs: product.nameEs || '',
+                sku: product.sku || '',
+                barcode: product.barcode || '',
+                price: product.price,
+                category: product.category || '',
+                stock: product.stock,
+                status: product.status,
+                priceZG: product.priceZG || 0,
+                priceOth: product.priceOth || 0,
+                image: product.image || ''
+            });
+        }
+    }, [product, isEditing]);
+
+    const handleChange = (field: string, value: any) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSave = async () => {
+        try {
+            const res = await fetch(`/api/inventory/${product.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            if (!res.ok) throw new Error('Failed to update');
+            toast.success('Producto actualizado correctamente');
+            setIsEditing(false);
+            router.refresh();
+        } catch (e: any) {
+            toast.error(e.message);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!confirm('Are you sure you want to delete this product? This cannot be undone.')) return;
+        try {
+            const res = await fetch(`/api/inventory/${product.id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed to delete');
+            toast.success('Producto eliminado');
+            router.push('/inventory');
+            router.refresh();
+        } catch (e: any) {
+            toast.error(e.message);
+        }
+    };
+
     // Inventory Count State
     const [physicalCount, setPhysicalCount] = useState<string>(''); // String to allow empty state
     const [countStatus, setCountStatus] = useState<'idle' | 'matching' | 'discrepancy'>('idle');
     const inputRef = useRef<HTMLInputElement>(null);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     // Focus input on load for rapid scanning/entry
     useEffect(() => {
-        // Only if not editing general info
         if (!isEditing && inputRef.current) {
             inputRef.current.focus();
         }
@@ -69,8 +142,6 @@ export default function ProductDetailClient({ product, currentTheme }: { product
         }
     };
 
-    const [isUpdating, setIsUpdating] = useState(false);
-
     const handleConfirmCount = async () => {
         if (!physicalCount) return;
         setIsUpdating(true);
@@ -92,25 +163,19 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                 body: JSON.stringify(payload)
             });
 
-            console.log("📥 [CLIENT] Response Status:", response.status);
             const data = await response.json();
-            console.log("📦 [CLIENT] Response Data:", data);
 
-            if (data.warning) {
-                console.warn("⚠️ [CLIENT] Warning:", data.warning);
-                alert("⚠️ AVISO: El conteo se guardó en memoria pero NO en Excel.\n\nNecesitas configurar el Script de Google (ver instrucciones).");
-                router.push('/inventory');
-            } else if (response.ok && data.status === 'success') {
+            if (response.ok && data.status === 'success') {
                 console.log("✅ [CLIENT] Success!");
-                alert("✅ Éxito: Inventario actualizado en Google Sheet.");
-                router.push('/inventory');
+                toast.success('Inventario actualizado');
+                router.refresh(); // Refresh server data
+                setPhysicalCount(''); // Clear input
             } else {
-                console.error("❌ [CLIENT] Logical Error:", data);
                 throw new Error(data.message || 'Error desconocido');
             }
         } catch (error: any) {
             console.error("🔥 [CLIENT] Exception:", error);
-            alert(`❌ Error al guardar: ${error.message}`);
+            toast.error(`Error al guardar: ${error.message}`);
         } finally {
             setIsUpdating(false);
         }
@@ -127,7 +192,9 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                             <span className="hidden sm:inline text-[17px] font-medium tracking-tight">Inventory</span>
                         </Link>
                         <span className="text-[#3C3C43]/30 text-[17px] hidden sm:inline">/</span>
-                        <span className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] truncate">{product.nameEs || product.name}</span>
+                        <span className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] truncate">
+                            {isEditing ? 'Editing Product' : (product.nameEs || product.name)}
+                        </span>
                     </div>
 
                     <div className="flex items-center gap-3 flex-shrink-0">
@@ -141,13 +208,13 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                         ) : (
                             <>
                                 <button
-                                    onClick={() => setIsEditing(false)}
-                                    className="text-[15px] font-medium text-[#007AFF] hover:bg-[#007AFF]/10 px-3 py-1.5 rounded-lg transition-colors"
+                                    onClick={() => { setIsEditing(false); setFormData({ ...product } as any); }} // Reset
+                                    className="text-[15px] font-medium text-[#FF3B30] hover:bg-[#FF3B30]/10 px-3 py-1.5 rounded-lg transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={() => setIsEditing(false)}
+                                    onClick={handleSave}
                                     className="text-[15px] font-semibold text-[#007AFF] hover:bg-[#007AFF]/10 px-3 py-1.5 rounded-lg transition-colors"
                                 >
                                     Done
@@ -174,26 +241,90 @@ export default function ProductDetailClient({ product, currentTheme }: { product
             <div className="max-w-4xl mx-auto mt-4 md:mt-8 px-4 sm:px-6 pb-20">
 
                 {/* Header Card */}
-                <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 p-5 md:p-6 mb-6 relative overflow-hidden">
-                    <div className="flex flex-col-reverse md:block">
-                        <div className="md:pr-[200px] z-10 relative">
-                            <div className="flex items-center gap-2 mb-1.5">
-                                {isFavorite && <span className="text-[#FF9500] text-lg">★</span>}
-                                <span className="text-[12px] md:text-[13px] font-semibold text-[#8E8E93] tracking-wide uppercase">Product</span>
-                            </div>
-                            <h1 className="text-[26px] md:text-[34px] font-bold text-[#1C1C1E] tracking-tight leading-tight mb-2">{product.nameEs || product.name || 'Unnamed Product'}</h1>
-                            <h2 className="text-[17px] md:text-[20px] text-[#8E8E93] mb-4 md:mb-6">{product.sku}</h2>
+                <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 p-6 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        {/* Left: Product Info */}
+                        <div className="md:col-span-3 flex flex-col justify-center">
+                            {isEditing ? (
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-500 uppercase">English Name</label>
+                                        <input
+                                            value={formData.name}
+                                            onChange={(e) => handleChange('name', e.target.value)}
+                                            className="w-full text-2xl font-bold border-b border-gray-200 focus:border-blue-500 outline-none py-1"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-500 uppercase">Nombre Español</label>
+                                        <input
+                                            value={formData.nameEs || ''}
+                                            onChange={(e) => handleChange('nameEs', e.target.value)}
+                                            className="w-full text-2xl font-bold border-b border-gray-200 focus:border-blue-500 outline-none py-1"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-500 uppercase">SKU</label>
+                                        <input
+                                            value={formData.sku}
+                                            onChange={(e) => handleChange('sku', e.target.value)}
+                                            className="w-full text-lg text-gray-600 border-b border-gray-200 focus:border-blue-500 outline-none py-1"
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        {isFavorite && <span className="text-[#FF9500] text-lg">★</span>}
+                                        <span className="text-[12px] md:text-[13px] font-semibold text-[#8E8E93] tracking-wide uppercase">Product</span>
+                                    </div>
+                                    <h1 className="text-[28px] md:text-[36px] font-bold text-[#1C1C1E] tracking-tight leading-tight mb-1">
+                                        {product.nameEs || product.name || 'Unnamed Product'}
+                                    </h1>
+                                    {product.nameEn && product.nameEs && (
+                                        <p className="text-[16px] md:text-[18px] text-[#8E8E93] mb-2 font-medium">{product.nameEn}</p>
+                                    )}
+                                    <div className="flex items-center gap-3 mt-3 flex-wrap">
+                                        <span className="text-[15px] font-mono text-[#8E8E93] bg-[#F2F2F7] px-3 py-1.5 rounded-lg">{product.sku}</span>
+                                        {product.barcode && (
+                                            <span className="text-[15px] font-mono text-[#8E8E93] bg-[#F2F2F7] px-3 py-1.5 rounded-lg">{product.barcode}</span>
+                                        )}
+                                        <div className="flex gap-2 ml-auto">
+                                            <div className="flex items-center gap-1.5 bg-[#F2F2F7] px-3 py-1.5 rounded-lg">
+                                                <span className="text-[15px] font-semibold text-[#1C1C1E]">0</span>
+                                                <span className="text-[11px] font-medium text-[#8E8E93] uppercase">Sales</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 bg-[#F2F2F7] px-3 py-1.5 rounded-lg">
+                                                <span className="text-[15px] font-semibold text-[#34C759]">{product.stock}</span>
+                                                <span className="text-[11px] font-medium text-[#8E8E93] uppercase">Stock</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
-                        {/* Stats - Standard View */}
-                        <div className="flex md:absolute md:top-0 md:right-0 p-0 md:p-6 gap-3 mb-6 md:mb-0">
-                            <div className="flex-1 md:flex-none flex flex-col items-center justify-center bg-[#F2F2F7] px-4 py-2.5 rounded-xl min-w-[80px]">
-                                <span className="text-[17px] font-semibold text-[#1C1C1E]">0</span>
-                                <span className="text-[11px] font-medium text-[#8E8E93] uppercase tracking-wide">Sales</span>
-                            </div>
-                            <div className="flex-1 md:flex-none flex flex-col items-center justify-center bg-[#F2F2F7] px-4 py-2.5 rounded-xl min-w-[80px]">
-                                <span className="text-[17px] font-semibold text-[#34C759]">{product.stock}</span>
-                                <span className="text-[11px] font-medium text-[#8E8E93] uppercase tracking-wide">System</span>
-                            </div>
+
+                        {/* Right: Image */}
+                        <div className="flex flex-col justify-center">
+                            {isEditing ? (
+                                <ImageUpload
+                                    onUpload={(url) => handleChange('image', url)}
+                                    currentImage={formData.image}
+                                    productId={product.sku || product.id}
+                                />
+                            ) : product.image ? (
+                                <img
+                                    src={product.image}
+                                    alt={product.name}
+                                    className="w-full aspect-square object-cover rounded-xl border border-gray-200 shadow-sm"
+                                />
+                            ) : (
+                                <div className="w-full aspect-square bg-gray-100 rounded-xl border border-gray-200 flex items-center justify-center">
+                                    <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                    </svg>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -202,7 +333,6 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                 <div className="bg-white rounded-[20px] shadow-md border border-[#3C3C43]/5 overflow-hidden mb-8 ring-4 ring-[#007AFF]/10">
                     <div className="px-5 py-3 border-b border-[#3C3C43]/5 bg-[#007AFF]/5 backdrop-blur-sm flex justify-between items-center">
                         <h3 className="text-[16px] font-bold text-[#007AFF] flex items-center gap-2">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                             Conteo Rápido / Cycle Count
                         </h3>
                         <span className="text-[12px] font-medium text-[#007AFF]/70 uppercase tracking-wider">Ready to Scan</span>
@@ -226,27 +356,12 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                     placeholder="?"
                                     className="w-full text-center text-[32px] md:text-[40px] font-bold text-[#1C1C1E] focus:outline-none placeholder-[#C7C7CC] py-0 leading-none bg-transparent"
                                 />
-                                {/* Status Indicator Dot */}
                                 {countStatus === 'matching' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#34C759] shadow-sm animate-pulse"></div>}
                                 {countStatus === 'discrepancy' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#FF3B30] shadow-sm animate-pulse"></div>}
                             </div>
                         </div>
 
-                        {/* Feedback & Action */}
                         <div className="mt-6">
-                            {countStatus === 'discrepancy' && (
-                                <div className="mb-4 p-3 rounded-xl bg-[#FF3B30]/10 border border-[#FF3B30]/20 flex items-center gap-3">
-                                    <svg className="w-5 h-5 text-[#FF3B30]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                                    <span className="text-[14px] font-medium text-[#FF3B30]">Diferencia de {parseInt(physicalCount) - product.stock} unidades</span>
-                                </div>
-                            )}
-                            {countStatus === 'matching' && (
-                                <div className="mb-4 p-3 rounded-xl bg-[#34C759]/10 border border-[#34C759]/20 flex items-center gap-3">
-                                    <svg className="w-5 h-5 text-[#34C759]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                                    <span className="text-[14px] font-medium text-[#34C759]">Stock coincide perfectamente</span>
-                                </div>
-                            )}
-
                             <button
                                 onClick={handleConfirmCount}
                                 disabled={physicalCount === ''}
@@ -255,17 +370,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                     : 'bg-[#007AFF] text-white hover:bg-[#007AFF]/90 shadow-[#007AFF]/30'
                                     }`}
                             >
-                                {isUpdating ? (
-                                    <>
-                                        <svg className="animate-spin h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Guardando...
-                                    </>
-                                ) : (
-                                    'Confirmar Conteo / Confirm Count'
-                                )}
+                                {isUpdating ? 'Guardando...' : 'Confirmar Conteo / Confirm Count'}
                             </button>
                         </div>
                     </div>
@@ -305,7 +410,11 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                     </div>
                                     <div className="py-3.5 grid grid-cols-1 md:grid-cols-2 items-center gap-2 md:gap-4">
                                         <label className="text-[15px] text-[#1C1C1E] font-medium md:font-normal">Category</label>
-                                        <div className="md:text-left text-[#1C1C1E] text-[15px]">{product.category}</div>
+                                        {isEditing ? (
+                                            <input value={formData.category} onChange={(e) => handleChange('category', e.target.value)} className="text-right border-b border-gray-200 outline-none focus:border-blue-500" />
+                                        ) : (
+                                            <div className="md:text-left text-[#1C1C1E] text-[15px]">{product.category}</div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -315,16 +424,75 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                     <h3 className="text-[16px] font-semibold text-[#1C1C1E]">Pricing & Codes</h3>
                                 </div>
                                 <div className="divide-y divide-[#3C3C43]/5 px-5">
-                                    <div className="py-3.5 grid grid-cols-2 items-center gap-4">
-                                        <label className="text-[15px] text-[#1C1C1E]">Price</label>
-                                        <div className="text-right text-[15px] text-[#007AFF] font-medium">${product.price.toLocaleString()}</div>
+                                    {/* Advanced Pricing Section */}
+                                    <div className="py-3.5">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <h4 className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide">Pricing Logic</h4>
+                                            {!isEditing && <span className="text-[10px] text-[#007AFF] bg-[#007AFF]/10 px-2 py-0.5 rounded">Auto-Calculated</span>}
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-[11px] text-[#8E8E93] mb-1">Competitor ($ Oth)</label>
+                                                {isEditing ? (
+                                                    <input
+                                                        type="number"
+                                                        value={(formData as any).priceOth || ''}
+                                                        onChange={(e) => handleChange('priceOth', e.target.value)}
+                                                        placeholder="0.00"
+                                                        className="w-full text-right border border-yellow-200 bg-yellow-50 rounded px-2 py-1 outline-none focus:border-yellow-400 font-mono text-[#1C1C1E]"
+                                                    />
+                                                ) : (
+                                                    <div className="text-right text-[14px] font-mono text-[#1C1C1E]">${(product.priceOth || 0).toLocaleString()}</div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <label className="block text-[11px] text-[#8E8E93] mb-1">Factory ($ ZG)</label>
+                                                {isEditing ? (
+                                                    <input
+                                                        type="number"
+                                                        value={(formData as any).priceZG || ''}
+                                                        onChange={(e) => handleChange('priceZG', e.target.value)}
+                                                        placeholder="0.00"
+                                                        className="w-full text-right border border-gray-200 bg-gray-50 rounded px-2 py-1 outline-none focus:border-blue-400 font-mono text-[#1C1C1E]"
+                                                    />
+                                                ) : (
+                                                    <div className="text-right text-[14px] font-mono text-[#1C1C1E]">${(product.priceZG || 0).toLocaleString()}</div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-3 pt-3 border-t border-dashed border-gray-200 flex justify-between items-center bg-blue-50/50 p-2 rounded-lg">
+                                            <label className="text-[14px] font-bold text-[#1C1C1E]">Final Price ($ Venta)</label>
+                                            <div className="text-right text-[20px] text-[#007AFF] font-bold">
+                                                ${product.price.toLocaleString()}
+                                            </div>
+                                        </div>
                                     </div>
+
                                     <div className="py-3.5 grid grid-cols-1 md:grid-cols-3 items-center gap-1 md:gap-4">
                                         <label className="text-[15px] text-[#1C1C1E] font-medium md:font-normal">Barcode</label>
-                                        <div className="md:col-span-2 text-[15px] font-mono text-[#8E8E93] truncate text-right">{product.barcode || '-'}</div>
+                                        {isEditing ? (
+                                            <input value={formData.barcode} onChange={(e) => handleChange('barcode', e.target.value)} className="md:col-span-2 text-right border-b border-gray-200 outline-none focus:border-blue-500 font-mono text-[#8E8E93]" />
+                                        ) : (
+                                            <div className="md:col-span-2 text-[15px] font-mono text-[#8E8E93] truncate text-right">{product.barcode || '-'}</div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
+
+                            {/* DELETE BUTTON */}
+                            {isEditing && (
+                                <div className="col-span-1 md:col-span-2 flex justify-center pt-8">
+                                    <button
+                                        onClick={handleDelete}
+                                        className="text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg font-medium border border-red-200 transition-colors"
+                                    >
+                                        Delete Product
+                                    </button>
+                                </div>
+                            )}
+
                         </div>
                     )}
                     {activeTab !== 'general' && (

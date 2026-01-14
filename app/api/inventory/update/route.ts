@@ -1,48 +1,65 @@
 import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+import { Redis } from '@upstash/redis';
 
-// This URL needs to be provided by the user after they deploy the script
-const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbwrrg2YWihU3ejhaVxaSb96a2IygLWPbfsaq7iyF-dwxxEFntYs6S9KbUnN58HSNoo/exec';
+// Prevent multiple instances in dev
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+const prisma = globalForPrisma.prisma || new PrismaClient();
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+
+// Initialize Redis (safely)
+const redis = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN
+    ? new Redis({
+        url: process.env.KV_REST_API_URL,
+        token: process.env.KV_REST_API_TOKEN,
+    })
+    : null;
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
         const { id, quantity, difference, auditor } = body;
 
-        if (!id || quantity === undefined) {
-            return NextResponse.json({ error: 'Missing ID or Quantity' }, { status: 400 });
+        console.log("📝 [API] Updating Product:", { id, quantity, auditor });
+
+        if (!id) {
+            return NextResponse.json({ status: 'error', message: "Missing ID" }, { status: 400 });
         }
 
-        if (!APPS_SCRIPT_URL) {
-            console.warn("⚠️ [API] APPS_SCRIPT_URL is not configured.");
-            return NextResponse.json({
-                warning: 'Integration not yet configured.',
-                mock_success: true
-            });
-        }
-
-        console.log("📡 [API] Forwarding to Apps Script:", APPS_SCRIPT_URL);
-        console.log("📦 [API] Payload:", { id, quantity, difference, auditor });
-
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, quantity, difference, auditor })
+        // 1. Update Database
+        const updatedProduct = await prisma.product.update({
+            where: { id: id },
+            data: {
+                stock: quantity,
+                lastAuditor: auditor,
+            }
         });
 
-        console.log("📥 [API] Apps Script Status:", response.status);
-
-        if (!response.ok) {
-            const text = await response.text();
-            console.error("🔥 [API] Apps Script Error Body:", text);
-            throw new Error(`Apps Script responded with ${response.status}: ${text}`);
+        // 2. Publish Realtime Event (Fire & Forget)
+        if (redis) {
+            const event = {
+                type: 'STOCK_UPDATE',
+                payload: {
+                    id: updatedProduct.id,
+                    stock: updatedProduct.stock,
+                    auditor: auditor,
+                    timestamp: new Date().toISOString()
+                }
+            };
+            // Publish to 'inventory-updates' channel
+            await redis.publish('inventory-updates', JSON.stringify(event));
+            console.log("📡 [API] Published to Redis");
+        } else {
+            console.warn("⚠️ [API] Redis not configured, skipping realtime broadcast");
         }
 
-        const data = await response.json();
-        console.log("✅ [API] Apps Script Response:", data);
-        return NextResponse.json(data);
+        return NextResponse.json({
+            status: 'success',
+            product: updatedProduct
+        });
 
     } catch (error: any) {
-        console.error('🔥 [API] Update error:', error);
-        return NextResponse.json({ error: 'Failed to update inventory', details: error.message }, { status: 500 });
+        console.error("🔥 [API] Update Error:", error);
+        return NextResponse.json({ status: 'error', message: error.message }, { status: 500 });
     }
 }

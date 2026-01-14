@@ -1,27 +1,18 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { Redis } from '@upstash/redis';
 
 // Prevent multiple instances in dev
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 const prisma = globalForPrisma.prisma || new PrismaClient();
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-export const dynamic = 'force-dynamic'; // Always fetch fresh data
-
-export async function GET() {
-    try {
-        const products = await prisma.product.findMany({
-            orderBy: {
-                updatedAt: 'desc'
-            }
-        });
-
-        return NextResponse.json(products);
-    } catch (error) {
-        console.error('Database Error:', error);
-        return NextResponse.json({ error: 'Failed to fetch inventory' }, { status: 500 });
-    }
-}
+const redis = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN
+    ? new Redis({
+        url: process.env.KV_REST_API_URL,
+        token: process.env.KV_REST_API_TOKEN,
+    })
+    : null;
 
 // Helper to get pricing settings
 async function getPricingSettings(prisma: PrismaClient) {
@@ -46,39 +37,37 @@ async function getPricingSettings(prisma: PrismaClient) {
     }
 }
 
-export async function POST(request: Request) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
+        const { id } = await params;
         const body = await request.json();
         const {
             name, nameEn, nameEs,
             sku, barcode, itemCode, uniCode,
             uvaNombre, description,
-            category, montaje, tipo, status,
-            stock, priceZG, priceOth, image
+            category, montaje, tipo, status, stock,
+            priceZG, priceOth, image
         } = body;
 
-        // Validation
+        console.log(`📝 [API] Updating Product ${id}:`, body);
+
+        // Pricing Logic
         const zg = parseFloat(priceZG) || 0;
         const oth = parseFloat(priceOth) || 0;
 
-        // Calc Pricing
         const config = await getPricingSettings(prisma);
 
-        // 1. Calculate BigMachines Price (USD) based on Competitor
         let bm_usd = 0;
         if (oth > 0) {
             bm_usd = oth * config.L1;
         }
 
-        // 2. Calculate Final Sale Price (MXN)
         const finalPriceMxn = bm_usd * config.I1;
 
-        console.log(`🧮 Pricing Calc: ZG=${zg}, Oth=${oth} -> BM=$${bm_usd} -> MXN=$${finalPriceMxn}`);
-
-        const newProduct = await prisma.product.create({
+        const updatedProduct = await prisma.product.update({
+            where: { id },
             data: {
-                id: crypto.randomUUID(),
-                name: name || nameEn || 'New Product',
+                name: name || nameEn || 'Unnamed',
                 nameEn: nameEn || null,
                 nameEs: nameEs || null,
 
@@ -90,18 +79,16 @@ export async function POST(request: Request) {
                 uvaNombre: uvaNombre || null,
                 description: description || null,
 
-                category: category || 'SIN ASIGNAR',
+                category: category || null,
                 montaje: montaje || null,
                 tipo: tipo || null,
 
-                stock: parseInt(stock) || 0,
-                status: status || ((parseInt(stock) || 0) > 0 ? 'in-stock' : 'out-of-stock'),
+                status,
+                stock: parseInt(stock),
 
-                // Pricing Inputs
+                // Pricing
                 priceZG: zg,
                 priceOth: oth,
-
-                // Calculated Final Price
                 price: finalPriceMxn,
 
                 // Image
@@ -109,9 +96,41 @@ export async function POST(request: Request) {
             }
         });
 
-        return NextResponse.json({ status: 'success', product: newProduct });
+        // Broadcast update
+        if (redis) {
+            await redis.publish('inventory-updates', JSON.stringify({
+                type: 'PRODUCT_UPDATE',
+                payload: updatedProduct
+            }));
+        }
+
+        return NextResponse.json({ status: 'success', product: updatedProduct });
     } catch (error: any) {
-        console.error('Create Error:', error);
+        console.error("🔥 [API] Update Error:", error);
+        return NextResponse.json({ status: 'error', message: error.message }, { status: 500 });
+    }
+}
+
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const { id } = await params;
+        console.log(`🗑️ [API] Deleting Product ${id}`);
+
+        await prisma.product.delete({
+            where: { id }
+        });
+
+        // Broadcast delete
+        if (redis) {
+            await redis.publish('inventory-updates', JSON.stringify({
+                type: 'PRODUCT_DELETE',
+                payload: { id }
+            }));
+        }
+
+        return NextResponse.json({ status: 'success' });
+    } catch (error: any) {
+        console.error("🔥 [API] Delete Error:", error);
         return NextResponse.json({ status: 'error', message: error.message }, { status: 500 });
     }
 }
