@@ -72,8 +72,7 @@ export default function InventoryClient() {
         if (!products) return [];
         return products.filter(product => {
             const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (product.itemCode && product.itemCode.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                (product.sku?.toLowerCase().includes(searchQuery.toLowerCase())) ||
                 (product.barcode && product.barcode.toLowerCase().includes(searchQuery.toLowerCase()));
             const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
             return matchesSearch && matchesCategory;
