@@ -52,3 +52,22 @@ model SystemSettings {
   description String?
   updatedAt   DateTime @updatedAt
 }
+
+model StockLog {
+  id          String   @id @default(uuid())
+  productId   String
+  productSku  String?
+  productName String
+  
+  // Stock Change
+  oldQuantity Int
+  newQuantity Int
+  difference  Int
+  
+  // Audit
+  auditor     String   @default("TEST")
+  timestamp   DateTime @default(now())
+  
+  @@index([productId])
+  @@index([timestamp])
+}

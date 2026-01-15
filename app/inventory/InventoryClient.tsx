@@ -232,11 +232,22 @@ export default function InventoryClient() {
                                                     <td className="px-4 py-3">
                                                         <div className="flex items-center gap-3">
                                                             <div className="w-10 h-10 rounded-lg bg-[#F2F2F7] flex-shrink-0 overflow-hidden border border-[#3C3C43]/5">
-                                                                <img src={product.image || 'https://placehold.co/100x100?text=No+Image'} alt={product.name} className="w-full h-full object-cover" />
+                                                                {product.image ? (
+                                                                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center">
+                                                                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                                                        </svg>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                             <div>
-                                                                <div className="text-[14px] font-medium text-[#1C1C1E]">{product.name}</div>
-                                                                <div className="text-[12px] text-[#8E8E93] font-mono">{product.sku}</div>
+                                                                <div className="text-[14px] font-medium text-[#1C1C1E]">{product.nameEs || product.name}</div>
+                                                                {product.nameEn && product.nameEs && (
+                                                                    <div className="text-[12px] text-[#8E8E93]">{product.nameEn}</div>
+                                                                )}
+                                                                <div className="text-[11px] text-[#8E8E93] font-mono mt-0.5">{product.sku}</div>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -265,11 +276,19 @@ export default function InventoryClient() {
                                         className="bg-white rounded-xl p-3 shadow-sm border border-[#3C3C43]/5 flex items-center gap-3 active:scale-[0.98] transition-transform"
                                     >
                                         <div className="w-12 h-12 rounded-lg bg-[#F2F2F7] flex-shrink-0 overflow-hidden border border-[#3C3C43]/5">
-                                            <img src={product.image || 'https://placehold.co/100x100?text=No+Image'} alt={product.name} className="w-full h-full object-cover" />
+                                            {product.image ? (
+                                                <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                                    </svg>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-start">
-                                                <h3 className="text-[14px] font-medium text-[#1C1C1E] truncate pr-2">{product.name}</h3>
+                                                <h3 className="text-[14px] font-medium text-[#1C1C1E] truncate pr-2">{product.nameEs || product.name}</h3>
                                                 <span className="text-[14px] font-semibold text-[#1C1C1E]">${product.price.toLocaleString()}</span>
                                             </div>
                                             <div className="flex justify-between items-center mt-0.5">
@@ -294,18 +313,26 @@ export default function InventoryClient() {
                                     className="bg-white rounded-xl p-2.5 shadow-sm border border-[#3C3C43]/5 cursor-pointer hover:border-[#007AFF]/30 hover:shadow-md transition-all group flex items-center gap-3 active:scale-[0.98] duration-100"
                                 >
                                     <div className="w-14 h-14 rounded-lg bg-[#F2F2F7] flex-shrink-0 overflow-hidden border border-[#3C3C43]/5 relative">
-                                        <img
-                                            src={product.image || 'https://placehold.co/100x100?text=No+Image'}
-                                            alt={product.name}
-                                            className="w-full h-full object-cover mix-blend-multiply"
-                                        />
+                                        {product.image ? (
+                                            <img
+                                                src={product.image}
+                                                alt={product.name}
+                                                className="w-full h-full object-cover mix-blend-multiply"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                                </svg>
+                                            </div>
+                                        )}
                                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-white rounded-tl-md flex items-center justify-center">
                                             <span className={`w-1.5 h-1.5 rounded-full block`} style={{ backgroundColor: getStockColor(product.status) }}></span>
                                         </div>
                                     </div>
 
                                     <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-                                        <h3 className="text-[13px] font-semibold text-[#1C1C1E] leading-tight truncate" title={product.name}>{product.name}</h3>
+                                        <h3 className="text-[13px] font-semibold text-[#1C1C1E] leading-tight truncate" title={product.nameEs || product.name}>{product.nameEs || product.name}</h3>
                                         <p className="text-[11px] text-[#8E8E93] font-mono truncate">{product.sku}</p>
                                         <div className="flex items-center justify-between mt-0.5">
                                             <span className="text-[12px] font-bold text-[#1C1C1E]">${product.price.toLocaleString()}</span>

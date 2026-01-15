@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 
-// Configure Cloudinary
-cloudinary.config({
-    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
 export async function POST(request: NextRequest) {
     try {
+        // Configure Cloudinary (must be inside handler to access env vars)
+        cloudinary.config({
+            cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET,
+        });
+
         const formData = await request.formData();
         const file = formData.get('file') as File;
         const productId = formData.get('productId') as string;

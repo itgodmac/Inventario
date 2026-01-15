@@ -26,7 +26,16 @@ export async function POST(request: Request) {
             return NextResponse.json({ status: 'error', message: "Missing ID" }, { status: 400 });
         }
 
-        // 1. Update Database
+        // 1. Get current product first
+        const currentProduct = await prisma.product.findUnique({
+            where: { id: id }
+        });
+
+        if (!currentProduct) {
+            return NextResponse.json({ status: 'error', message: "Product not found" }, { status: 404 });
+        }
+
+        // 2. Update Database
         const updatedProduct = await prisma.product.update({
             where: { id: id },
             data: {
@@ -35,7 +44,20 @@ export async function POST(request: Request) {
             }
         });
 
-        // 2. Publish Realtime Event (Fire & Forget)
+        // 3. Create Stock Log
+        await prisma.stockLog.create({
+            data: {
+                productId: updatedProduct.id,
+                productSku: updatedProduct.sku,
+                productName: updatedProduct.nameEs || updatedProduct.name,
+                oldQuantity: currentProduct.stock,
+                newQuantity: quantity,
+                difference: difference,
+                auditor: auditor || 'TEST',
+            }
+        });
+
+        // 4. Publish Realtime Event (Fire & Forget)
         if (redis) {
             const event = {
                 type: 'STOCK_UPDATE',

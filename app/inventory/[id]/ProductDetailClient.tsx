@@ -73,6 +73,27 @@ export default function ProductDetailClient({ product, currentTheme }: { product
         }
     }, [product, isEditing]);
 
+    // Stock Logs State
+    const [stockLogs, setStockLogs] = useState<any[]>([]);
+    const [logsLoading, setLogsLoading] = useState(false);
+
+    // Fetch stock logs
+    useEffect(() => {
+        const fetchLogs = async () => {
+            setLogsLoading(true);
+            try {
+                const res = await fetch(`/api/inventory/${product.id}/logs`);
+                const data = await res.json();
+                setStockLogs(data.logs || []);
+            } catch (error) {
+                console.error('Error fetching logs:', error);
+            } finally {
+                setLogsLoading(false);
+            }
+        };
+        fetchLogs();
+    }, [product.id]);
+
     const handleChange = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
@@ -170,6 +191,11 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                 toast.success('Inventario actualizado');
                 router.refresh(); // Refresh server data
                 setPhysicalCount(''); // Clear input
+
+                // Refresh logs
+                const res = await fetch(`/api/inventory/${product.id}/logs`);
+                const logsData = await res.json();
+                setStockLogs(logsData.logs || []);
             } else {
                 throw new Error(data.message || 'Error desconocido');
             }
@@ -478,6 +504,54 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                             <div className="md:col-span-2 text-[15px] font-mono text-[#8E8E93] truncate text-right">{product.barcode || '-'}</div>
                                         )}
                                     </div>
+                                </div>
+                            </div>
+
+                            {/* STOCK HISTORY */}
+                            <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 overflow-hidden">
+                                <div className="border-b border-gray-100 p-4">
+                                    <h3 className="text-[15px] font-semibold text-[#1C1C1E]">Historial de Conteos</h3>
+                                </div>
+                                <div className="divide-y divide-gray-100">
+                                    {logsLoading ? (
+                                        <div className="p-6 text-center text-[#8E8E93]">Cargando...</div>
+                                    ) : stockLogs.length === 0 ? (
+                                        <div className="p-6 text-center text-[#8E8E93]">No hay conteos registrados</div>
+                                    ) : (
+                                        stockLogs.map((log: any) => (
+                                            <div key={log.id} className="p-4 hover:bg-gray-50 transition-colors">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-2 h-2 rounded-full ${log.difference > 0 ? 'bg-green-500' : log.difference < 0 ? 'bg-red-500' : 'bg-gray-400'}`}></div>
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[14px] font-medium text-[#1C1C1E]">
+                                                                    {log.oldQuantity} → {log.newQuantity}
+                                                                </span>
+                                                                <span className={`text-[13px] font-semibold ${log.difference > 0 ? 'text-green-600' : log.difference < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                                                                    {log.difference > 0 ? '+' : ''}{log.difference}
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-[12px] text-[#8E8E93] mt-0.5">
+                                                                {new Date(log.timestamp).toLocaleString('es-ES', {
+                                                                    day: '2-digit',
+                                                                    month: 'short',
+                                                                    year: 'numeric',
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit'
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="text-[11px] font-medium text-[#8E8E93] uppercase tracking-wide bg-gray-100 px-2 py-1 rounded">
+                                                            {log.auditor}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                             </div>
 
