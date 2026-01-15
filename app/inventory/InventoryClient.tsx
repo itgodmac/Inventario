@@ -7,7 +7,7 @@ import useSWR from 'swr';
 import { useRealtimeInventory } from '../hooks/useRealtimeInventory';
 import { Product } from '../lib/google-sheets';
 import Loading from './loading';
-import toast from 'react-hot-toast';
+import ExportModal from '../components/ExportModal';
 
 const BarcodeScanner = dynamic(() => import('./BarcodeScanner'), { ssr: false });
 
