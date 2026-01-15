@@ -1,76 +1,80 @@
-# BigMaterials Catalog Generator - Script InDesign
+# Cómo Usar el Script
 
-## Instalación Súper Simple ✅
+## Paso 1: Descargar Datos
 
-**NO necesitas instalar nada**. Solo arrastrar el archivo.
+Abre terminal en la carpeta del proyecto y ejecuta:
 
-### Usar el Script
+```bash
+node download-catalog-data.js
+```
 
-1. **Descarga:** `BigMaterials-Catalog-Generator.jsx`
-2. **Abre InDesign**
-3. **Arrastra** el archivo `.jsx` a la ventana de InDesign
-4. El script se ejecuta automáticamente
+Esto crea el archivo `catalog-data.json`
 
-O desde el menú:
-- **File → Scripts → Other Script...**
-- Selecciona `BigMaterials-Catalog-Generator.jsx`
+## Paso 2: Ejecutar en InDesign
 
-## Funcionalidades
+**IMPORTANTE: El script Y el archivo catalog-data.json deben estar en la MISMA carpeta**
 
-- ✅ Seleccionar secciones del catálogo
-- ✅ Idioma español/inglés
-- ✅ Grid 4x4 automático (16 productos por página)
-- ✅ Páginas de título por sección
-- ✅ Texto con nombre, SKU y precio
-- ✅ Conexión directa al API
+### Método 1: Arrastrar (NO FUNCIONA - InDesign lo abre)
 
-## Importante: Imágenes
+### Método 2: Desde InDesign ✅
 
-⚠️ **Limitación de ExtendScript:** No puede descargar imágenes automáticamente por HTTPS.
+1. Abre InDesign
+2. **File → Scripts → Other Script...** (NO existe en menú, usa atajo)
+3. Presiona: **Ctrl + Alt + F11** (Windows) o **Cmd + Opt + F11** (Mac)
+4. Busca y selecciona `BigMaterials-Catalog-Generator.jsx`
+5. Se ejecuta automáticamente
 
-**Solución:**
-1. El script crea el layout completo
-2. Los frames de imágenes quedan vacíos
-3. Usa **File → Place** para agregar imágenes manualmente
-4. O ejecuta un script separado de descarga
+### Método 3: Panel Scripts (Recomendado) ✅
 
-**Alternativa (Próximamente):**
-- Crear endpoint que descargue imágenes como ZIP
-- Extraer ZIP localmente
-- Script las coloca automáticamente
+1. En InDesign: **Window → Utilities → Scripts**
+2. En el panel, haz click derecho en la carpeta **"User"**
+3. Selecciona **"Reveal in Explorer"** (Windows) o **"Reveal in Finder"** (Mac)
+4. **COPIA** estos 2 archivos a esa carpeta:
+   - `BigMaterials-Catalog-Generator.jsx`
+   - `catalog-data.json`
+5. Vuelve a InDesign
+6. En el panel Scripts, **doble click** en `BigMaterials-Catalog-Generator`
 
-## Diferencias con Plugin UXP
+## Qué Hace
 
-| Feature | Script .jsx | Plugin UXP |
-|---------|-------------|------------|
-| Instalación | ❌ No requiere | ✅ Requiere .ccx |
-| Uso | Arrastrar archivo | Panel lateral |
-| Imágenes | ❌ Manual | ✅ Automático |
-| Distribución | 📧 Email directo | 📦 Archivo .ccx |
-| Compatibilidad | InDesign CS6+ | InDesign 2023+ |
+- Lee `catalog-data.json` (debe estar en la misma carpeta)
+- Crea documento A4 automáticamente
+- Página de título por cada sección
+- Grid 4x4 con 16 productos por página
+- Texto: nombre + SKU + precio
 
-## Requisitos
+## Imágenes
 
-- InDesign CS6 o superior
-- Conexión a internet (para datos del API)
-- Windows/Mac
+⚠️ Las imágenes NO se descargan automáticamente (ExtendScript no puede hacer HTTPS)
+
+**Para agregar imágenes después:**
+1. Selecciona un frame vacío
+2. File → Place
+3. Selecciona la imagen
+4. Se coloca en el frame
 
 ## Troubleshooting
 
-**Script no se ejecuta:**
-- Verifica que InDesign esté abierto
-- Arrastra de nuevo el archivo
+**"No se encontró catalog-data.json"**
+→ Ejecuta: `node download-catalog-data.js`
+→ Copia `catalog-data.json` a la misma carpeta donde está el .jsx
 
-**Error de conexión:**
-- Verifica internet
-- El API debe estar en: `https://inventario.big-m.mx/api/catalog/export`
+**Script no aparece en el panel**
+→ Verifica que lo copiaste a la carpeta correcta (User scripts folder)
+→ Reinicia InDesign
 
-**Imágenes no aparecen:**
-- Normal - ExtendScript no descarga HTTPS
-- Agrégalas manualmente después
+**Ctrl+Alt+F11 no funciona**
+→ Prueba con Ctrl+Alt+Shift+F11
+→ O busca en: File → Scripts (puede estar oculto)
 
-## Próximas Mejoras
+## Ubicación de Scripts
 
-1. Script de descarga de imágenes por lote
-2. Integración con Cloudinary CLI
-3. Versión con Node.js helper para imágenes
+**Windows:**
+```
+C:\Users\[TuUsuario]\AppData\Roaming\Adobe\InDesign\[Version]\[Idioma]\Scripts\Scripts Panel\
+```
+
+**Mac:**
+```
+~/Library/Preferences/Adobe InDesign/Version [X]/Scripts/Scripts Panel/
+```

@@ -1,0 +1,73 @@
+{
+  "sections": [
+    {
+      "name": "SIN ASIGNAR",
+      "products": [
+        {
+          "id": "54e41088-3993-416e-bc65-0f71f4bdd1fc",
+          "sku": "1000",
+          "name": "Test",
+          "nameEs": "Test",
+          "nameEn": "Prueba",
+          "price": 8880,
+          "image": null
+        },
+        {
+          "id": "6870bbde-0369-4741-a466-865004663ff7",
+          "sku": "1001",
+          "name": "aleprueba",
+          "nameEs": "aleprueba",
+          "nameEn": "aletest",
+          "price": 8880,
+          "image": null
+        },
+        {
+          "id": "d7ab8bac-390b-4cdc-b5b5-ee52dc3e080a",
+          "sku": "1002",
+          "name": "español",
+          "nameEs": "español",
+          "nameEn": "ingles",
+          "price": 88800,
+          "image": "https://res.cloudinary.com/dmcpixqgf/image/upload/v1768434863/inventory/1002.jpg"
+        },
+        {
+          "id": "7ee3e2b1-b7ec-4b28-86dc-b2c9d2dd1dc7",
+          "sku": "1003",
+          "name": "PLATON",
+          "nameEs": "PLATON",
+          "nameEn": null,
+          "price": 3552,
+          "image": "https://res.cloudinary.com/dmcpixqgf/image/upload/v1768435607/inventory/1003.jpg"
+        }
+      ],
+      "productCount": 4
+    },
+    {
+      "name": "Uncategorized",
+      "products": [
+        {
+          "id": "ef01c58f-b0bc-42d7-a439-e1ac4ac5ea09",
+          "sku": "12",
+          "name": null,
+          "nameEs": null,
+          "nameEn": null,
+          "price": 12,
+          "image": null
+        },
+        {
+          "id": "c3338d29-a568-47db-b3b7-36dc65c09914",
+          "sku": null,
+          "name": null,
+          "nameEs": null,
+          "nameEn": null,
+          "price": 888,
+          "image": null
+        }
+      ],
+      "productCount": 2
+    }
+  ],
+  "totalProducts": 6,
+  "totalPages": 1,
+  "generatedAt": "2026-01-15T22:20:06.049Z"
+}
