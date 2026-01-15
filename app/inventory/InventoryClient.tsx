@@ -137,18 +137,21 @@ export default function InventoryClient() {
             const currentTime = Date.now();
             const char = e.key;
 
-            // Scanner inputs are very fast (< 50ms between keys usually)
-            // If pause is too long, reset buffer
-            if (currentTime - lastKeyTime > 100) {
+            // Scanner inputs are very fast, but 100ms might be too tight for some systems/scanners.
+            // Increased to 500ms to be safe.
+            if (currentTime - lastKeyTime > 500) {
                 buffer = '';
             }
 
             lastKeyTime = currentTime;
 
-            if (char === 'Enter') {
+            // Debug log to see what the scanner is sending
+            console.log(`Key: ${char}, Buffer: ${buffer}`);
+
+            if (char === 'Enter' || char === 'Tab') {
                 if (buffer.length > 2) {
-                    // It's likely a barcode scan
-                    console.log('Detected Scan:', buffer);
+                    e.preventDefault(); // Prevent default browser action for Enter/Tab
+                    console.log('🚀 Scanner Triggered:', buffer);
                     handleScanSuccess(buffer);
                     buffer = '';
                 }
