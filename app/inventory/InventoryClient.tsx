@@ -115,10 +115,51 @@ export default function InventoryClient() {
 
         if (product) {
             router.push(`/inventory/${product.id}`);
+            toast.success('Product found!');
         } else {
             toast.error(`Producto no encontrado: ${code}`);
         }
     };
+
+    // --- Barcode Scanner Keyboard Listener ---
+    useEffect(() => {
+        let buffer = '';
+        let lastKeyTime = Date.now();
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Ignore if user is typing in an input field
+            const target = e.target as HTMLElement;
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                return;
+            }
+
+            const currentTime = Date.now();
+            const char = e.key;
+
+            // Scanner inputs are very fast (< 50ms between keys usually)
+            // If pause is too long, reset buffer
+            if (currentTime - lastKeyTime > 100) {
+                buffer = '';
+            }
+
+            lastKeyTime = currentTime;
+
+            if (char === 'Enter') {
+                if (buffer.length > 2) {
+                    // It's likely a barcode scan
+                    console.log('Detected Scan:', buffer);
+                    handleScanSuccess(buffer);
+                    buffer = '';
+                }
+            } else if (char.length === 1) {
+                // Determine if it's a printable character
+                buffer += char;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [products, router]); // Re-bind if products changes so we have latest list
 
     return (
         <main ref={container} className="min-h-screen bg-[#F2F2F7] pb-24 font-sans selection:bg-blue-100 selection:text-blue-900">
