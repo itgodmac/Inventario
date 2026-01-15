@@ -1,80 +1,71 @@
-# Cómo Usar el Script
+# Importar TODOS los Productos a InDesign
 
-## Paso 1: Descargar Datos
-
-Abre terminal en la carpeta del proyecto y ejecuta:
+## Paso 1: Descargar Productos + Imágenes
 
 ```bash
 node download-catalog-data.js
 ```
 
-Esto crea el archivo `catalog-data.json`
+Esto descarga:
+- ✅ `catalog-data.json` - Datos de productos
+- ✅ `catalog-images/` - Todas las fotos de Cloudinary
 
-## Paso 2: Ejecutar en InDesign
+## Paso 2: Ejecutar Script en InDesign
 
-**IMPORTANTE: El script Y el archivo catalog-data.json deben estar en la MISMA carpeta**
+**Desde el Panel de Scripts:**
 
-### Método 1: Arrastrar (NO FUNCIONA - InDesign lo abre)
-
-### Método 2: Desde InDesign ✅
-
-1. Abre InDesign
-2. **File → Scripts → Other Script...** (NO existe en menú, usa atajo)
-3. Presiona: **Ctrl + Alt + F11** (Windows) o **Cmd + Opt + F11** (Mac)
-4. Busca y selecciona `BigMaterials-Catalog-Generator.jsx`
-5. Se ejecuta automáticamente
-
-### Método 3: Panel Scripts (Recomendado) ✅
-
-1. En InDesign: **Window → Utilities → Scripts**
-2. En el panel, haz click derecho en la carpeta **"User"**
-3. Selecciona **"Reveal in Explorer"** (Windows) o **"Reveal in Finder"** (Mac)
-4. **COPIA** estos 2 archivos a esa carpeta:
+1. InDesign → **Window → Utilities → Scripts**
+2. Click derecho en **"User"** → **Reveal in Explorer**
+3. **Copia toda la carpeta del proyecto** ahí (o solo estos archivos):
    - `BigMaterials-Catalog-Generator.jsx`
    - `catalog-data.json`
-5. Vuelve a InDesign
-6. En el panel Scripts, **doble click** en `BigMaterials-Catalog-Generator`
+   - `catalog-images/` (carpeta completa)
+4. En InDesign, **doble click** en el script
+
+**O con atajo:**
+
+1. Presiona **Ctrl + Alt + F11**
+2. Selecciona `BigMaterials-Catalog-Generator.jsx`
 
 ## Qué Hace
 
-- Lee `catalog-data.json` (debe estar en la misma carpeta)
-- Crea documento A4 automáticamente
-- Página de título por cada sección
-- Grid 4x4 con 16 productos por página
-- Texto: nombre + SKU + precio
+- ✅ Importa **TODOS los productos** (ignora secciones)
+- ✅ Grid 4x4 perfecto (16 productos por página)
+- ✅ **Coloca las fotos automáticamente** desde `catalog-images/`
+- ✅ Texto: nombre + SKU + precio
 
-## Imágenes
+## Resultado
 
-⚠️ Las imágenes NO se descargan automáticamente (ExtendScript no puede hacer HTTPS)
+```
+Página 1: Productos 1-16 (con fotos)
+Página 2: Productos 17-32 (con fotos)
+...
+```
 
-**Para agregar imágenes después:**
-1. Selecciona un frame vacío
-2. File → Place
-3. Selecciona la imagen
-4. Se coloca en el frame
+## Archivos Necesarios
+
+```
+tu-carpeta/
+├── BigMaterials-Catalog-Generator.jsx
+├── catalog-data.json
+├── download-catalog-data.js
+└── catalog-images/
+    ├── 1000.jpg
+    ├── 1001.jpg
+    ├── 1002.jpg
+    └── ...
+```
+
+**IMPORTANTE:** Todos los archivos deben estar en la MISMA carpeta para que el script encuentre las imágenes.
 
 ## Troubleshooting
 
 **"No se encontró catalog-data.json"**
 → Ejecuta: `node download-catalog-data.js`
-→ Copia `catalog-data.json` a la misma carpeta donde está el .jsx
 
-**Script no aparece en el panel**
-→ Verifica que lo copiaste a la carpeta correcta (User scripts folder)
-→ Reinicia InDesign
+**Imágenes no aparecen**
+→ Verifica que la carpeta `catalog-images/` esté en el mismo lugar que el .jsx
+→ Ejecuta de nuevo: `node download-catalog-data.js` para re-descargar imágenes
 
-**Ctrl+Alt+F11 no funciona**
-→ Prueba con Ctrl+Alt+Shift+F11
-→ O busca en: File → Scripts (puede estar oculto)
-
-## Ubicación de Scripts
-
-**Windows:**
-```
-C:\Users\[TuUsuario]\AppData\Roaming\Adobe\InDesign\[Version]\[Idioma]\Scripts\Scripts Panel\
-```
-
-**Mac:**
-```
-~/Library/Preferences/Adobe InDesign/Version [X]/Scripts/Scripts Panel/
-```
+**"No hay productos"**
+→ El API no devolvió datos, verifica tu conexión
