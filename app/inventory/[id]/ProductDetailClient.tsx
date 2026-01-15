@@ -577,7 +577,6 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                     </div>
                 )}
             </div>
-        </div>
-        </main >
+        </main>
     );
 }
