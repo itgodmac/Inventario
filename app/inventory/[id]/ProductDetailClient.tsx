@@ -491,7 +491,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                         <div className="mt-3 pt-3 border-t border-dashed border-gray-200 flex justify-between items-center bg-blue-50/50 p-2 rounded-lg">
                                             <label className="text-[14px] font-bold text-[#1C1C1E]">Final Price ($ Venta)</label>
                                             <div className="text-right text-[20px] text-[#007AFF] font-bold">
-                                                ${product.price.toLocaleString()}
+                                                ${product.price.toFixed(2)}
                                             </div>
                                         </div>
                                     </div>

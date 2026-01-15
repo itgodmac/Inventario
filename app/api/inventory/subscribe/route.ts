@@ -38,8 +38,10 @@ export async function GET(request: NextRequest) {
                         // Process new messages
                         for (const msg of messages) {
                             try {
-                                const event = JSON.parse(msg);
-                                const message = `data: ${msg}\n\n`;
+                                // Handle both string and object responses from Redis
+                                const msgStr = typeof msg === 'string' ? msg : JSON.stringify(msg);
+                                const event = JSON.parse(msgStr);
+                                const message = `data: ${JSON.stringify(event)}\n\n`;
                                 controller.enqueue(encoder.encode(message));
                             } catch (e) {
                                 console.error('Failed to parse event:', e);
