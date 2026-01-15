@@ -1,45 +1,44 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import archiver from 'archiver';
 import Papa from 'papaparse';
 import { PassThrough } from 'stream';
 
-// Prisma Client Instantiation
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 const prisma = globalForPrisma.prisma || new PrismaClient();
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60; // Set timeout to 60s (Vercel Pro/Hobby limits apply)
+export const maxDuration = 60;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
-        // 1. Setup Stream & Archive
+        const { searchParams } = new URL(req.url);
+        const category = searchParams.get('category');
+        const status = searchParams.get('status');
+        const dateRange = searchParams.get('dateRange'); // '7d', '30d', 'all'
+        const sortBy = searchParams.get('sortBy') || 'name'; // 'name', 'newest'
+
+        // 1. Setup Stream
         const stream = new PassThrough();
         const archive = archiver('zip', { zlib: { level: 9 } });
 
-        // Error handling for archive
-        archive.on('error', (err) => {
-            console.error('Archiver error:', err);
-            // We can't really change the response status now as headers are sent
-            // But checking 'error' event is good practice
-        });
-
-        // Pipe archive data to the response stream
+        archive.on('error', (err) => console.error('Archiver error:', err));
         archive.pipe(stream);
 
         // 2. Start Async Generation
-        // proper pattern: we return the stream immediately, and populate it in background
-        generateArchiveContent(archive).catch(err => {
+        generateArchiveContent(archive, { category, status, dateRange, sortBy }).catch(err => {
             console.error('Generation failed:', err);
             archive.abort();
         });
 
-        // 3. Return Response
+        // 3. Return Response with Metadata
+        const filename = `inventory-export-${new Date().toISOString().split('T')[0]}.zip`;
+
         return new Response(stream as any, {
             headers: {
                 'Content-Type': 'application/zip',
-                'Content-Disposition': 'attachment; filename="inventory-indesign_assets.zip"',
+                'Content-Disposition': `attachment; filename="${filename}"`,
             },
         });
 
@@ -49,84 +48,110 @@ export async function GET() {
     }
 }
 
-async function generateArchiveContent(archive: archiver.Archiver) {
-    try {
-        console.log('📦 Starting Export Generation...');
+interface FilterOptions {
+    category?: string | null;
+    status?: string | null;
+    dateRange?: string | null;
+    sortBy?: string | null;
+}
 
-        // 1. Fetch Products
+async function generateArchiveContent(archive: archiver.Archiver, filters: FilterOptions) {
+    try {
+        console.log('📦 Starting Export with filters:', filters);
+
+        // Build Query
+        const where: any = { status: { not: 'archived' } };
+
+        if (filters.category && filters.category !== 'all') {
+            where.category = filters.category;
+        }
+
+        if (filters.status && filters.status !== 'all') {
+            // Map UI status to DB status if needed, or assume direct match
+            where.status = filters.status;
+        }
+
+        if (filters.dateRange) {
+            const now = new Date();
+            if (filters.dateRange === '7d') {
+                const date = new Date(now.setDate(now.getDate() - 7));
+                where.createdAt = { gte: date };
+            } else if (filters.dateRange === '30d') {
+                const date = new Date(now.setDate(now.getDate() - 30));
+                where.createdAt = { gte: date };
+            }
+        }
+
+        let orderBy: any = { name: 'asc' };
+        if (filters.sortBy === 'newest') {
+            orderBy = { createdAt: 'desc' };
+        } else if (filters.sortBy === 'stock') {
+            orderBy = { stock: 'desc' };
+        }
+
+        // Fetch Products
         const products = await prisma.product.findMany({
-            where: {
-                status: { not: 'archived' }
-            },
-            orderBy: { name: 'asc' }
+            where,
+            orderBy
         });
 
-        console.log(`🔍 Found ${products.length} products`);
+        console.log(`🔍 Exporting ${products.length} products`);
 
         const csvData = [];
+        const processedImages = new Set<string>();
 
-        // 2. Process Products
         for (const product of products) {
             const sku = product.sku || product.id.substring(0, 8);
-            // Sanitize filename
             const safeName = product.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-
             let imageFilename = '';
             let imagePathForCsv = '';
 
-            // Handle Image
+            // Handle Image Download
             if (product.image && product.image.startsWith('http')) {
                 try {
                     const ext = product.image.split('.').pop()?.split('?')[0] || 'jpg';
                     imageFilename = `${sku}_${safeName}.${ext}`;
 
-                    // Fetch image buffer
-                    const response = await fetch(product.image);
-                    if (response.ok) {
-                        const arrayBuffer = await response.arrayBuffer();
-                        const buffer = Buffer.from(arrayBuffer);
-
-                        // Add to ZIP
-                        archive.append(buffer, { name: `images/${imageFilename}` });
-
-                        // Set CSV path (relative to CSV file location)
-                        // InDesign Data Merge expects paths like "images/pic.jpg" or full paths.
-                        // Relative paths work if the CSV is in the same folder as the images folder
-                        imagePathForCsv = `images/${imageFilename}`;
+                    // Deduplication check (unlikely but good safety)
+                    if (!processedImages.has(imageFilename)) {
+                        const response = await fetch(product.image);
+                        if (response.ok) {
+                            const arrayBuffer = await response.arrayBuffer();
+                            archive.append(Buffer.from(arrayBuffer), { name: `images/${imageFilename}` });
+                            processedImages.add(imageFilename);
+                        }
                     }
-                } catch (imgErr) {
-                    console.error(`Failed to download image for ${sku}:`, imgErr);
+                    imagePathForCsv = `images/${imageFilename}`;
+                } catch (e) {
+                    console.error(`Failed individual image download: ${product.image}`, e);
                 }
             }
 
-            // Prepare CSV Row
-            // Note: InDesign requires @Image for the image column
+            // CSV Row
             csvData.push({
                 'SKU': sku,
                 'Name': product.name,
-                'NameEs': product.nameEs || product.name,
-                'NameEn': product.nameEn || '',
+                'Spanish Name': product.nameEs || product.name,
+                'English Name': product.nameEn || '',
                 'Price': product.price.toFixed(2),
+                'Factory Price': (product.priceZG || 0).toFixed(2),
+                'Competitor Price': (product.priceOth || 0).toFixed(2),
+                'Stock': product.stock,
                 'Barcode': product.barcode || '',
                 'Category': product.category || '',
+                'Status': product.status,
                 '@Image': imagePathForCsv
             });
         }
 
-        // 3. Create CSV
-        const csvString = Papa.unparse(csvData, {
-            quotes: true,
-        });
-
-        // Add CSV to ZIP
+        // CSV Generation
+        const csvString = Papa.unparse(csvData, { quotes: true });
         archive.append(csvString, { name: 'data.csv' });
 
-        // 4. Finalize
-        console.log('🎉 Finalizing Archive...');
         await archive.finalize();
 
     } catch (error) {
-        console.error('Critical error in generator:', error);
+        console.error('Critical generator error:', error);
         throw error;
     }
 }

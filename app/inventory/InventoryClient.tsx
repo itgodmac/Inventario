@@ -40,6 +40,8 @@ export default function InventoryClient() {
     const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'stock-asc' | 'stock-desc'>('stock-desc');
     const [isSortOpen, setIsSortOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'table' | 'grid' | 'compact'>('grid');
+    // Export Modal State
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
     // Pagination
     const currentPage = Number(searchParams.get('page')) || 1;
@@ -183,35 +185,14 @@ export default function InventoryClient() {
                             </button>
                         </div>
 
-                        {/* Export Button */}
+                        {/* Export Button - Opens Modal */}
                         <button
-                            onClick={async () => {
-                                const toastId = toast.loading('Generating InDesign assets...');
-                                try {
-                                    const response = await fetch('/api/export/indesign');
-                                    if (!response.ok) throw new Error('Export failed');
-
-                                    const blob = await response.blob();
-                                    const url = window.URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.href = url;
-                                    a.download = 'inventory-indesign_assets.zip';
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    window.URL.revokeObjectURL(url);
-                                    document.body.removeChild(a);
-
-                                    toast.success('Assets downloaded!', { id: toastId });
-                                } catch (error) {
-                                    console.error(error);
-                                    toast.error('Failed to generate assets', { id: toastId });
-                                }
-                            }}
+                            onClick={() => setIsExportModalOpen(true)}
                             className="bg-white hover:bg-gray-50 text-[#1C1C1E] border border-[#3C3C43]/20 px-3 py-2 rounded-xl text-[14px] font-medium shadow-sm transition-all flex items-center gap-2 active:scale-95"
-                            title="Export for InDesign Data Merge"
+                            title="Export options for InDesign"
                         >
                             <svg className="w-4 h-4 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                            <span className="hidden lg:inline">InDesign</span>
+                            <span className="hidden lg:inline">Export</span>
                         </button>
 
                         <button
@@ -467,6 +448,11 @@ export default function InventoryClient() {
                     onScanSuccess={handleScanSuccess}
                 />
             )}
+            {/* Export Modal */}
+            <ExportModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+            />
         </main>
     );
 }
