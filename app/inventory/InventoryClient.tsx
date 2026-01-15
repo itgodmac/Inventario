@@ -4,6 +4,7 @@ import React, { useState, useRef, useMemo, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import useSWR from 'swr';
+import { useRealtimeInventory } from '../hooks/useRealtimeInventory';
 import { Product } from '../lib/google-sheets';
 import Loading from './loading';
 import toast from 'react-hot-toast';
@@ -27,13 +28,8 @@ export default function InventoryClient() {
     // const [isLoading, setIsLoading] = useState(true);
     // const [error, setError] = useState(false);
 
-    // SWR Hook for Realtime Updates
-    const fetcher = (url: string) => fetch(url).then((r) => r.json());
-    const { data: products, error, isLoading } = useSWR<Product[]>('/api/inventory', fetcher, {
-        refreshInterval: 2000, // Poll every 2s
-        revalidateOnFocus: true,
-        fallbackData: [], // Initial empty state
-    });
+    // Realtime Updates Hook
+    const { products, isLoading, error, isConnected } = useRealtimeInventory();
 
     const [filteredProductsState, setFilteredProductsState] = useState<Product[]>([]);
 

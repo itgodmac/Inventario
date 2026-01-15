@@ -57,7 +57,7 @@ export async function POST(request: Request) {
             }
         });
 
-        // 4. Publish Realtime Event (Fire & Forget)
+        // 4. Broadcast to SSE clients via Redis list
         if (redis) {
             const event = {
                 type: 'STOCK_UPDATE',
@@ -68,9 +68,13 @@ export async function POST(request: Request) {
                     timestamp: new Date().toISOString()
                 }
             };
-            // Publish to 'inventory-updates' channel
-            await redis.publish('inventory-updates', JSON.stringify(event));
-            console.log("📡 [API] Published to Redis");
+
+            // Push event to Redis list for SSE endpoints to consume
+            await redis.lpush('inventory-events', JSON.stringify(event));
+            // Set TTL to auto-cleanup old events (5 seconds)
+            await redis.expire('inventory-events', 5);
+
+            console.log("📡 [API] Broadcasted inventory update");
         } else {
             console.warn("⚠️ [API] Redis not configured, skipping realtime broadcast");
         }
