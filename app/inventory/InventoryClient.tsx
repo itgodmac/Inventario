@@ -107,7 +107,6 @@ export default function InventoryClient() {
         // Products are local state now, instant lookup
         const product = (products || []).find(p =>
             (p.barcode && p.barcode === code) ||
-            (p.itemCode && p.itemCode === code) ||
             (p.sku && p.sku === code) ||
             (p.barcode && p.barcode.includes(code))
         );

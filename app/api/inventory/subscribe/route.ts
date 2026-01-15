@@ -10,6 +10,7 @@ const redis = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN
     : null;
 
 export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
     if (!redis) {
@@ -21,19 +22,33 @@ export async function GET(request: NextRequest) {
     const stream = new ReadableStream({
         async start(controller) {
             // Send initial connection message
-            const message = `data: ${JSON.stringify({ type: 'CONNECTED', timestamp: new Date().toISOString() })}\n\n`;
-            controller.enqueue(encoder.encode(message));
+            const initMessage = `data: ${JSON.stringify({
+                type: 'CONNECTED',
+                timestamp: new Date().toISOString()
+            })}\n\n`;
+            controller.enqueue(encoder.encode(initMessage));
 
-            // Subscribe to inventory updates
-            const channelName = 'inventory-updates';
-
-            // Poll Redis for messages every 1s
-            const intervalId = setInterval(async () => {
+            // Poll for new messages every 1 second
+            const pollInterval = setInterval(async () => {
                 try {
-                    // Note: Upstash Redis doesn't support traditional pub/sub in serverless
-                    // We'll use a different approach: check a stream/list
-                    // For now, we'll keep the existing setup and clients will poll
-                    // This is a limitation of serverless Redis
+                    // Get messages from Redis list
+                    const messages = await redis.lrange('inventory-events', 0, -1) as string[];
+
+                    if (messages && messages.length > 0) {
+                        // Process new messages
+                        for (const msg of messages) {
+                            try {
+                                const event = JSON.parse(msg);
+                                const message = `data: ${msg}\n\n`;
+                                controller.enqueue(encoder.encode(message));
+                            } catch (e) {
+                                console.error('Failed to parse event:', e);
+                            }
+                        }
+
+                        // Clear processed messages
+                        await redis.del('inventory-events');
+                    }
                 } catch (error) {
                     console.error('Redis poll error:', error);
                 }
@@ -41,7 +56,7 @@ export async function GET(request: NextRequest) {
 
             // Cleanup on close
             request.signal.addEventListener('abort', () => {
-                clearInterval(intervalId);
+                clearInterval(pollInterval);
                 controller.close();
             });
         }
@@ -50,8 +65,9 @@ export async function GET(request: NextRequest) {
     return new Response(stream, {
         headers: {
             'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
+            'Cache-Control': 'no-cache, no-transform',
             'Connection': 'keep-alive',
+            'X-Accel-Buffering': 'no',
         },
     });
 }
