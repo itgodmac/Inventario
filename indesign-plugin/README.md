@@ -38,9 +38,9 @@ Plugin de Adobe InDesign para generar automáticamente el catálogo BigMaterials
 
 1. En el campo "URL del API", ingresa:
    ```
-   http://localhost:3000/api/catalog/export
+   https://inventario.big-m.mx/api/catalog/export
    ```
-   (o la URL de tu servidor en producción)
+   (por defecto ya viene configurado)
 
 ### Paso 2: Cargar Secciones
 
