@@ -306,7 +306,7 @@ export default function InventoryClient() {
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setSearchVisible(!searchVisible)}
-                                className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-sm active:scale-95 transition-transform"
+                                className="w-12 h-12 rounded-full bg-white dark:bg-zinc-800 text-black dark:text-white flex items-center justify-center shadow-sm active:scale-95 transition-transform"
                             >
                                 {searchVisible ? (
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -316,7 +316,7 @@ export default function InventoryClient() {
                             </button>
                             <button
                                 onClick={() => setShowScanner(true)}
-                                className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-sm active:scale-95 transition-transform"
+                                className="w-12 h-12 rounded-full bg-white dark:bg-zinc-800 text-black dark:text-white flex items-center justify-center shadow-sm active:scale-95 transition-transform"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h2v16H3V4zm5 0h2v16H8V4zm5 0h2v16h-2V4zm5 0h3v16h-3V4z" />
@@ -359,7 +359,7 @@ export default function InventoryClient() {
                                     key={category}
                                     onClick={() => setCategoryFilter(category || 'all')}
                                     className={`px-4 py-1.5 rounded-full text-[14px] font-medium whitespace-nowrap transition-all ${categoryFilter === category
-                                        ? 'bg-white text-black shadow-lg'
+                                        ? 'bg-white dark:bg-zinc-800 text-black dark:text-white shadow-lg'
                                         : 'bg-black/40 text-white/80 backdrop-blur-md'
                                         } `}
                                 >
@@ -383,7 +383,7 @@ export default function InventoryClient() {
                             placeholder="Search name, sku, barcode..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-12 py-2.5 bg-white border border-[#3C3C43]/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF]/50 text-[#1C1C1E] placeholder-[#8E8E93] transition-all text-[15px] shadow-sm appearance-none"
+                            className="w-full pl-10 pr-12 py-2.5 bg-white dark:bg-zinc-800 border border-[#3C3C43]/10 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF]/50 text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] transition-all text-[15px] shadow-sm appearance-none"
                         />
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
                             <div className="relative">
@@ -409,7 +409,7 @@ export default function InventoryClient() {
                     </div>
 
                     <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-                        <div className="bg-white rounded-lg border border-[#3C3C43]/10 p-0.5 flex items-center shadow-sm">
+                        <div className="bg-white dark:bg-zinc-800 rounded-lg border border-[#3C3C43]/10 dark:border-white/10 p-0.5 flex items-center shadow-sm">
                             <button
                                 onClick={() => setViewMode('table')}
                                 className={`p - 2 rounded - md transition - all hidden md:block ${viewMode === 'table' ? 'bg-[#F2F2F7] text-[#1C1C1E] shadow-sm' : 'text-[#8E8E93] hover:text-[#1C1C1E]'} `}
@@ -436,7 +436,7 @@ export default function InventoryClient() {
                         {/* Export Button - Opens Modal */}
                         <button
                             onClick={() => setIsExportModalOpen(true)}
-                            className="bg-white hover:bg-gray-50 text-[#1C1C1E] border border-[#3C3C43]/20 px-3 py-2 rounded-xl text-[14px] font-medium shadow-sm transition-all flex items-center gap-2 active:scale-95"
+                            className="bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700 text-[#1C1C1E] dark:text-white border border-[#3C3C43]/20 dark:border-white/20 px-3 py-2 rounded-xl text-[14px] font-medium shadow-sm transition-all flex items-center gap-2 active:scale-95"
                             title="Export options for InDesign"
                         >
                             <svg className="w-4 h-4 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
@@ -468,7 +468,7 @@ export default function InventoryClient() {
                     {/* Table View */}
                     {viewMode === 'table' && (
                         <>
-                            <div className="hidden md:block bg-white rounded-[10px] shadow-sm border border-[#3C3C43]/5 overflow-hidden">
+                            <div className="hidden md:block bg-white dark:bg-zinc-900 rounded-[10px] shadow-sm border border-[#3C3C43]/5 dark:border-white/5 overflow-hidden">
                                 <div className="overflow-x-auto">
                                     <table className="w-full">
                                         <thead className="bg-[#F2F2F7]/50 border-b border-[#3C3C43]/5">
@@ -587,7 +587,7 @@ export default function InventoryClient() {
                                 <div
                                     key={product.id}
                                     onClick={() => router.push(`/inventory/${product.id}`)}
-                                    className="bg-white rounded-xl p-2.5 shadow-sm cursor-pointer hover:shadow-md transition-all group flex items-center gap-3 active:scale-[0.98] duration-100"
+                                    className="bg-white dark:bg-zinc-900 rounded-xl p-2.5 shadow-sm cursor-pointer hover:shadow-md transition-all group flex items-center gap-3 active:scale-[0.98] duration-100"
                                 >
                                     <div className="w-14 h-14 rounded-lg bg-[#F2F2F7] flex-shrink-0 overflow-hidden relative">
                                         {product.image ? (
@@ -627,7 +627,7 @@ export default function InventoryClient() {
                             {paginatedProducts.map((product) => (
                                 <div
                                     key={product.id}
-                                    className="bg-white rounded-[16px] p-2.5 md:p-3 shadow-sm border border-[#3C3C43]/5 cursor-pointer hover:shadow-md transition-all group relative overflow-hidden flex flex-col active:scale-[0.98] duration-100"
+                                    className="bg-white dark:bg-zinc-900 rounded-[16px] p-2.5 md:p-3 shadow-sm border border-[#3C3C43]/5 dark:border-white/5 cursor-pointer hover:shadow-md transition-all group relative overflow-hidden flex flex-col active:scale-[0.98] duration-100"
                                     onClick={() => router.push(`/inventory/${product.id}`)}
                                 >
                                     <div className="aspect-square rounded-xl bg-[#F2F2F7] mb-2.5 md:mb-3 overflow-hidden border border-[#3C3C43]/5 relative">
@@ -768,7 +768,7 @@ export default function InventoryClient() {
                             <button
                                 onClick={() => setModalTab('info')}
                                 className={`flex-1 py-2 rounded-lg text-[14px] font-semibold transition-all ${modalTab === 'info'
-                                    ? 'bg-white text-black shadow-md'
+                                    ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-md'
                                     : 'bg-zinc-800 text-gray-400 hover:bg-zinc-700'
                                     }`}
                             >
@@ -777,7 +777,7 @@ export default function InventoryClient() {
                             <button
                                 onClick={() => setModalTab('count')}
                                 className={`flex-1 py-2 rounded-lg text-[14px] font-semibold transition-all ${modalTab === 'count'
-                                    ? 'bg-white text-black shadow-md'
+                                    ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-md'
                                     : 'bg-zinc-800 text-gray-400 hover:bg-zinc-700'
                                     }`}
                             >

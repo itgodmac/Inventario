@@ -220,7 +220,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
     return (
         <main className="min-h-screen bg-[#F2F2F7] text-[#1C1C1E] pb-24 font-sans selection:bg-blue-100 selection:text-blue-900">
             {/* Apple Style Sticky Navigation Bar with Blur */}
-            <div className="sticky top-14 z-40 bg-white/75 backdrop-blur-xl border-b border-[#3C3C43]/10 transition-colors duration-500 supports-[backdrop-filter]:bg-white/60">
+            <div className="sticky top-14 z-40 bg-white/75 dark:bg-black/75 backdrop-blur-xl border-b border-[#3C3C43]/10 dark:border-white/10 transition-colors duration-500 supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-black/60">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
                     <div className="flex items-center gap-2 overflow-hidden">
                         <Link href="/inventory" className="flex-shrink-0 flex items-center gap-1 text-[#007AFF] hover:opacity-70 transition-opacity">
@@ -228,7 +228,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                             <span className="hidden sm:inline text-[17px] font-medium tracking-tight">Inventory</span>
                         </Link>
                         <span className="text-[#3C3C43]/30 text-[17px] hidden sm:inline">/</span>
-                        <span className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] truncate">
+                        <span className="text-[17px] font-semibold tracking-tight text-[#1C1C1E] dark:text-white truncate">
                             {isEditing ? 'Editing Product' : (product.nameEs || product.name)}
                         </span>
                     </div>
@@ -265,7 +265,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
             </div>
 
             {/* Action Sheet */}
-            <div className="bg-white border-b border-[#3C3C43]/10 px-4 py-3 flex gap-3 overflow-x-auto no-scrollbar">
+            <div className="bg-white dark:bg-zinc-900 border-b border-[#3C3C43]/10 dark:border-white/10 px-4 py-3 flex gap-3 overflow-x-auto no-scrollbar">
                 {['Update Quantity', 'Replenish', 'Print Labels'].map((action) => (
                     <button key={action} className="flex-shrink-0 bg-[#767680]/10 hover:bg-[#767680]/20 active:bg-[#767680]/30 transition-colors px-4 py-2 rounded-lg text-[13px] font-medium text-[#1C1C1E] whitespace-nowrap active:scale-95 duration-100">
                         {action}
@@ -277,7 +277,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
             <div className="max-w-4xl mx-auto mt-4 md:mt-8 px-4 sm:px-6 pb-20">
 
                 {/* Header Card */}
-                <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 p-6 mb-6">
+                <div className="bg-white dark:bg-zinc-900 rounded-[20px] shadow-sm border border-[#3C3C43]/5 dark:border-white/5 p-6 mb-6">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         {/* Left: Product Info */}
                         <div className="md:col-span-3 flex flex-col justify-center">
@@ -314,20 +314,20 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                         {isFavorite && <span className="text-[#FF9500] text-lg">★</span>}
                                         <span className="text-[12px] md:text-[13px] font-semibold text-[#8E8E93] tracking-wide uppercase">Product</span>
                                     </div>
-                                    <h1 className="text-[28px] md:text-[36px] font-bold text-[#1C1C1E] tracking-tight leading-tight mb-1">
+                                    <h1 className="text-[28px] md:text-[36px] font-bold text-[#1C1C1E] dark:text-white tracking-tight leading-tight mb-1">
                                         {product.nameEs || product.name || 'Unnamed Product'}
                                     </h1>
                                     {product.nameEn && product.nameEs && (
                                         <p className="text-[16px] md:text-[18px] text-[#8E8E93] mb-2 font-medium">{product.nameEn}</p>
                                     )}
                                     <div className="flex items-center gap-3 mt-3 flex-wrap">
-                                        <span className="text-[15px] font-mono text-[#8E8E93] bg-[#F2F2F7] px-3 py-1.5 rounded-lg">{product.sku}</span>
+                                        <span className="text-[15px] font-mono text-[#8E8E93] bg-[#F2F2F7] dark:bg-white/10 px-3 py-1.5 rounded-lg">{product.sku}</span>
                                         {product.barcode && (
                                             <span className="text-[15px] font-mono text-[#8E8E93] bg-[#F2F2F7] px-3 py-1.5 rounded-lg">{product.barcode}</span>
                                         )}
                                         <div className="flex gap-2 ml-auto">
                                             <div className="flex items-center gap-1.5 bg-[#F2F2F7] px-3 py-1.5 rounded-lg">
-                                                <span className="text-[15px] font-semibold text-[#1C1C1E]">0</span>
+                                                <span className="text-[15px] font-semibold text-[#1C1C1E] dark:text-white">0</span>
                                                 <span className="text-[11px] font-medium text-[#8E8E93] uppercase">Sales</span>
                                             </div>
                                             <div className="flex items-center gap-1.5 bg-[#F2F2F7] px-3 py-1.5 rounded-lg">
@@ -366,7 +366,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                 </div>
 
                 {/* QUICK COUNT INTERFACE (Primary Action) */}
-                <div className="bg-white rounded-[20px] shadow-md border border-[#3C3C43]/5 overflow-hidden mb-8 ring-4 ring-[#007AFF]/10">
+                <div className="bg-white dark:bg-zinc-900 rounded-[20px] shadow-md border border-[#3C3C43]/5 dark:border-white/5 overflow-hidden mb-8 ring-4 ring-[#007AFF]/10">
                     <div className="px-5 py-3 border-b border-[#3C3C43]/5 bg-[#007AFF]/5 backdrop-blur-sm flex justify-between items-center">
                         <h3 className="text-[16px] font-bold text-[#007AFF] flex items-center gap-2">
                             Conteo Rápido / Cycle Count
@@ -378,11 +378,11 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                             {/* System Stock Display */}
                             <div className="flex flex-col items-center p-4 rounded-2xl bg-[#F2F2F7] border border-[#3C3C43]/5 opacity-60">
                                 <span className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide mb-1">Teórico (System)</span>
-                                <span className="text-[32px] md:text-[40px] font-bold text-[#1C1C1E]">{product.stock}</span>
+                                <span className="text-[32px] md:text-[40px] font-bold text-[#1C1C1E] dark:text-white">{product.stock}</span>
                             </div>
 
                             {/* Physical Input */}
-                            <div className="flex flex-col items-center p-4 rounded-2xl bg-white border-2 border-[#007AFF] shadow-lg shadow-[#007AFF]/10 relative w-full">
+                            <div className="flex flex-col items-center p-4 rounded-2xl bg-white dark:bg-zinc-800 border-2 border-[#007AFF] shadow-lg shadow-[#007AFF]/10 relative w-full">
                                 <span className="text-[13px] font-bold text-[#007AFF] uppercase tracking-wide mb-1">Físico (Real)</span>
                                 <input
                                     ref={inputRef}
@@ -395,7 +395,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                     readOnly={isMobile}
                                     onFocus={(e) => { if (isMobile) e.target.blur(); }}
                                     placeholder="0"
-                                    className="w-full text-center text-[48px] font-bold text-[#1C1C1E] focus:outline-none placeholder-[#E5E5EA] py-2 leading-none bg-transparent"
+                                    className="w-full text-center text-[48px] font-bold text-[#1C1C1E] dark:text-white focus:outline-none placeholder-[#E5E5EA] dark:placeholder-zinc-600 py-2 leading-none bg-transparent"
                                 />
                                 {countStatus === 'matching' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#34C759] shadow-sm animate-pulse"></div>}
                                 {countStatus === 'discrepancy' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#FF3B30] shadow-sm animate-pulse"></div>}
@@ -437,8 +437,8 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                 key={tab}
                                 onClick={() => setActiveTab(tab.toLowerCase() as any)}
                                 className={`px-4 py-1.5 rounded-lg text-[13px] font-semibold transition-all duration-200 active:scale-95 ${activeTab === tab.toLowerCase()
-                                    ? 'bg-white text-[#1C1C1E] shadow-sm'
-                                    : 'text-[#8E8E93] hover:text-[#1C1C1E]'
+                                    ? 'bg-white dark:bg-zinc-800 text-[#1C1C1E] dark:text-white shadow-sm'
+                                    : 'text-[#8E8E93] hover:text-[#1C1C1E] dark:hover:text-white'
                                     }`}
                             >
                                 {tab}
@@ -452,9 +452,9 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                     {activeTab === 'general' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Detailed form content same as before ... */}
-                            <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 overflow-hidden">
+                            <div className="bg-white dark:bg-zinc-900 rounded-[20px] shadow-sm border border-[#3C3C43]/5 dark:border-white/5 overflow-hidden">
                                 <div className="px-5 py-3 border-b border-[#3C3C43]/5 bg-[#F2F2F7]/50 backdrop-blur-sm">
-                                    <h3 className="text-[16px] font-semibold text-[#1C1C1E]">Basic details</h3>
+                                    <h3 className="text-[16px] font-semibold text-[#1C1C1E] dark:text-white">Basic details</h3>
                                 </div>
                                 <div className="divide-y divide-[#3C3C43]/5 px-5">
                                     <div className="py-3.5 grid grid-cols-1 md:grid-cols-2 items-center gap-2 md:gap-4">
@@ -472,9 +472,9 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 overflow-hidden">
+                            <div className="bg-white dark:bg-zinc-900 rounded-[20px] shadow-sm border border-[#3C3C43]/5 dark:border-white/5 overflow-hidden">
                                 <div className="px-5 py-3 border-b border-[#3C3C43]/5 bg-[#F2F2F7]/50 backdrop-blur-sm">
-                                    <h3 className="text-[16px] font-semibold text-[#1C1C1E]">Pricing & Codes</h3>
+                                    <h3 className="text-[16px] font-semibold text-[#1C1C1E] dark:text-white">Pricing & Codes</h3>
                                 </div>
                                 <div className="divide-y divide-[#3C3C43]/5 px-5">
                                     {/* Advanced Pricing Section */}
@@ -535,7 +535,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                             </div>
 
                             {/* STOCK HISTORY */}
-                            <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 overflow-hidden">
+                            <div className="bg-white dark:bg-zinc-900 rounded-[20px] shadow-sm border border-[#3C3C43]/5 dark:border-white/5 overflow-hidden">
                                 <div className="border-b border-gray-100 p-4">
                                     <h3 className="text-[15px] font-semibold text-[#1C1C1E]">Historial de Conteos</h3>
                                 </div>
@@ -597,7 +597,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                         </div>
                     )}
                     {activeTab !== 'general' && (
-                        <div className="flex flex-col items-center justify-center py-10 bg-white rounded-[20px] border border-[#3C3C43]/5 text-center">
+                        <div className="flex flex-col items-center justify-center py-10 bg-white dark:bg-zinc-900 rounded-[20px] border border-[#3C3C43]/5 dark:border-white/5 text-center">
                             <p className="text-[#8E8E93]">View only mode active.</p>
                         </div>
                     )}

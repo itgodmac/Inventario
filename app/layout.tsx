@@ -28,23 +28,24 @@ export default function RootLayout({
                         toastOptions={{
                             duration: 3000,
                             style: {
-                                background: '#fff',
-                                color: '#1C1C1E',
+                                background: 'var(--card)',
+                                color: 'var(--foreground)',
                                 borderRadius: '12px',
                                 padding: '12px 16px',
                                 fontSize: '14px',
                                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                                border: '1px solid var(--border)',
                             },
                             success: {
                                 iconTheme: {
-                                    primary: '#34C759',
-                                    secondary: '#fff',
+                                    primary: 'var(--primary)',
+                                    secondary: 'var(--primary-foreground)',
                                 },
                             },
                             error: {
                                 iconTheme: {
-                                    primary: '#FF3B30',
-                                    secondary: '#fff',
+                                    primary: 'var(--destructive)',
+                                    secondary: 'var(--destructive-foreground)',
                                 },
                             },
                         }}
