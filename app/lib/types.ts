@@ -16,6 +16,7 @@ export interface Product {
     image: string | null;
     description: string | null;
     // Add other fields as needed based on Prisma schema
+    uvaNombre?: string;
     updatedAt?: Date;
     createdAt?: Date;
 }
