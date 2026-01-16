@@ -37,6 +37,24 @@ async function getPricingSettings(prisma: PrismaClient) {
     }
 }
 
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const { id } = await params;
+        const product = await prisma.product.findUnique({
+            where: { id }
+        });
+
+        if (!product) {
+            return NextResponse.json({ status: 'error', message: 'Product not found' }, { status: 404 });
+        }
+
+        return NextResponse.json({ status: 'success', product });
+    } catch (error: any) {
+        console.error("🔥 [API] Fetch Error:", error);
+        return NextResponse.json({ status: 'error', message: error.message }, { status: 500 });
+    }
+}
+
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
