@@ -289,17 +289,9 @@ export default function InventoryClient() {
 
     return (
         <main ref={container} className="min-h-screen bg-background pb-24 font-sans selection:bg-primary/20 selection:text-primary">
-            {/* MOBILE HEADER - Odoo Style - Sticky */}
-            <div className="md:hidden sticky top-0 z-50">
-                <GradualBlur
-                    className="absolute -top-12 left-0 right-0 pointer-events-none"
-                    position="top"
-                    height="180px"
-                    strength={2}
-                    opacity={1}
-                    zIndex={-1}
-                />
-                <div className="px-4 pt-4 pb-3 relative z-10">
+            {/* MOBILE HEADER - Standard Sticky */}
+            <div className="md:hidden sticky top-0 z-50 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border-b border-gray-200/50 dark:border-white/5 data-[state=scrolled]:shadow-sm transition-all">
+                <div className="px-4 pb-3 pt-[max(16px,env(safe-area-inset-top))]">
                     {/* Title and Icon Buttons */}
                     <div className="flex items-center justify-between mb-3">
                         <h1 className="text-[32px] font-semibold text-foreground">Inventario</h1>
