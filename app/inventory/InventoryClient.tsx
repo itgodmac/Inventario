@@ -245,10 +245,10 @@ export default function InventoryClient() {
     }, [products]);
 
     // --- Barcode Scanner Keyboard Listener ---
-    useEffect(() => {
-        let buffer = '';
-        let lastKeyTime = Date.now();
+    const bufferRef = useRef('');
+    const lastKeyTimeRef = useRef(0);
 
+    useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             // Ignore if user is typing in an input field
             const target = e.target as HTMLElement;
@@ -259,33 +259,28 @@ export default function InventoryClient() {
             const currentTime = Date.now();
             const char = e.key;
 
-            // Scanner inputs are very fast, but 100ms might be too tight for some systems/scanners.
-            // Increased to 500ms to be safe.
-            if (currentTime - lastKeyTime > 500) {
-                buffer = '';
+            // Scanner inputs are very fast. If too much time passes, reset buffer.
+            if (currentTime - lastKeyTimeRef.current > 500) {
+                bufferRef.current = '';
             }
 
-            lastKeyTime = currentTime;
-
-            // Debug log to see what the scanner is sending
-            console.log(`Key: ${char}, Buffer: ${buffer} `);
+            lastKeyTimeRef.current = currentTime;
 
             if (char === 'Enter' || char === 'Tab') {
-                if (buffer.length > 2) {
-                    e.preventDefault(); // Prevent default browser action for Enter/Tab
-                    console.log('🚀 Scanner Triggered:', buffer);
-                    handleScanSuccess(buffer);
-                    buffer = '';
+                if (bufferRef.current.length > 2) {
+                    e.preventDefault(); // Prevent default browser action
+                    console.log('🚀 Scanner Triggered:', bufferRef.current);
+                    handleScanSuccess(bufferRef.current);
+                    bufferRef.current = '';
                 }
             } else if (char.length === 1) {
-                // Determine if it's a printable character
-                buffer += char;
+                bufferRef.current += char;
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handleScanSuccess]); // Depend on the stable callback
+    }, [handleScanSuccess]);
 
     return (
         <main ref={container} className="min-h-screen bg-background pb-24 font-sans selection:bg-primary/20 selection:text-primary">
