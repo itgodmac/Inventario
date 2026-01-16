@@ -11,6 +11,7 @@ import NumericKeypad from '@/app/components/NumericKeypad';
 import Loading from './loading';
 import toast from 'react-hot-toast';
 import ExportModal from '../components/ExportModal';
+import GradualBlur from '@/app/components/GradualBlur';
 
 const BarcodeScanner = dynamic(() => import('./BarcodeScanner'), { ssr: false });
 
@@ -26,13 +27,8 @@ export default function InventoryClient() {
     const searchParams = useSearchParams();
     const pathname = usePathname();
 
-    // Data State (Managed by SWR now)
-    // const [products, setProducts] = useState<Product[]>([]); // Removed local state for products
-    // const [isLoading, setIsLoading] = useState(true);
-    // const [error, setError] = useState(false);
-
     // Realtime Updates Hook
-    const { products, isLoading, error, isConnected } = useRealtimeInventory();
+    const { products, isLoading, error, isConnected, refresh } = useRealtimeInventory();
 
     const [filteredProductsState, setFilteredProductsState] = useState<Product[]>([]);
 
@@ -50,6 +46,7 @@ export default function InventoryClient() {
     // Mobile Product Detail Modal State
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [printCopies, setPrintCopies] = useState(1);
 
     // Sync selectedProduct with realtime updates
     useEffect(() => {
@@ -60,6 +57,11 @@ export default function InventoryClient() {
             }
         }
     }, [products, selectedProduct]);
+
+    // Reset copies when modal opens or product changes
+    useEffect(() => {
+        setPrintCopies(1);
+    }, [selectedProduct, isModalOpen]);
 
     // Quick Count State
     const [physicalCount, setPhysicalCount] = useState<string>('');
@@ -97,9 +99,13 @@ export default function InventoryClient() {
     const filteredProducts = useMemo(() => {
         if (!products) return [];
         return products.filter(product => {
-            const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (product.sku?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                (product.barcode && product.barcode.toLowerCase().includes(searchQuery.toLowerCase()));
+            const term = searchQuery.toLowerCase();
+            const matchesSearch = product.name.toLowerCase().includes(term) ||
+                (product.nameEn?.toLowerCase().includes(term)) ||
+                (product.nameEs?.toLowerCase().includes(term)) ||
+                (product.sku?.toLowerCase().includes(term)) ||
+                (product.barcode && product.barcode.toLowerCase().includes(term)) ||
+                (product.category?.toLowerCase().includes(term));
             const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
             return matchesSearch && matchesCategory;
         }).sort((a, b) => {
@@ -135,24 +141,15 @@ export default function InventoryClient() {
         }
     };
 
-    // Get stock badge style based on actual stock number (Odoo style)
-    const getStockBadgeStyle = (stock: number) => {
+    // Get stock badge style using Tailwind classes for Dark Mode support
+    const getStockBadgeClass = (stock: number) => {
         if (stock === 0) {
-            return {
-                backgroundColor: '#ffe8e8',
-                color: '#ff0000'
-            };
+            return 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400';
         }
         if (stock <= 5) {
-            return {
-                backgroundColor: '#fff8e8',
-                color: '#ff8000'
-            };
+            return 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400';
         }
-        return {
-            backgroundColor: '#e8ffe8',
-            color: '#008000'
-        };
+        return 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
     };
 
     // Quick Count Handlers  
@@ -196,6 +193,7 @@ export default function InventoryClient() {
                 toast.success('Inventario actualizado');
                 router.refresh();
                 setPhysicalCount('');
+                refresh(); // Force re-fetch of data
                 // setIsModalOpen(false); // Keep open for continuous workflow
             } else {
                 throw new Error(data.message || 'Error desconocido');
@@ -214,7 +212,7 @@ export default function InventoryClient() {
             const res = await fetch('/api/inventory/print-queue', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId: selectedProduct.id })
+                body: JSON.stringify({ productId: selectedProduct.id, copies: printCopies })
             });
 
             if (res.ok) {
@@ -290,73 +288,85 @@ export default function InventoryClient() {
     }, [handleScanSuccess]); // Depend on the stable callback
 
     return (
-        <main ref={container} className="min-h-screen bg-[#F2F2F7] pb-24 font-sans selection:bg-blue-100 selection:text-blue-900">
+        <main ref={container} className="min-h-screen bg-background pb-24 font-sans selection:bg-primary/20 selection:text-primary">
             {/* MOBILE HEADER - Odoo Style - Sticky */}
-            <div className="md:hidden bg-white px-4 pt-4 pb-3 sticky top-0 z-50">
-                {/* Title and Icon Buttons */}
-                <div className="flex items-center justify-between mb-3">
-                    <h1 className="text-[32px] font-semibold text-[#1C1C1E]">Inventario</h1>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setSearchVisible(!searchVisible)}
-                            className="w-12 h-12 rounded-full bg-[#1C1C1E] flex items-center justify-center shadow-sm active:scale-95 transition-transform"
-                        >
-                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </button>
-                        <button
-                            onClick={() => setShowScanner(true)}
-                            className="w-12 h-12 rounded-full bg-[#1C1C1E] flex items-center justify-center shadow-sm active:scale-95 transition-transform"
-                        >
-                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Toggleable Search Bar */}
-                {searchVisible && (
-                    <div className="mb-3 animate-in slide-in-from-top duration-200">
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="Buscar productos..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-4 pr-10 py-2.5 bg-[#F5F5F5] rounded-full focus:outline-none text-[#1C1C1E] placeholder-[#8E8E93] text-[15px]"
-                                autoFocus
-                            />
-                            {searchQuery && (
-                                <button
-                                    onClick={() => setSearchQuery('')}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                                >
-                                    <svg className="w-5 h-5 text-[#8E8E93]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            )}
+            <div className="md:hidden sticky top-0 z-50">
+                <GradualBlur
+                    className="absolute top-0 left-0 right-0 pointer-events-none"
+                    position="top"
+                    height="160px"
+                    strength={2}
+                    opacity={1}
+                    zIndex={-1}
+                />
+                <div className="px-4 pt-4 pb-3 relative z-10">
+                    {/* Title and Icon Buttons */}
+                    <div className="flex items-center justify-between mb-3">
+                        <h1 className="text-[32px] font-semibold text-foreground">Inventario</h1>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setSearchVisible(!searchVisible)}
+                                className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-sm active:scale-95 transition-transform"
+                            >
+                                {searchVisible ? (
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                ) : (
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                )}
+                            </button>
+                            <button
+                                onClick={() => setShowScanner(true)}
+                                className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-sm active:scale-95 transition-transform"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h2v16H3V4zm5 0h2v16H8V4zm5 0h2v16h-2V4zm5 0h3v16h-3V4z" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
-                )}
 
-                {/* Category Filter Pills */}
-                <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
-                    <div className="flex gap-2 pb-2">
-                        {categories.map((category) => (
-                            <button
-                                key={category}
-                                onClick={() => setCategoryFilter(category || 'all')}
-                                className={`px-4 py-1.5 rounded-full text-[14px] font-medium whitespace-nowrap transition-all ${categoryFilter === category
-                                    ? 'bg-[#1C1C1E] text-white shadow-lg'
-                                    : 'bg-[#f8f8f8] text-[#666] border border-[#e0e0e0]'
-                                    } `}
-                            >
-                                {category === 'all' ? 'Todo' : category}
-                            </button>
-                        ))}
+                    {/* Toggleable Search Bar */}
+                    {searchVisible && (
+                        <div className="mb-3 animate-in slide-in-from-top duration-200">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Buscar productos..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-4 pr-10 py-2.5 bg-white dark:bg-zinc-800 rounded-full focus:outline-none text-foreground placeholder-muted-foreground text-[15px] shadow-sm border border-gray-100 dark:border-zinc-700"
+                                    autoFocus
+                                />
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => setSearchQuery('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2"
+                                    >
+                                        <svg className="w-5 h-5 text-[#8E8E93]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Category Filter Pills */}
+                    <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
+                        <div className="flex gap-2 pb-2">
+                            {categories.map((category) => (
+                                <button
+                                    key={category}
+                                    onClick={() => setCategoryFilter(category || 'all')}
+                                    className={`px-4 py-1.5 rounded-full text-[14px] font-medium whitespace-nowrap transition-all ${categoryFilter === category
+                                        ? 'bg-white text-black shadow-lg'
+                                        : 'bg-black/40 text-white/80 backdrop-blur-md'
+                                        } `}
+                                >
+                                    {category === 'all' ? 'Todo' : category}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -516,57 +526,59 @@ export default function InventoryClient() {
                     )}
 
                     {/* MOBILE VIEW - Always shown on mobile, independent of viewMode */}
-                    <div className="md:hidden bg-[#F1F1F1] rounded-xl p-2.5 border-[0.5px] border-[#e0e0e0] mt-4">
-                        {paginatedProducts.map((product) => (
-                            <div
-                                key={product.id}
-                                onClick={() => {
-                                    setSelectedProduct(product);
-                                    setIsModalOpen(true);
-                                }}
-                                className="bg-white rounded-lg p-2.5 border-[0.5px] border-[#e0e0e0] flex items-center mb-2 last:mb-0 active:opacity-80 transition-opacity"
-                            >
-                                <img
-                                    src={product.image || 'https://via.placeholder.com/80'}
-                                    alt={product.name}
-                                    className="w-20 h-20 rounded-[10px] object-cover mr-2.5"
-                                />
+                    <div className="md:hidden relative">
+                        <div className="bg-gray-100 dark:bg-zinc-950 rounded-xl p-2.5 mt-4 pb-20">
+                            {paginatedProducts.map((product) => (
+                                <div
+                                    key={product.id}
+                                    onClick={() => {
+                                        setSelectedProduct(product);
+                                        setIsModalOpen(true);
+                                    }}
+                                    className="bg-white dark:bg-zinc-900 rounded-lg p-2.5 flex items-center mb-2 last:mb-0 active:opacity-80 transition-opacity text-foreground shadow-sm"
+                                >
+                                    <img
+                                        src={product.image || 'https://via.placeholder.com/80'}
+                                        alt={product.name}
+                                        className="w-20 h-20 rounded-[10px] object-cover mr-2.5"
+                                    />
 
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex justify-between items-center mb-[5px]">
-                                        <h3 className="text-[16px] font-semibold text-[#1c1c1e] flex-1 mr-2.5 line-clamp-2">
-                                            {product.nameEs || product.name}
-                                        </h3>
-                                        <span className="text-[16px] text-[#1c1c1e]">
-                                            ${product.price.toLocaleString('en-US', {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2
-                                            })}
-                                        </span>
-                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-center mb-[5px]">
+                                            <h3 className="text-[16px] font-semibold text-card-foreground flex-1 mr-2.5 line-clamp-2">
+                                                {product.nameEs || product.name}
+                                            </h3>
+                                            <span className="text-[16px] text-card-foreground">
+                                                ${product.price.toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2
+                                                })}
+                                            </span>
+                                        </div>
 
-                                    <p className="text-[14px] text-[#8e8e93]">
-                                        {product.barcode || product.sku}
-                                    </p>
+                                        <p className="text-[14px] text-muted-foreground">
+                                            {product.barcode || product.sku}
+                                        </p>
 
-                                    <div className="flex justify-between items-center mt-1">
-                                        <span className="text-[14px] text-[#8e8e93]">
-                                            {product.category || 'N/A'}
-                                        </span>
-                                        <div className="flex items-center">
-                                            <div
-                                                className="px-3 h-6 rounded-xl flex items-center justify-center"
-                                                style={getStockBadgeStyle(product.stock)}
-                                            >
-                                                <span className="text-[12px] font-medium">
-                                                    Stock: {product.stock}
-                                                </span>
+                                        <div className="flex justify-between items-center mt-1">
+                                            <span className="text-[14px] text-muted-foreground">
+                                                {product.category || 'N/A'}
+                                            </span>
+                                            <div className="flex items-center">
+                                                <div
+                                                    className={`px-3 h-6 rounded-xl flex items-center justify-center ${getStockBadgeClass(product.stock)}`}
+                                                >
+                                                    <span className="text-[12px] font-medium">
+                                                        Stock: {product.stock}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
+
                     </div>
 
                     {viewMode === 'compact' && (
@@ -575,9 +587,9 @@ export default function InventoryClient() {
                                 <div
                                     key={product.id}
                                     onClick={() => router.push(`/inventory/${product.id}`)}
-                                    className="bg-white rounded-xl p-2.5 shadow-sm border border-[#3C3C43]/5 cursor-pointer hover:border-[#007AFF]/30 hover:shadow-md transition-all group flex items-center gap-3 active:scale-[0.98] duration-100"
+                                    className="bg-white rounded-xl p-2.5 shadow-sm cursor-pointer hover:shadow-md transition-all group flex items-center gap-3 active:scale-[0.98] duration-100"
                                 >
-                                    <div className="w-14 h-14 rounded-lg bg-[#F2F2F7] flex-shrink-0 overflow-hidden border border-[#3C3C43]/5 relative">
+                                    <div className="w-14 h-14 rounded-lg bg-[#F2F2F7] flex-shrink-0 overflow-hidden relative">
                                         {product.image ? (
                                             <img
                                                 src={product.image}
@@ -683,19 +695,12 @@ export default function InventoryClient() {
                 </div>
             )}
 
-            {/* Scanner Button (FAB) */}
-            <button
-                onClick={() => setShowScanner(true)}
-                className="fixed bottom-8 right-8 w-14 h-14 bg-[#007AFF] text-white rounded-full shadow-lg shadow-blue-500/30 flex items-center justify-center hover:bg-[#0056b3] transition-all hover:scale-110 active:scale-95 z-50 md:hidden"
-                title="Scan Barcode"
-            >
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
-            </button>
+            {/* Scanner Button (FAB) REMOVED as per user request */}
             <button
                 onClick={() => setShowScanner(true)}
                 className="hidden md:flex fixed bottom-8 right-8 bg-[#007AFF] text-white rounded-xl shadow-lg shadow-blue-500/30 items-center justify-center gap-2 px-6 py-3 hover:bg-[#0056b3] transition-all hover:scale-105 active:scale-95 z-50"
             >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h2v16H3V4zm5 0h2v16H8V4zm5 0h2v16h-2V4zm5 0h3v16h-3V4z" /></svg>
                 <span className="font-semibold">Scan Barcode</span>
             </button>
 
@@ -716,18 +721,18 @@ export default function InventoryClient() {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 md:hidden">
                     {/* Backdrop */}
                     <div
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                        className="absolute inset-0 bg-black/60 animate-in fade-in duration-200"
                         onClick={() => setIsModalOpen(false)}
                     />
 
                     {/* Modal Content - 90% width like Odoo */}
-                    <div className="bg-white rounded-[15px] w-[90%] p-5 shadow-2xl relative animate-in zoom-in-95 duration-200 max-h-[85vh] overflow-y-auto">
+                    <div className="bg-white dark:bg-zinc-900 rounded-[15px] w-[90%] p-5 shadow-2xl relative animate-in zoom-in-95 duration-200 max-h-[85vh] overflow-y-auto">
                         {/* Close Button - 36x36 solid black */}
                         <button
                             onClick={() => setIsModalOpen(false)}
-                            className="absolute right-[15px] top-[15px] z-10 w-9 h-9 bg-black rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-lg"
+                            className="absolute right-[15px] top-[15px] z-10 w-9 h-9 bg-foreground rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-lg"
                         >
-                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 text-background" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
@@ -743,13 +748,13 @@ export default function InventoryClient() {
                         <div className="flex justify-between items-start w-full mb-2.5">
                             {/* Name - 60% width */}
                             <div className="w-[60%] pr-2.5">
-                                <h2 className="text-[24px] font-semibold text-[#1C1C1E] leading-7 flex-wrap">
+                                <h2 className="text-[24px] font-semibold text-gray-900 dark:text-white leading-7 flex-wrap">
                                     {selectedProduct.nameEs || selectedProduct.name}
                                 </h2>
                             </div>
                             {/* Price - 40% width, right aligned */}
                             <div className="w-[40%] flex items-end flex-col">
-                                <span className="text-[24px] font-medium text-[#1C1C1E]">
+                                <span className="text-[24px] font-medium text-gray-900 dark:text-white">
                                     ${selectedProduct.price.toLocaleString('en-US', {
                                         minimumFractionDigits: 2,
                                         maximumFractionDigits: 2
@@ -763,8 +768,8 @@ export default function InventoryClient() {
                             <button
                                 onClick={() => setModalTab('info')}
                                 className={`flex-1 py-2 rounded-lg text-[14px] font-semibold transition-all ${modalTab === 'info'
-                                    ? 'bg-[#007AFF] text-white'
-                                    : 'bg-gray-100 text-gray-600'
+                                    ? 'bg-white text-black shadow-md'
+                                    : 'bg-zinc-800 text-gray-400 hover:bg-zinc-700'
                                     }`}
                             >
                                 Info
@@ -772,8 +777,8 @@ export default function InventoryClient() {
                             <button
                                 onClick={() => setModalTab('count')}
                                 className={`flex-1 py-2 rounded-lg text-[14px] font-semibold transition-all ${modalTab === 'count'
-                                    ? 'bg-[#007AFF] text-white'
-                                    : 'bg-gray-100 text-gray-600'
+                                    ? 'bg-white text-black shadow-md'
+                                    : 'bg-zinc-800 text-gray-400 hover:bg-zinc-700'
                                     }`}
                             >
                                 Contar
@@ -784,18 +789,17 @@ export default function InventoryClient() {
                         {modalTab === 'info' ? (
                             <>
                                 {/* Barcode */}
-                                <p className="text-[16px] text-[#8e8e93] mb-0">
+                                <p className="text-[16px] text-muted-foreground mb-0">
                                     {selectedProduct.barcode || selectedProduct.sku}
                                 </p>
 
                                 {/* Bottom row: Measures and Stock */}
                                 <div className="flex justify-between items-center w-full mt-1">
-                                    <span className="text-[14px] text-[#1C1C1E]">
+                                    <span className="text-[14px] text-gray-900 dark:text-white">
                                         Medidas: {selectedProduct.category || 'N/A'}
                                     </span>
                                     <div
-                                        className="px-3 h-6 rounded-xl flex items-center justify-center"
-                                        style={getStockBadgeStyle(selectedProduct.stock)}
+                                        className={`px-3 h-6 rounded-xl flex items-center justify-center ${getStockBadgeClass(selectedProduct.stock)}`}
                                     >
                                         <span className="text-[12px] font-medium">
                                             Stock: {selectedProduct.stock}
@@ -804,15 +808,35 @@ export default function InventoryClient() {
                                 </div>
 
                                 {/* Action Button */}
-                                <button
-                                    onClick={handleRemotePrint}
-                                    className="w-full bg-[#007AFF] text-white py-3 rounded-[10px] font-semibold text-[16px] flex items-center justify-center gap-2 mt-4 active:scale-[0.98] transition-transform"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                    </svg>
-                                    Imprimir en Estación
-                                </button>
+                                {/* Action Button */}
+                                <div className="flex items-center gap-3 mt-4">
+                                    <div className="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-xl p-1 shrink-0 h-[52px]">
+                                        <button
+                                            onClick={() => setPrintCopies(Math.max(1, printCopies - 1))}
+                                            className="w-10 h-full flex items-center justify-center text-gray-500 dark:text-gray-400 active:bg-gray-200 dark:active:bg-zinc-700 rounded-lg transition-colors"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
+                                        </button>
+                                        <div className="w-8 flex justify-center text-[18px] font-bold text-gray-900 dark:text-white tabular-nums">
+                                            {printCopies}
+                                        </div>
+                                        <button
+                                            onClick={() => setPrintCopies(printCopies + 1)}
+                                            className="w-10 h-full flex items-center justify-center text-gray-500 dark:text-gray-400 active:bg-gray-200 dark:active:bg-zinc-700 rounded-lg transition-colors"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                                        </button>
+                                    </div>
+                                    <button
+                                        onClick={handleRemotePrint}
+                                        className="flex-1 bg-[#007AFF] text-white h-[52px] rounded-xl font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg shadow-blue-500/20"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        </svg>
+                                        Imprimir
+                                    </button>
+                                </div>
                             </>
                         ) : (
                             <>
@@ -820,15 +844,15 @@ export default function InventoryClient() {
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         {/* System Stock */}
-                                        <div className="flex flex-col items-center p-4 rounded-xl bg-[#F2F2F7]/50">
-                                            <span className="text-[11px] font-semibold text-[#8E8E93] uppercase mb-1">Sistema</span>
-                                            <span className="text-[32px] font-bold text-[#1C1C1E]">{selectedProduct.stock}</span>
+                                        <div className="flex flex-col items-center p-4 rounded-xl bg-gray-100 dark:bg-zinc-800">
+                                            <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Sistema</span>
+                                            <span className="text-[32px] font-bold text-gray-900 dark:text-white">{selectedProduct.stock}</span>
                                         </div>
 
                                         {/* Physical Count Input */}
-                                        <div className="flex flex-col items-center p-4 rounded-xl bg-white border-2 border-[#007AFF] relative">
+                                        <div className="flex flex-col items-center p-4 rounded-xl bg-white dark:bg-zinc-800 border-2 border-[#007AFF] relative">
                                             <span className="text-[11px] font-bold text-[#007AFF] uppercase mb-1">Físico</span>
-                                            <div className="text-[32px] font-bold text-[#1C1C1E] leading-none">
+                                            <div className="text-[32px] font-bold text-gray-900 dark:text-white leading-none">
                                                 {physicalCount || '0'}
                                             </div>
                                             {countStatus === 'matching' && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#34C759] animate-pulse" />}

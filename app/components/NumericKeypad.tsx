@@ -28,7 +28,7 @@ export default function NumericKeypad({
                             <button
                                 key={key}
                                 onClick={onClear}
-                                className="h-16 rounded-xl bg-red-100 text-red-600 text-xl font-bold active:scale-95 transition-transform flex items-center justify-center shadow-sm"
+                                className="h-16 rounded-xl bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xl font-bold active:scale-95 transition-transform flex items-center justify-center shadow-sm"
                             >
                                 C
                             </button>
@@ -39,7 +39,7 @@ export default function NumericKeypad({
                             <button
                                 key={key}
                                 onClick={onDelete}
-                                className="h-16 rounded-xl bg-gray-100 text-gray-600 active:scale-95 transition-transform flex items-center justify-center shadow-sm"
+                                className="h-16 rounded-xl bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 active:scale-95 transition-transform flex items-center justify-center shadow-sm"
                             >
                                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
@@ -51,7 +51,7 @@ export default function NumericKeypad({
                         <button
                             key={key}
                             onClick={() => onKeyPress(key)}
-                            className="h-16 rounded-xl bg-white border border-gray-200 text-gray-900 text-2xl font-semibold active:scale-95 transition-transform shadow-sm hover:bg-gray-50 bg-[#F2F2F7]"
+                            className="h-16 rounded-xl bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-white text-2xl font-semibold active:scale-95 transition-transform shadow-sm hover:bg-gray-50 dark:hover:bg-zinc-700 bg-[#F2F2F7] dark:bg-zinc-800"
                         >
                             {key}
                         </button>
@@ -69,7 +69,7 @@ export default function NumericKeypad({
                     onClick={onConfirm}
                     disabled={isConfirmDisabled}
                     className={`nav-button-primary w-full mt-4 h-14 rounded-xl font-bold text-lg shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 ${isConfirmDisabled
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        ? 'bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                         : 'bg-[#007AFF] text-white hover:bg-[#0056b3]'
                         }`}
                 >

@@ -78,19 +78,19 @@ html {
     --popover: 255 255 255;
     --popover-foreground: 29 27 32;
 
-    /* Primary - M3 Purple */
-    --primary: 103 80 164;
-    /* #6750A4 */
+    /* Primary - iOS Blue #007AFF */
+    --primary: 0 122 255;
     --primary-foreground: 255 255 255;
 
     /* Secondary */
-    --secondary: 232 222 248;
-    /* M3 Secondary Container */
-    --secondary-foreground: 29 25 43;
+    --secondary: 242 242 247;
+    /* iOS System Gray 6 */
+    --secondary-foreground: 29 27 32;
 
     /* Muted / Surface Variant */
-    --muted: 244 239 244;
-    --muted-foreground: 73 69 79;
+    --muted: 242 242 247;
+    --muted-foreground: 142 142 147;
+    /* iOS System Gray */
 
     /* Accent / Tertiary */
     --accent: 73 37 50;
@@ -98,52 +98,54 @@ html {
     --accent-foreground: 255 255 255;
 
     /* Destructive */
-    --destructive: 179 38 30;
-    /* M3 Error */
+    --destructive: 255 59 48;
+    /* iOS System Red */
     --destructive-foreground: 255 255 255;
 
     /* Borders & Inputs */
-    --border: 202 196 208;
-    /* M3 Outline */
-    --input: 202 196 208;
-    --ring: 103 80 164;
+    --border: 229 229 234;
+    /* iOS System Gray 5 */
+    --input: 229 229 234;
+    --ring: 0 122 255;
     /* Primary */
 
     --radius: 1.5rem;
 }
 
 .dark {
-    /* Dark Mode M3 Colors */
-    --background: 20 18 24;
-    --foreground: 230 225 229;
+    /* Dark Mode M3/iOS Colors */
+    --background: 0 0 0;
+    /* Pure Black for Contrast */
+    --foreground: 255 255 255;
 
-    --card: 29 27 32;
-    /* Surface Container High */
-    --card-foreground: 230 225 229;
+    --card: 63 63 70;
+    /* Zinc 700 - Much lighter for clear visual separation */
+    --card-foreground: 255 255 255;
 
-    --popover: 29 27 32;
-    --popover-foreground: 230 225 229;
+    --popover: 63 63 70;
+    --popover-foreground: 255 255 255;
 
-    --primary: 208 188 255;
-    /* M3 Primary Dark */
-    --primary-foreground: 56 30 114;
+    --primary: 10 132 255;
+    /* iOS Dark Mode Blue */
+    --primary-foreground: 255 255 255;
 
-    --secondary: 74 68 88;
-    --secondary-foreground: 232 222 248;
+    --secondary: 18 18 18;
+    /* Very dark container background for maximum card contrast */
+    --secondary-foreground: 255 255 255;
 
-    --muted: 73 69 79;
-    --muted-foreground: 202 196 208;
+    --muted: 39 39 42;
+    --muted-foreground: 142 142 147;
 
-    --accent: 239 183 200;
-    --accent-foreground: 73 37 50;
+    --accent: 58 58 60;
+    --accent-foreground: 255 255 255;
 
-    --destructive: 242 184 181;
-    --destructive-foreground: 96 20 16;
+    --destructive: 255 69 58;
+    --destructive-foreground: 255 255 255;
 
-    --border: 73 69 79;
-    /* M3 Outline Variant */
-    --input: 73 69 79;
-    --ring: 208 188 255;
+    --border: 58 58 60;
+    /* iOS Separator Color */
+    --input: 58 58 60;
+    --ring: 10 132 255;
 }
 
 @layer base {
