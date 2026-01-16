@@ -527,7 +527,7 @@ export default function InventoryClient() {
 
                     {/* MOBILE VIEW - Always shown on mobile, independent of viewMode */}
                     <div className="md:hidden relative">
-                        <div className="bg-gray-100 dark:bg-zinc-950 rounded-xl p-2.5 mt-4 pb-20">
+                        <div className="bg-gray-100 dark:bg-zinc-950/50 rounded-xl p-2.5 mt-4 pb-20">
                             {paginatedProducts.map((product) => (
                                 <div
                                     key={product.id}
@@ -535,7 +535,7 @@ export default function InventoryClient() {
                                         setSelectedProduct(product);
                                         setIsModalOpen(true);
                                     }}
-                                    className="bg-white dark:bg-zinc-900 rounded-lg p-2.5 flex items-center mb-2 last:mb-0 active:opacity-80 active:scale-[0.99] transition-all text-foreground shadow-sm border border-transparent dark:border-white/5"
+                                    className="bg-white dark:bg-zinc-900 rounded-lg p-2.5 flex items-center mb-2 last:mb-0 active:opacity-80 active:scale-[0.99] transition-all text-foreground shadow-sm border border-transparent dark:border-white/10"
                                 >
                                     <img
                                         src={product.image || 'https://via.placeholder.com/80'}

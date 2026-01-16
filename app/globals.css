@@ -28,6 +28,8 @@ html {
     background-clip: content-box;
 }
 
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
     --font-sans: 'Roboto', system-ui, -apple-system, sans-serif;
     --font-mono: 'Roboto Mono', monospace;
@@ -64,7 +66,6 @@ html {
 /* Material Design 3 (M3) Color Tokens - Baseline Purple/base theme */
 :root {
     /* Surface / Background */
-    color-scheme: light;
     --background: 254 247 255;
     /* M3 Surface */
     --foreground: 29 27 32;
