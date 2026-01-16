@@ -601,7 +601,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                             <p className="text-[#8E8E93]">View only mode active.</p>
                         </div>
                     )}
-                </div>
-        </main>
-    );
+
+                </main>
+                );
 }
