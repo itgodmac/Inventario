@@ -51,7 +51,7 @@ export default function NumericKeypad({
                         <button
                             key={key}
                             onClick={() => onKeyPress(key)}
-                            className="h-16 rounded-xl bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-white text-2xl font-semibold active:scale-95 transition-transform shadow-sm hover:bg-gray-50 dark:hover:bg-zinc-700 bg-[#F2F2F7] dark:bg-zinc-800"
+                            className="h-16 rounded-xl bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-white text-2xl font-semibold active:scale-95 transition-transform shadow-sm hover:bg-gray-50 dark:hover:bg-zinc-700"
                         >
                             {key}
                         </button>

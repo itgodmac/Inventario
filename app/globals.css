@@ -114,8 +114,8 @@ html {
 
 .dark {
     /* Dark Mode M3/iOS Colors */
-    --background: 0 0 0;
-    /* Pure Black for Contrast */
+    --background: 9 9 11;
+    /* Zinc 950 - Softer than pure black */
     --foreground: 255 255 255;
 
     --card: 63 63 70;

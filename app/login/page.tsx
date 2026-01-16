@@ -95,21 +95,21 @@ export default function LoginPage() {
                                 currentTheme.name === 'MCA Corporation' ? 'MC' : 'R'}
                         </span>
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900 transition-all duration-500">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white transition-all duration-500">
                         {currentTheme.name}
                     </h1>
-                    <p className="text-gray-600 mt-1">Sign in to your account</p>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">Sign in to your account</p>
                 </div>
 
                 {/* Form */}
                 <div
                     ref={formRef}
-                    className="bg-white rounded-3xl p-8 border border-gray-200"
+                    className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-gray-200 dark:border-zinc-800"
                 >
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Email */}
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Email address
                             </label>
                             <input
@@ -118,7 +118,7 @@ export default function LoginPage() {
                                 required
                                 value={email}
                                 onChange={handleEmailChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 transition-all duration-300"
+                                className="w-full px-4 py-3 border border-gray-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 transition-all duration-300 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white"
                                 onFocus={(e) => e.target.style.borderColor = currentTheme.primary}
                                 onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                                 placeholder="you@company.com"
@@ -132,7 +132,7 @@ export default function LoginPage() {
 
                         {/* Password */}
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Password
                             </label>
                             <input
@@ -141,7 +141,7 @@ export default function LoginPage() {
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 transition-all"
+                                className="w-full px-4 py-3 border border-gray-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 transition-all bg-white dark:bg-zinc-800 text-gray-900 dark:text-white"
                                 onFocus={(e) => e.target.style.borderColor = currentTheme.primary}
                                 onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                                 placeholder="••••••••"
@@ -156,7 +156,7 @@ export default function LoginPage() {
                                     className="w-4 h-4 rounded border-gray-300 transition-all"
                                     style={{ accentColor: currentTheme.primary }}
                                 />
-                                <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                                <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Remember me</span>
                             </label>
                         </div>
 
@@ -181,7 +181,7 @@ export default function LoginPage() {
                 <div className="mt-6 text-center">
                     <Link
                         href="/"
-                        className="text-sm text-gray-600 hover:text-gray-900 transition-all inline-flex items-center gap-1"
+                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all inline-flex items-center gap-1"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />

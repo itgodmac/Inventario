@@ -115,14 +115,14 @@ export default function NewProductPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-gray-500">Generando ID...</div>
+            <div className="min-h-screen bg-gray-50 dark:bg-background flex items-center justify-center">
+                <div className="text-gray-500 dark:text-gray-400">Generando ID...</div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4">
+        <div className="min-h-screen bg-gray-50 dark:bg-background py-8 px-4">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
@@ -132,67 +132,67 @@ export default function NewProductPage() {
                     >
                         ← Cancelar
                     </button>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                         Nuevo Producto
                     </h1>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                         Completa la información del producto
                     </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Auto-generated IDs */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                        <h2 className="text-sm font-semibold text-gray-900 mb-4">Identificadores</h2>
+                    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm">
+                        <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Identificadores</h2>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs text-gray-600 mb-1">ID (Secuencial)</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">ID (Secuencial)</label>
                                 <input
                                     value={formData.id}
                                     disabled
-                                    className="w-full px-3 py-2 bg-gray-100 rounded-lg border border-gray-200 text-gray-700 font-mono"
+                                    className="w-full px-3 py-2 bg-gray-100 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-gray-300 font-mono"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-600 mb-1">Barcode (Editable)</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Barcode (Editable)</label>
                                 <input
                                     value={formData.barcode}
                                     onChange={(e) => handleChange('barcode', e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none font-mono"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-300 dark:border-zinc-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none font-mono text-gray-900 dark:text-white"
                                 />
                             </div>
                         </div>
                     </div>
 
                     {/* Names */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                        <h2 className="text-sm font-semibold text-gray-900 mb-4">Nombres</h2>
+                    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm">
+                        <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Nombres</h2>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-xs text-gray-600 mb-1">Nombre Inglés *</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Nombre Inglés *</label>
                                 <input
                                     required
                                     value={formData.nameEn}
                                     onChange={(e) => handleChange('nameEn', e.target.value)}
                                     placeholder="WEAR PLATE DN250 CARBIDE"
-                                    className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-300 dark:border-zinc-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-600 mb-1">Nombre Español</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Nombre Español</label>
                                 <input
                                     value={formData.nameEs}
                                     onChange={(e) => handleChange('nameEs', e.target.value)}
                                     placeholder="ANTIFAZ DN250 CARBURO"
-                                    className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-300 dark:border-zinc-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white"
                                 />
                             </div>
                         </div>
                     </div>
 
                     {/* Image Upload */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                        <h2 className="text-sm font-semibold text-gray-900 mb-4">Imagen del Producto</h2>
+                    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm">
+                        <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Imagen del Producto</h2>
                         <ImageUpload
                             onUpload={setImageUrl}
                             currentImage={imageUrl}
@@ -201,56 +201,56 @@ export default function NewProductPage() {
                     </div>
 
                     {/* Details */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                        <h2 className="text-sm font-semibold text-gray-900 mb-4">Detalles Adicionales</h2>
+                    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm">
+                        <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Detalles Adicionales</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="md:col-span-2">
-                                <label className="block text-xs text-gray-600 mb-1">Descripción</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Descripción</label>
                                 <textarea
                                     value={formData.description}
                                     onChange={(e) => handleChange('description', e.target.value)}
                                     rows={2}
-                                    className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none resize-none"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-300 dark:border-zinc-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none resize-none text-gray-900 dark:text-white"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-600 mb-1">UVA Nombre</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">UVA Nombre</label>
                                 <input
                                     value={formData.uvaNombre}
                                     onChange={(e) => handleChange('uvaNombre', e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-300 dark:border-zinc-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-600 mb-1">Item Code</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Item Code</label>
                                 <input
                                     value={formData.itemCode}
                                     onChange={(e) => handleChange('itemCode', e.target.value)}
                                     placeholder="10181938"
-                                    className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none font-mono"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-300 dark:border-zinc-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none font-mono text-gray-900 dark:text-white"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-600 mb-1">Uni Code</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Uni Code</label>
                                 <input
                                     value={formData.uniCode}
                                     onChange={(e) => handleChange('uniCode', e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none font-mono"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-300 dark:border-zinc-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none font-mono text-gray-900 dark:text-white"
                                 />
                             </div>
                         </div>
                     </div>
 
                     {/* Classification */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                        <h2 className="text-sm font-semibold text-gray-900 mb-4">Clasificación</h2>
+                    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm">
+                        <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Clasificación</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs text-gray-600 mb-1">Categoría</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Categoría</label>
                                 <select
                                     value={formData.category}
                                     onChange={(e) => handleChange('category', e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-300 dark:border-zinc-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white"
                                 >
                                     {CATEGORIAS.map(cat => (
                                         <option key={cat} value={cat}>{cat}</option>
@@ -258,11 +258,11 @@ export default function NewProductPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-600 mb-1">Montaje</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Montaje</label>
                                 <select
                                     value={formData.montaje}
                                     onChange={(e) => handleChange('montaje', e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-300 dark:border-zinc-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white"
                                 >
                                     {MONTAJE.map(m => (
                                         <option key={m} value={m}>{m}</option>
@@ -270,11 +270,11 @@ export default function NewProductPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-600 mb-1">Tipo</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Tipo</label>
                                 <select
                                     value={formData.tipo}
                                     onChange={(e) => handleChange('tipo', e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-300 dark:border-zinc-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white"
                                 >
                                     {TIPO.map(t => (
                                         <option key={t} value={t}>{t}</option>
@@ -282,11 +282,11 @@ export default function NewProductPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-600 mb-1">Status</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Status</label>
                                 <select
                                     value={formData.status}
                                     onChange={(e) => handleChange('status', e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-300 dark:border-zinc-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white"
                                 >
                                     {STATUS_OPTIONS.map(s => (
                                         <option key={s} value={s}>{s}</option>
@@ -297,42 +297,42 @@ export default function NewProductPage() {
                     </div>
 
                     {/* Stock & Pricing */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                        <h2 className="text-sm font-semibold text-gray-900 mb-4">Inventario y Precios</h2>
+                    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm">
+                        <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Inventario y Precios</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-xs text-gray-600 mb-1">Stock Inicial</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Stock Inicial</label>
                                 <input
                                     type="number"
                                     value={formData.stock}
                                     onChange={(e) => handleChange('stock', e.target.value)}
-                                    className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-right font-mono"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-300 dark:border-zinc-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-right font-mono text-gray-900 dark:text-white"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-600 mb-1">Precio Fábrica ($ ZG)</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Precio Fábrica ($ ZG)</label>
                                 <input
                                     type="number"
                                     step="0.01"
                                     value={formData.priceZG}
                                     onChange={(e) => handleChange('priceZG', e.target.value)}
                                     placeholder="120.00"
-                                    className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-right font-mono"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-300 dark:border-zinc-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-right font-mono text-gray-900 dark:text-white"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-600 mb-1">Precio Competencia ($ Oth)</label>
+                                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Precio Competencia ($ Oth)</label>
                                 <input
                                     type="number"
                                     step="0.01"
                                     value={formData.priceOth}
                                     onChange={(e) => handleChange('priceOth', e.target.value)}
                                     placeholder="500.00"
-                                    className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-right font-mono"
+                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-300 dark:border-zinc-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-right font-mono text-gray-900 dark:text-white"
                                 />
                             </div>
                         </div>
-                        <p className="text-xs text-gray-500 mt-3">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
                             El precio final ($ Venta) se calculará automáticamente basado en la configuración global.
                         </p>
                     </div>
@@ -342,7 +342,7 @@ export default function NewProductPage() {
                         <button
                             type="button"
                             onClick={() => router.push('/inventory')}
-                            className="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+                            className="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700"
                         >
                             Cancelar
                         </button>

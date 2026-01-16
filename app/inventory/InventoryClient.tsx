@@ -358,9 +358,9 @@ export default function InventoryClient() {
                                 <button
                                     key={category}
                                     onClick={() => setCategoryFilter(category || 'all')}
-                                    className={`px-4 py-1.5 rounded-full text-[14px] font-medium whitespace-nowrap transition-all ${categoryFilter === category
-                                        ? 'bg-white dark:bg-zinc-800 text-black dark:text-white shadow-lg'
-                                        : 'bg-black/40 text-white/80 backdrop-blur-md'
+                                    className={`px-4 py-1.5 rounded-full text-[14px] font-medium whitespace-nowrap transition-all border border-transparent ${categoryFilter === category
+                                        ? 'bg-white dark:bg-zinc-800 text-black dark:text-white shadow-sm'
+                                        : 'bg-black/5 dark:bg-white/10 text-black/60 dark:text-white/80 hover:bg-black/10 dark:hover:bg-white/20'
                                         } `}
                                 >
                                     {category === 'all' ? 'Todo' : category}
@@ -535,7 +535,7 @@ export default function InventoryClient() {
                                         setSelectedProduct(product);
                                         setIsModalOpen(true);
                                     }}
-                                    className="bg-white dark:bg-zinc-900 rounded-lg p-2.5 flex items-center mb-2 last:mb-0 active:opacity-80 transition-opacity text-foreground shadow-sm"
+                                    className="bg-white dark:bg-zinc-900 rounded-lg p-2.5 flex items-center mb-2 last:mb-0 active:opacity-80 active:scale-[0.99] transition-all text-foreground shadow-sm border border-transparent dark:border-white/5"
                                 >
                                     <img
                                         src={product.image || 'https://via.placeholder.com/80'}
@@ -769,7 +769,7 @@ export default function InventoryClient() {
                                 onClick={() => setModalTab('info')}
                                 className={`flex-1 py-2 rounded-lg text-[14px] font-semibold transition-all ${modalTab === 'info'
                                     ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-md'
-                                    : 'bg-zinc-800 text-gray-400 hover:bg-zinc-700'
+                                    : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                                     }`}
                             >
                                 Info
@@ -778,7 +778,7 @@ export default function InventoryClient() {
                                 onClick={() => setModalTab('count')}
                                 className={`flex-1 py-2 rounded-lg text-[14px] font-semibold transition-all ${modalTab === 'count'
                                     ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-md'
-                                    : 'bg-zinc-800 text-gray-400 hover:bg-zinc-700'
+                                    : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                                     }`}
                             >
                                 Contar
