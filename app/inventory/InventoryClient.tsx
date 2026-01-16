@@ -290,7 +290,7 @@ export default function InventoryClient() {
     return (
         <main ref={container} className="min-h-screen bg-background pb-24 font-sans selection:bg-primary/20 selection:text-primary">
             {/* MOBILE HEADER - Standard Sticky */}
-            <div className="md:hidden sticky top-0 z-50 bg-white dark:bg-zinc-950 shadow-sm transition-all">
+            <div className="md:hidden sticky top-0 z-50 bg-white dark:bg-zinc-950 transition-all">
                 <div className="px-4 pb-3 pt-[max(16px,env(safe-area-inset-top))]">
                     {/* Title and Icon Buttons */}
                     <div className="flex items-center justify-between mb-3">
