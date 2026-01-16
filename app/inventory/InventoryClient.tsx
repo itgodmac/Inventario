@@ -292,9 +292,9 @@ export default function InventoryClient() {
             {/* MOBILE HEADER - Odoo Style - Sticky */}
             <div className="md:hidden sticky top-0 z-50">
                 <GradualBlur
-                    className="absolute top-0 left-0 right-0 pointer-events-none"
+                    className="absolute -top-12 left-0 right-0 pointer-events-none"
                     position="top"
-                    height="160px"
+                    height="180px"
                     strength={2}
                     opacity={1}
                     zIndex={-1}
