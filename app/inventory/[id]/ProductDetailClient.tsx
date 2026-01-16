@@ -364,14 +364,24 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                         </h3>
                         <span className="text-[12px] font-medium text-[#007AFF]/70 uppercase tracking-wider">Ready to Scan</span>
                     </div>
-                    <div className="p-5 md:p-6">
-                        <div className="grid grid-cols-2 gap-4 md:gap-8 items-center">
-                            {/* System Stock Display */}
-                            <div className="flex flex-col items-center p-4 rounded-2xl bg-[#F2F2F7] border border-[#3C3C43]/5 opacity-60">
-                                <span className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide mb-1">Teórico (System)</span>
-                                <span className="text-[32px] md:text-[40px] font-bold text-[#1C1C1E]">{product.stock}</span>
-                            </div>
+    // Mobile detection
+                    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+                    checkMobile();
+                    window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
+                    // ... handleCountChange and handleConfirmCount definitions ...
+
+                    return (
+                    // ... (lines 130-366 omitted)
+                    <div className="grid grid-cols-2 gap-4 md:gap-8 items-center">
+                        {/* System Stock Display */}
+                        <div className="flex flex-col items-center p-4 rounded-2xl bg-[#F2F2F7] border border-[#3C3C43]/5 opacity-60">
+                            <span className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide mb-1">Teórico (System)</span>
+                            <span className="text-[32px] md:text-[40px] font-bold text-[#1C1C1E]">{product.stock}</span>
                         </div>
 
                         {/* Physical Input */}
@@ -379,12 +389,14 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                             <span className="text-[13px] font-bold text-[#007AFF] uppercase tracking-wide mb-1">Físico (Real)</span>
                             <input
                                 ref={inputRef}
-                                type="text"
+                                type="text" // Change to text so inputMode works better
                                 inputMode="numeric"
                                 value={physicalCount}
-                                onChange={(e) => handleCountChange(e.target.value)} // Keep for fallback typing
-                                readOnly={true} // Prevent mobile keyboard
-                                onFocus={(e) => e.target.blur()} // Double ensure no keyboard
+                                onChange={(e) => handleCountChange(e.target.value)}
+                                // On Mobile: ReadOnly to force use of our keypad + prevent keyboard popup
+                                // On Desktop: Editable so physical keyboard works
+                                readOnly={isMobile}
+                                onFocus={(e) => { if (isMobile) e.target.blur(); }}
                                 placeholder="0"
                                 className="w-full text-center text-[48px] font-bold text-[#1C1C1E] focus:outline-none placeholder-[#E5E5EA] py-2 leading-none bg-transparent"
                             />
@@ -393,14 +405,30 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                         </div>
                     </div>
 
-                    {/* Custom Numeric Keypad */}
-                    <NumericKeypad
-                        onKeyPress={(key) => handleCountChange(physicalCount + key)}
-                        onDelete={() => handleCountChange(physicalCount.slice(0, -1))}
-                        onClear={() => handleCountChange('')}
-                        onConfirm={handleConfirmCount}
-                        isConfirmDisabled={physicalCount === '' || isUpdating}
-                    />
+                    {/* Custom Numeric Keypad - HIDDEN ON DESKTOP */}
+                    <div className="md:hidden">
+                        <NumericKeypad
+                            onKeyPress={(key) => handleCountChange(physicalCount + key)}
+                            onDelete={() => handleCountChange(physicalCount.slice(0, -1))}
+                            onClear={() => handleCountChange('')}
+                            onConfirm={handleConfirmCount}
+                            isConfirmDisabled={physicalCount === '' || isUpdating}
+                        />
+                    </div>
+
+                    {/* Desktop Confirm Button (only shows on Desktop) */}
+                    <div className="hidden md:block mt-6">
+                        <button
+                            onClick={handleConfirmCount}
+                            disabled={physicalCount === ''}
+                            className={`w-full py-3.5 rounded-xl font-bold text-[16px] shadow-sm transition-all active:scale-[0.98] ${physicalCount === ''
+                                ? 'bg-[#F2F2F7] text-[#C7C7CC] cursor-not-allowed'
+                                : 'bg-[#007AFF] text-white hover:bg-[#007AFF]/90 shadow-[#007AFF]/30'
+                                }`}
+                        >
+                            {isUpdating ? 'Guardando...' : 'Confirmar Conteo / Confirm Count'}
+                        </button>
+                    </div>
                 </div>
             </div>
 
