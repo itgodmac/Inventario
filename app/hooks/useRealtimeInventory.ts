@@ -1,19 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import useSWR from 'swr';
 
-interface Product {
-    id: string;
-    name: string;
-    nameEn: string | null;
-    nameEs: string | null;
-    sku: string | null;
-    barcode: string | null;
-    category: string | null;
-    stock: number;
-    price: number;
-    status: string;
-    image: string | null;
-}
+import { Product } from '@/app/lib/types';
 
 interface InventoryEvent {
     type: 'STOCK_UPDATE' | 'PRODUCT_UPDATE' | 'CONNECTED';
