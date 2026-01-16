@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useMemo, useEffect, Suspense } from 'react';
+import React, { useState, useRef, useMemo, useEffect, Suspense, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -196,7 +196,7 @@ export default function InventoryClient() {
                 toast.success('Inventario actualizado');
                 router.refresh();
                 setPhysicalCount('');
-                setIsModalOpen(false);
+                // setIsModalOpen(false); // Keep open for continuous workflow
             } else {
                 throw new Error(data.message || 'Error desconocido');
             }
@@ -228,7 +228,7 @@ export default function InventoryClient() {
         }
     };
 
-    const handleScanSuccess = async (code: string) => {
+    const handleScanSuccess = useCallback(async (code: string) => {
         setShowScanner(false);
         // Products are local state now, instant lookup
         const product = (products || []).find(p =>
@@ -238,12 +238,13 @@ export default function InventoryClient() {
         );
 
         if (product) {
-            router.push(`/ inventory / ${product.id} `);
-            toast.success('Product found!');
+            setSelectedProduct(product);
+            setIsModalOpen(true);
+            toast.success('Producto encontrado');
         } else {
-            toast.error(`Producto no encontrado: ${code} `);
+            toast.error(`Producto no encontrado: ${code}`);
         }
-    };
+    }, [products]);
 
     // --- Barcode Scanner Keyboard Listener ---
     useEffect(() => {
@@ -286,7 +287,7 @@ export default function InventoryClient() {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [products, router]); // Re-bind if products changes so we have latest list
+    }, [handleScanSuccess]); // Depend on the stable callback
 
     return (
         <main ref={container} className="min-h-screen bg-[#F2F2F7] pb-24 font-sans selection:bg-blue-100 selection:text-blue-900">
@@ -472,7 +473,7 @@ export default function InventoryClient() {
                                         </thead>
                                         <tbody className="divide-y divide-[#3C3C43]/5">
                                             {paginatedProducts.map((product) => (
-                                                <tr key={product.id} className="cursor-pointer hover:bg-[#F2F2F7]/50 transition-colors group" onClick={() => router.push(`/ inventory / ${product.id} `)}>
+                                                <tr key={product.id} className="cursor-pointer hover:bg-[#F2F2F7]/50 transition-colors group" onClick={() => router.push(`/inventory/${product.id}`)}>
                                                     <td className="px-4 py-3">
                                                         <div className="flex items-center gap-3">
                                                             <div className="w-10 h-10 rounded-lg bg-[#F2F2F7] flex-shrink-0 overflow-hidden border border-[#3C3C43]/5">
@@ -573,7 +574,7 @@ export default function InventoryClient() {
                             {paginatedProducts.map((product) => (
                                 <div
                                     key={product.id}
-                                    onClick={() => router.push(`/ inventory / ${product.id} `)}
+                                    onClick={() => router.push(`/inventory/${product.id}`)}
                                     className="bg-white rounded-xl p-2.5 shadow-sm border border-[#3C3C43]/5 cursor-pointer hover:border-[#007AFF]/30 hover:shadow-md transition-all group flex items-center gap-3 active:scale-[0.98] duration-100"
                                 >
                                     <div className="w-14 h-14 rounded-lg bg-[#F2F2F7] flex-shrink-0 overflow-hidden border border-[#3C3C43]/5 relative">
@@ -615,7 +616,7 @@ export default function InventoryClient() {
                                 <div
                                     key={product.id}
                                     className="bg-white rounded-[16px] p-2.5 md:p-3 shadow-sm border border-[#3C3C43]/5 cursor-pointer hover:shadow-md transition-all group relative overflow-hidden flex flex-col active:scale-[0.98] duration-100"
-                                    onClick={() => router.push(`/ inventory / ${product.id} `)}
+                                    onClick={() => router.push(`/inventory/${product.id}`)}
                                 >
                                     <div className="aspect-square rounded-xl bg-[#F2F2F7] mb-2.5 md:mb-3 overflow-hidden border border-[#3C3C43]/5 relative">
                                         <img
