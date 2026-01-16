@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { useRealtimeInventory } from '@/app/hooks/useRealtimeInventory';
-import { Product } from '@/types/product';
+import { Product } from '@/app/lib/types';
 import NumericKeypad from '@/app/components/NumericKeypad';
 import Loading from './loading';
 import toast from 'react-hot-toast';
