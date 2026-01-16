@@ -602,6 +602,8 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                         </div>
                     )}
 
-                </main>
-                );
+                </div>
+            </div>
+        </main>
+    );
 }
