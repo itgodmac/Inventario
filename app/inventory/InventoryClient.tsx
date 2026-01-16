@@ -306,7 +306,7 @@ export default function InventoryClient() {
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setSearchVisible(!searchVisible)}
-                                className="w-12 h-12 rounded-full bg-white dark:bg-zinc-800 text-black dark:text-white flex items-center justify-center shadow-sm active:scale-95 transition-transform"
+                                className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-sm active:scale-95 transition-transform"
                             >
                                 {searchVisible ? (
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -316,7 +316,7 @@ export default function InventoryClient() {
                             </button>
                             <button
                                 onClick={() => setShowScanner(true)}
-                                className="w-12 h-12 rounded-full bg-white dark:bg-zinc-800 text-black dark:text-white flex items-center justify-center shadow-sm active:scale-95 transition-transform"
+                                className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-sm active:scale-95 transition-transform"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h2v16H3V4zm5 0h2v16H8V4zm5 0h2v16h-2V4zm5 0h3v16h-3V4z" />
@@ -359,7 +359,7 @@ export default function InventoryClient() {
                                     key={category}
                                     onClick={() => setCategoryFilter(category || 'all')}
                                     className={`px-4 py-1.5 rounded-full text-[14px] font-medium whitespace-nowrap transition-all border border-transparent ${categoryFilter === category
-                                        ? 'bg-white dark:bg-zinc-800 text-black dark:text-white shadow-sm'
+                                        ? 'bg-white text-black shadow-sm'
                                         : 'bg-black/5 dark:bg-white/10 text-black/60 dark:text-white/80 hover:bg-black/10 dark:hover:bg-white/20'
                                         } `}
                                 >
@@ -730,9 +730,9 @@ export default function InventoryClient() {
                         {/* Close Button - 36x36 solid black */}
                         <button
                             onClick={() => setIsModalOpen(false)}
-                            className="absolute right-[15px] top-[15px] z-10 w-9 h-9 bg-foreground rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-lg"
+                            className="absolute right-[15px] top-[15px] z-10 w-9 h-9 bg-white text-black rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-lg"
                         >
-                            <svg className="w-5 h-5 text-background" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
@@ -768,7 +768,7 @@ export default function InventoryClient() {
                             <button
                                 onClick={() => setModalTab('info')}
                                 className={`flex-1 py-2 rounded-lg text-[14px] font-semibold transition-all ${modalTab === 'info'
-                                    ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-md'
+                                    ? 'bg-white text-black shadow-md'
                                     : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                                     }`}
                             >
@@ -777,7 +777,7 @@ export default function InventoryClient() {
                             <button
                                 onClick={() => setModalTab('count')}
                                 className={`flex-1 py-2 rounded-lg text-[14px] font-semibold transition-all ${modalTab === 'count'
-                                    ? 'bg-white dark:bg-zinc-700 text-black dark:text-white shadow-md'
+                                    ? 'bg-white text-black shadow-md'
                                     : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                                     }`}
                             >
