@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from "./components/theme-provider";
@@ -6,6 +6,17 @@ import { ThemeProvider } from "./components/theme-provider";
 export const metadata: Metadata = {
     title: "RIPODOO - Next Generation ERP",
     description: "Advanced ERP System built with Next.js, featuring modern architecture and seamless workflows",
+};
+
+export const viewport: Viewport = {
+    themeColor: [
+        { media: '(prefers-color-scheme: light)', color: '#fef7ff' },
+        { media: '(prefers-color-scheme: dark)', color: '#09090b' },
+    ],
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
 };
 
 export default function RootLayout({

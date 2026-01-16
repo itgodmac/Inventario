@@ -64,6 +64,7 @@ html {
 /* Material Design 3 (M3) Color Tokens - Baseline Purple/base theme */
 :root {
     /* Surface / Background */
+    color-scheme: light;
     --background: 254 247 255;
     /* M3 Surface */
     --foreground: 29 27 32;
@@ -114,6 +115,7 @@ html {
 
 .dark {
     /* Dark Mode M3/iOS Colors */
+    color-scheme: dark;
     --background: 9 9 11;
     /* Zinc 950 - Softer than pure black */
     --foreground: 255 255 255;
