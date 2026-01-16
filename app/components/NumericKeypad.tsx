@@ -39,11 +39,11 @@ export default function NumericKeypad({
                             <button
                                 key={key}
                                 onClick={onDelete}
-                                className="h-16 rounded-xl bg-gray-100 text-gray-600 text-xl font-bold active:scale-95 transition-transform flex items-center justify-center shadow-sm"
+                                className="h-16 rounded-xl bg-gray-100 text-gray-600 active:scale-95 transition-transform flex items-center justify-center shadow-sm"
                             >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                                ⌫
+                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
+                                </svg>
                             </button>
                         );
                     }
@@ -69,8 +69,8 @@ export default function NumericKeypad({
                     onClick={onConfirm}
                     disabled={isConfirmDisabled}
                     className={`nav-button-primary w-full mt-4 h-14 rounded-xl font-bold text-lg shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 ${isConfirmDisabled
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-[#007AFF] text-white hover:bg-[#0056b3]'
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-[#007AFF] text-white hover:bg-[#0056b3]'
                         }`}
                 >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>

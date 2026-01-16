@@ -68,6 +68,11 @@ model StockLog {
   auditor     String   @default("TEST")
   timestamp   DateTime @default(now())
   
-  @@index([productId])
   @@index([timestamp])
+}
+
+model PrintQueue {
+  id        String   @id @default(uuid())
+  productId String
+  createdAt DateTime @default(now())
 }

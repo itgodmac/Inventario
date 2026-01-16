@@ -3,9 +3,11 @@
 import React, { useState, useRef, useMemo, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import useSWR from 'swr';
-import { useRealtimeInventory } from '../hooks/useRealtimeInventory';
-import { Product } from '../lib/google-sheets';
+import { useRealtimeInventory } from '@/app/hooks/useRealtimeInventory';
+import { Product } from '@/types/product';
+import NumericKeypad from '@/app/components/NumericKeypad';
 import Loading from './loading';
 import toast from 'react-hot-toast';
 import ExportModal from '../components/ExportModal';
@@ -37,12 +39,33 @@ export default function InventoryClient() {
     // UI state
     const [showScanner, setShowScanner] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [searchVisible, setSearchVisible] = useState(false); // Mobile search toggle
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'stock-asc' | 'stock-desc'>('stock-desc');
     const [isSortOpen, setIsSortOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'table' | 'grid' | 'compact'>('grid');
     // Export Modal State
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+    // Mobile Product Detail Modal State
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Sync selectedProduct with realtime updates
+    useEffect(() => {
+        if (selectedProduct && products) {
+            const fresh = products.find(p => p.id === selectedProduct.id);
+            if (fresh && fresh !== selectedProduct) {
+                setSelectedProduct(fresh);
+            }
+        }
+    }, [products, selectedProduct]);
+
+    // Quick Count State
+    const [physicalCount, setPhysicalCount] = useState<string>('');
+    const [countStatus, setCountStatus] = useState<'idle' | 'matching' | 'discrepancy'>('idle');
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [modalTab, setModalTab] = useState<'info' | 'count'>('info');
 
     // Pagination
     const currentPage = Number(searchParams.get('page')) || 1;
@@ -55,7 +78,7 @@ export default function InventoryClient() {
     const updatePage = (page: number) => {
         const params = new URLSearchParams(searchParams);
         params.set('page', page.toString());
-        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+        router.push(`${pathname}?${params.toString()} `, { scroll: false });
     };
 
     const isFirstRun = useRef(true);
@@ -67,7 +90,7 @@ export default function InventoryClient() {
         const params = new URLSearchParams(window.location.search);
         if (params.get('page') !== '1') {
             params.set('page', '1');
-            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+            router.replace(`${pathname}?${params.toString()} `, { scroll: false });
         }
     }, [searchQuery, categoryFilter, pathname, router]);
 
@@ -96,12 +119,112 @@ export default function InventoryClient() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
 
+    // Get unique categories from products
+    const categories = useMemo(() => {
+        if (!products) return ['all'];
+        const unique = Array.from(new Set(products.map(p => p.category)));
+        return ['all', ...unique];
+    }, [products]);
+
     const getStockColor = (status: string) => {
         switch (status) {
             case 'in-stock': return '#34C759';
             case 'low-stock': return '#FF9500';
             case 'out-of-stock': return '#FF3B30';
             default: return '#8E8E93';
+        }
+    };
+
+    // Get stock badge style based on actual stock number (Odoo style)
+    const getStockBadgeStyle = (stock: number) => {
+        if (stock === 0) {
+            return {
+                backgroundColor: '#ffe8e8',
+                color: '#ff0000'
+            };
+        }
+        if (stock <= 5) {
+            return {
+                backgroundColor: '#fff8e8',
+                color: '#ff8000'
+            };
+        }
+        return {
+            backgroundColor: '#e8ffe8',
+            color: '#008000'
+        };
+    };
+
+    // Quick Count Handlers  
+    const handleCountChange = (val: string) => {
+        setPhysicalCount(val);
+        if (!selectedProduct) return;
+
+        const count = parseInt(val);
+        if (isNaN(count)) {
+            setCountStatus('idle');
+            return;
+        }
+        if (count === selectedProduct.stock) {
+            setCountStatus('matching');
+        } else {
+            setCountStatus('discrepancy');
+        }
+    };
+
+    const handleConfirmCount = async () => {
+        if (!physicalCount || !selectedProduct) return;
+        setIsUpdating(true);
+
+        const payload = {
+            id: selectedProduct.id,
+            quantity: parseInt(physicalCount),
+            difference: parseInt(physicalCount) - selectedProduct.stock,
+            auditor: 'MOBILE'
+        };
+
+        try {
+            const response = await fetch('/api/inventory/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.status === 'success') {
+                toast.success('Inventario actualizado');
+                router.refresh();
+                setPhysicalCount('');
+                setIsModalOpen(false);
+            } else {
+                throw new Error(data.message || 'Error desconocido');
+            }
+        } catch (error: any) {
+            toast.error(`Error al guardar: ${error.message}`);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleRemotePrint = async () => {
+        if (!selectedProduct) return;
+        const toastId = toast.loading('Enviando a impresión...');
+        try {
+            const res = await fetch('/api/inventory/print-queue', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: selectedProduct.id })
+            });
+
+            if (res.ok) {
+                toast.success('Enviado a Estación de Impresión', { id: toastId });
+            } else {
+                toast.error('Error al enviar', { id: toastId });
+            }
+        } catch (e) {
+            console.error(e);
+            toast.error('Error de conexión', { id: toastId });
         }
     };
 
@@ -115,10 +238,10 @@ export default function InventoryClient() {
         );
 
         if (product) {
-            router.push(`/inventory/${product.id}`);
+            router.push(`/ inventory / ${product.id} `);
             toast.success('Product found!');
         } else {
-            toast.error(`Producto no encontrado: ${code}`);
+            toast.error(`Producto no encontrado: ${code} `);
         }
     };
 
@@ -146,7 +269,7 @@ export default function InventoryClient() {
             lastKeyTime = currentTime;
 
             // Debug log to see what the scanner is sending
-            console.log(`Key: ${char}, Buffer: ${buffer}`);
+            console.log(`Key: ${char}, Buffer: ${buffer} `);
 
             if (char === 'Enter' || char === 'Tab') {
                 if (buffer.length > 2) {
@@ -167,8 +290,78 @@ export default function InventoryClient() {
 
     return (
         <main ref={container} className="min-h-screen bg-[#F2F2F7] pb-24 font-sans selection:bg-blue-100 selection:text-blue-900">
-            {/* HEADER SHELL - Renders Instantly */}
-            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-4 md:mt-6 mb-4 md:mb-6">
+            {/* MOBILE HEADER - Odoo Style - Sticky */}
+            <div className="md:hidden bg-white px-4 pt-4 pb-3 sticky top-0 z-50">
+                {/* Title and Icon Buttons */}
+                <div className="flex items-center justify-between mb-3">
+                    <h1 className="text-[32px] font-semibold text-[#1C1C1E]">Inventario</h1>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setSearchVisible(!searchVisible)}
+                            className="w-12 h-12 rounded-full bg-[#1C1C1E] flex items-center justify-center shadow-sm active:scale-95 transition-transform"
+                        >
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </button>
+                        <button
+                            onClick={() => setShowScanner(true)}
+                            className="w-12 h-12 rounded-full bg-[#1C1C1E] flex items-center justify-center shadow-sm active:scale-95 transition-transform"
+                        >
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Toggleable Search Bar */}
+                {searchVisible && (
+                    <div className="mb-3 animate-in slide-in-from-top duration-200">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Buscar productos..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-4 pr-10 py-2.5 bg-[#F5F5F5] rounded-full focus:outline-none text-[#1C1C1E] placeholder-[#8E8E93] text-[15px]"
+                                autoFocus
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                                >
+                                    <svg className="w-5 h-5 text-[#8E8E93]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Category Filter Pills */}
+                <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
+                    <div className="flex gap-2 pb-2">
+                        {categories.map((category) => (
+                            <button
+                                key={category}
+                                onClick={() => setCategoryFilter(category || 'all')}
+                                className={`px-4 py-1.5 rounded-full text-[14px] font-medium whitespace-nowrap transition-all ${categoryFilter === category
+                                    ? 'bg-[#1C1C1E] text-white shadow-lg'
+                                    : 'bg-[#f8f8f8] text-[#666] border border-[#e0e0e0]'
+                                    } `}
+                            >
+                                {category === 'all' ? 'Todo' : category}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* DESKTOP HEADER - Original */}
+            <div className="hidden md:block max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-4 md:mt-6 mb-4 md:mb-6">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
                     <div className="relative group w-full md:max-w-md z-20">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8E8E93] group-focus-within:text-[#007AFF] transition-colors">
@@ -185,7 +378,6 @@ export default function InventoryClient() {
                             <div className="relative">
                                 <button
                                     onClick={() => setIsSortOpen(!isSortOpen)}
-                                    // Removed onBlur for better mobile touch handling
                                     className="p-1 hover:bg-[#F2F2F7] rounded-md transition-colors text-[#8E8E93]"
                                     title="Sort"
                                 >
@@ -195,10 +387,10 @@ export default function InventoryClient() {
                                 {isSortOpen && (
                                     <div className="absolute right-0 top-full mt-2 w-48 bg-white/90 backdrop-blur-xl rounded-xl shadow-xl border border-[#3C3C43]/10 p-1 animate-in fade-in zoom-in-95 duration-100 transform origin-top-right z-50">
                                         <div className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider px-3 py-2">Sort By</div>
-                                        <button onClick={() => { setSortBy('stock-desc'); setIsSortOpen(false); }} className={`w-full text-left px-3 py-2 rounded-lg text-[13px] ${sortBy === 'stock-desc' ? 'bg-[#007AFF]/10 text-[#007AFF]' : 'text-[#1C1C1E] hover:bg-[#F2F2F7]'}`}>Highest Stock</button>
-                                        <button onClick={() => { setSortBy('stock-asc'); setIsSortOpen(false); }} className={`w-full text-left px-3 py-2 rounded-lg text-[13px] ${sortBy === 'stock-asc' ? 'bg-[#007AFF]/10 text-[#007AFF]' : 'text-[#1C1C1E] hover:bg-[#F2F2F7]'}`}>Lowest Stock</button>
-                                        <button onClick={() => { setSortBy('price-desc'); setIsSortOpen(false); }} className={`w-full text-left px-3 py-2 rounded-lg text-[13px] ${sortBy === 'price-desc' ? 'bg-[#007AFF]/10 text-[#007AFF]' : 'text-[#1C1C1E] hover:bg-[#F2F2F7]'}`}>Highest Price</button>
-                                        <button onClick={() => { setSortBy('price-asc'); setIsSortOpen(false); }} className={`w-full text-left px-3 py-2 rounded-lg text-[13px] ${sortBy === 'price-asc' ? 'bg-[#007AFF]/10 text-[#007AFF]' : 'text-[#1C1C1E] hover:bg-[#F2F2F7]'}`}>Lowest Price</button>
+                                        <button onClick={() => { setSortBy('stock-desc'); setIsSortOpen(false); }} className={`w - full text - left px - 3 py - 2 rounded - lg text - [13px] ${sortBy === 'stock-desc' ? 'bg-[#007AFF]/10 text-[#007AFF]' : 'text-[#1C1C1E] hover:bg-[#F2F2F7]'} `}>Highest Stock</button>
+                                        <button onClick={() => { setSortBy('stock-asc'); setIsSortOpen(false); }} className={`w - full text - left px - 3 py - 2 rounded - lg text - [13px] ${sortBy === 'stock-asc' ? 'bg-[#007AFF]/10 text-[#007AFF]' : 'text-[#1C1C1E] hover:bg-[#F2F2F7]'} `}>Lowest Stock</button>
+                                        <button onClick={() => { setSortBy('price-desc'); setIsSortOpen(false); }} className={`w - full text - left px - 3 py - 2 rounded - lg text - [13px] ${sortBy === 'price-desc' ? 'bg-[#007AFF]/10 text-[#007AFF]' : 'text-[#1C1C1E] hover:bg-[#F2F2F7]'} `}>Highest Price</button>
+                                        <button onClick={() => { setSortBy('price-asc'); setIsSortOpen(false); }} className={`w - full text - left px - 3 py - 2 rounded - lg text - [13px] ${sortBy === 'price-asc' ? 'bg-[#007AFF]/10 text-[#007AFF]' : 'text-[#1C1C1E] hover:bg-[#F2F2F7]'} `}>Lowest Price</button>
                                     </div>
                                 )}
                             </div>
@@ -209,21 +401,21 @@ export default function InventoryClient() {
                         <div className="bg-white rounded-lg border border-[#3C3C43]/10 p-0.5 flex items-center shadow-sm">
                             <button
                                 onClick={() => setViewMode('table')}
-                                className={`p-2 rounded-md transition-all hidden md:block ${viewMode === 'table' ? 'bg-[#F2F2F7] text-[#1C1C1E] shadow-sm' : 'text-[#8E8E93] hover:text-[#1C1C1E]'}`}
+                                className={`p - 2 rounded - md transition - all hidden md:block ${viewMode === 'table' ? 'bg-[#F2F2F7] text-[#1C1C1E] shadow-sm' : 'text-[#8E8E93] hover:text-[#1C1C1E]'} `}
                                 title="List View"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
                             </button>
                             <button
                                 onClick={() => setViewMode('compact')}
-                                className={`p-2 rounded-md transition-all ${viewMode === 'compact' ? 'bg-[#F2F2F7] text-[#1C1C1E] shadow-sm' : 'text-[#8E8E93] hover:text-[#1C1C1E]'}`}
+                                className={`p - 2 rounded - md transition - all ${viewMode === 'compact' ? 'bg-[#F2F2F7] text-[#1C1C1E] shadow-sm' : 'text-[#8E8E93] hover:text-[#1C1C1E]'} `}
                                 title="Compact Tile View"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /><path d="M4 6v12M10 6v12" strokeWidth={1.5} strokeLinecap="round" /></svg>
                             </button>
                             <button
                                 onClick={() => setViewMode('grid')}
-                                className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-[#F2F2F7] text-[#1C1C1E] shadow-sm' : 'text-[#8E8E93] hover:text-[#1C1C1E]'}`}
+                                className={`p - 2 rounded - md transition - all ${viewMode === 'grid' ? 'bg-[#F2F2F7] text-[#1C1C1E] shadow-sm' : 'text-[#8E8E93] hover:text-[#1C1C1E]'} `}
                                 title="Grid View"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
@@ -261,7 +453,7 @@ export default function InventoryClient() {
 
             {/* CONTENT */}
             {isLoading && !error ? <Loading /> : (
-                <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-4 animate-in fade-in duration-500">
+                <div className="md:max-w-[1400px] md:mx-auto md:px-4 sm:px-6 lg:px-8 md:mt-4 animate-in fade-in duration-500">
                     {/* Table View */}
                     {viewMode === 'table' && (
                         <>
@@ -280,7 +472,7 @@ export default function InventoryClient() {
                                         </thead>
                                         <tbody className="divide-y divide-[#3C3C43]/5">
                                             {paginatedProducts.map((product) => (
-                                                <tr key={product.id} className="cursor-pointer hover:bg-[#F2F2F7]/50 transition-colors group" onClick={() => router.push(`/inventory/${product.id}`)}>
+                                                <tr key={product.id} className="cursor-pointer hover:bg-[#F2F2F7]/50 transition-colors group" onClick={() => router.push(`/ inventory / ${product.id} `)}>
                                                     <td className="px-4 py-3">
                                                         <div className="flex items-center gap-3">
                                                             <div className="w-10 h-10 rounded-lg bg-[#F2F2F7] flex-shrink-0 overflow-hidden border border-[#3C3C43]/5">
@@ -305,7 +497,7 @@ export default function InventoryClient() {
                                                     </td>
                                                     <td className="px-4 py-3"><span className="inline-flex px-2 py-0.5 rounded-md text-[12px] font-medium bg-[#767680]/10 text-[#1C1C1E]">{product.category}</span></td>
                                                     <td className="px-4 py-3">
-                                                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[12px] font-medium border border-[#3C3C43]/10" style={{ backgroundColor: `${getStockColor(product.status)}20`, color: getStockColor(product.status), borderColor: `${getStockColor(product.status)}30` }}>
+                                                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[12px] font-medium border border-[#3C3C43]/10" style={{ backgroundColor: `${getStockColor(product.status)} 20`, color: getStockColor(product.status), borderColor: `${getStockColor(product.status)} 30` }}>
                                                             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getStockColor(product.status) }}></span>
                                                             {product.status === 'in-stock' ? 'In Stock' : product.status === 'low-stock' ? 'Low Stock' : 'Out'}
                                                         </span>
@@ -319,49 +511,69 @@ export default function InventoryClient() {
                                     </table>
                                 </div>
                             </div>
+                        </>
+                    )}
 
-                            <div className="md:hidden grid grid-cols-1 gap-3">
-                                {paginatedProducts.map((product) => (
-                                    <div
-                                        key={product.id}
-                                        onClick={() => router.push(`/inventory/${product.id}`)}
-                                        className="bg-white rounded-xl p-3 shadow-sm border border-[#3C3C43]/5 flex items-center gap-3 active:scale-[0.98] transition-transform"
-                                    >
-                                        <div className="w-12 h-12 rounded-lg bg-[#F2F2F7] flex-shrink-0 overflow-hidden border border-[#3C3C43]/5">
-                                            {product.image ? (
-                                                <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center">
-                                                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                                    </svg>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start">
-                                                <h3 className="text-[14px] font-medium text-[#1C1C1E] truncate pr-2">{product.nameEs || product.name}</h3>
-                                                <span className="text-[14px] font-semibold text-[#1C1C1E]">${product.price.toLocaleString()}</span>
-                                            </div>
-                                            <div className="flex justify-between items-center mt-0.5">
-                                                <p className="text-[12px] text-[#8E8E93] font-mono">{product.sku}</p>
-                                                <span className={`text-[11px] font-medium px-1.5 py-0.5 rounded-md`} style={{ color: getStockColor(product.status), backgroundColor: `${getStockColor(product.status)}15` }}>
-                                                    {product.stock} in stock
+                    {/* MOBILE VIEW - Always shown on mobile, independent of viewMode */}
+                    <div className="md:hidden bg-[#F1F1F1] rounded-xl p-2.5 border-[0.5px] border-[#e0e0e0] mt-4">
+                        {paginatedProducts.map((product) => (
+                            <div
+                                key={product.id}
+                                onClick={() => {
+                                    setSelectedProduct(product);
+                                    setIsModalOpen(true);
+                                }}
+                                className="bg-white rounded-lg p-2.5 border-[0.5px] border-[#e0e0e0] flex items-center mb-2 last:mb-0 active:opacity-80 transition-opacity"
+                            >
+                                <img
+                                    src={product.image || 'https://via.placeholder.com/80'}
+                                    alt={product.name}
+                                    className="w-20 h-20 rounded-[10px] object-cover mr-2.5"
+                                />
+
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-center mb-[5px]">
+                                        <h3 className="text-[16px] font-semibold text-[#1c1c1e] flex-1 mr-2.5 line-clamp-2">
+                                            {product.nameEs || product.name}
+                                        </h3>
+                                        <span className="text-[16px] text-[#1c1c1e]">
+                                            ${product.price.toLocaleString('en-US', {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            })}
+                                        </span>
+                                    </div>
+
+                                    <p className="text-[14px] text-[#8e8e93]">
+                                        {product.barcode || product.sku}
+                                    </p>
+
+                                    <div className="flex justify-between items-center mt-1">
+                                        <span className="text-[14px] text-[#8e8e93]">
+                                            {product.category || 'N/A'}
+                                        </span>
+                                        <div className="flex items-center">
+                                            <div
+                                                className="px-3 h-6 rounded-xl flex items-center justify-center"
+                                                style={getStockBadgeStyle(product.stock)}
+                                            >
+                                                <span className="text-[12px] font-medium">
+                                                    Stock: {product.stock}
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
-                                ))}
+                                </div>
                             </div>
-                        </>
-                    )}
+                        ))}
+                    </div>
 
                     {viewMode === 'compact' && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+                        <div className="hidden md:grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
                             {paginatedProducts.map((product) => (
                                 <div
                                     key={product.id}
-                                    onClick={() => router.push(`/inventory/${product.id}`)}
+                                    onClick={() => router.push(`/ inventory / ${product.id} `)}
                                     className="bg-white rounded-xl p-2.5 shadow-sm border border-[#3C3C43]/5 cursor-pointer hover:border-[#007AFF]/30 hover:shadow-md transition-all group flex items-center gap-3 active:scale-[0.98] duration-100"
                                 >
                                     <div className="w-14 h-14 rounded-lg bg-[#F2F2F7] flex-shrink-0 overflow-hidden border border-[#3C3C43]/5 relative">
@@ -379,7 +591,7 @@ export default function InventoryClient() {
                                             </div>
                                         )}
                                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-white rounded-tl-md flex items-center justify-center">
-                                            <span className={`w-1.5 h-1.5 rounded-full block`} style={{ backgroundColor: getStockColor(product.status) }}></span>
+                                            <span className={`w - 1.5 h - 1.5 rounded - full block`} style={{ backgroundColor: getStockColor(product.status) }}></span>
                                         </div>
                                     </div>
 
@@ -396,14 +608,14 @@ export default function InventoryClient() {
                         </div>
                     )}
 
-                    {/* Grid View */}
+                    {/* Grid View - Desktop Only */}
                     {viewMode === 'grid' && (
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4">
+                        <div className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4">
                             {paginatedProducts.map((product) => (
                                 <div
                                     key={product.id}
                                     className="bg-white rounded-[16px] p-2.5 md:p-3 shadow-sm border border-[#3C3C43]/5 cursor-pointer hover:shadow-md transition-all group relative overflow-hidden flex flex-col active:scale-[0.98] duration-100"
-                                    onClick={() => router.push(`/inventory/${product.id}`)}
+                                    onClick={() => router.push(`/ inventory / ${product.id} `)}
                                 >
                                     <div className="aspect-square rounded-xl bg-[#F2F2F7] mb-2.5 md:mb-3 overflow-hidden border border-[#3C3C43]/5 relative">
                                         <img
@@ -412,7 +624,7 @@ export default function InventoryClient() {
                                             className="w-full h-full object-cover mix-blend-multiply"
                                         />
                                         <div className="absolute top-2 right-2">
-                                            <span className={`w-2.5 h-2.5 rounded-full block border border-white shadow-sm`} style={{ backgroundColor: getStockColor(product.status) }}></span>
+                                            <span className={`w - 2.5 h - 2.5 rounded - full block border border - white shadow - sm`} style={{ backgroundColor: getStockColor(product.status) }}></span>
                                         </div>
                                     </div>
 
@@ -498,6 +710,145 @@ export default function InventoryClient() {
                 isOpen={isExportModalOpen}
                 onClose={() => setIsExportModalOpen(false)}
             />
+            {/* Mobile Product Detail Modal */}
+            {isModalOpen && selectedProduct && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 md:hidden">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                        onClick={() => setIsModalOpen(false)}
+                    />
+
+                    {/* Modal Content - 90% width like Odoo */}
+                    <div className="bg-white rounded-[15px] w-[90%] p-5 shadow-2xl relative animate-in zoom-in-95 duration-200 max-h-[85vh] overflow-y-auto">
+                        {/* Close Button - 36x36 solid black */}
+                        <button
+                            onClick={() => setIsModalOpen(false)}
+                            className="absolute right-[15px] top-[15px] z-10 w-9 h-9 bg-black rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-lg"
+                        >
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        {/* Product Image - 200x200 centered */}
+                        <img
+                            src={selectedProduct.image || 'https://via.placeholder.com/200'}
+                            alt={selectedProduct.name}
+                            className="w-[200px] h-[200px] rounded-[10px] mb-5 mx-auto object-cover"
+                        />
+
+                        {/* Header: Name and Price side by side */}
+                        <div className="flex justify-between items-start w-full mb-2.5">
+                            {/* Name - 60% width */}
+                            <div className="w-[60%] pr-2.5">
+                                <h2 className="text-[24px] font-semibold text-[#1C1C1E] leading-7 flex-wrap">
+                                    {selectedProduct.nameEs || selectedProduct.name}
+                                </h2>
+                            </div>
+                            {/* Price - 40% width, right aligned */}
+                            <div className="w-[40%] flex items-end flex-col">
+                                <span className="text-[24px] font-medium text-[#1C1C1E]">
+                                    ${selectedProduct.price.toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    })}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex gap-2 mb-4">
+                            <button
+                                onClick={() => setModalTab('info')}
+                                className={`flex-1 py-2 rounded-lg text-[14px] font-semibold transition-all ${modalTab === 'info'
+                                    ? 'bg-[#007AFF] text-white'
+                                    : 'bg-gray-100 text-gray-600'
+                                    }`}
+                            >
+                                Info
+                            </button>
+                            <button
+                                onClick={() => setModalTab('count')}
+                                className={`flex-1 py-2 rounded-lg text-[14px] font-semibold transition-all ${modalTab === 'count'
+                                    ? 'bg-[#007AFF] text-white'
+                                    : 'bg-gray-100 text-gray-600'
+                                    }`}
+                            >
+                                Contar
+                            </button>
+                        </div>
+
+                        {/* Tab Content */}
+                        {modalTab === 'info' ? (
+                            <>
+                                {/* Barcode */}
+                                <p className="text-[16px] text-[#8e8e93] mb-0">
+                                    {selectedProduct.barcode || selectedProduct.sku}
+                                </p>
+
+                                {/* Bottom row: Measures and Stock */}
+                                <div className="flex justify-between items-center w-full mt-1">
+                                    <span className="text-[14px] text-[#1C1C1E]">
+                                        Medidas: {selectedProduct.category || 'N/A'}
+                                    </span>
+                                    <div
+                                        className="px-3 h-6 rounded-xl flex items-center justify-center"
+                                        style={getStockBadgeStyle(selectedProduct.stock)}
+                                    >
+                                        <span className="text-[12px] font-medium">
+                                            Stock: {selectedProduct.stock}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Action Button */}
+                                <button
+                                    onClick={handleRemotePrint}
+                                    className="w-full bg-[#007AFF] text-white py-3 rounded-[10px] font-semibold text-[16px] flex items-center justify-center gap-2 mt-4 active:scale-[0.98] transition-transform"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                    Imprimir en Estación
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                {/* Quick Count Interface */}
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {/* System Stock */}
+                                        <div className="flex flex-col items-center p-4 rounded-xl bg-[#F2F2F7]/50">
+                                            <span className="text-[11px] font-semibold text-[#8E8E93] uppercase mb-1">Sistema</span>
+                                            <span className="text-[32px] font-bold text-[#1C1C1E]">{selectedProduct.stock}</span>
+                                        </div>
+
+                                        {/* Physical Count Input */}
+                                        <div className="flex flex-col items-center p-4 rounded-xl bg-white border-2 border-[#007AFF] relative">
+                                            <span className="text-[11px] font-bold text-[#007AFF] uppercase mb-1">Físico</span>
+                                            <div className="text-[32px] font-bold text-[#1C1C1E] leading-none">
+                                                {physicalCount || '0'}
+                                            </div>
+                                            {countStatus === 'matching' && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#34C759] animate-pulse" />}
+                                            {countStatus === 'discrepancy' && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#FF3B30] animate-pulse" />}
+                                        </div>
+                                    </div>
+
+                                    {/* Numeric Keypad */}
+                                    <NumericKeypad
+                                        onKeyPress={(key) => handleCountChange(physicalCount + key)}
+                                        onDelete={() => handleCountChange(physicalCount.slice(0, -1))}
+                                        onClear={() => handleCountChange('')}
+                                        onConfirm={handleConfirmCount}
+                                        isConfirmDisabled={physicalCount === '' || isUpdating}
+                                    />
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </main>
     );
 }
