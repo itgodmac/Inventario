@@ -141,6 +141,15 @@ export default function ProductDetailClient({ product, currentTheme }: { product
         }
     }, [isEditing]);
 
+    // Mobile detection
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     const handleCountChange = (val: string) => {
         setPhysicalCount(val);
         const count = parseInt(val);
@@ -364,247 +373,235 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                         </h3>
                         <span className="text-[12px] font-medium text-[#007AFF]/70 uppercase tracking-wider">Ready to Scan</span>
                     </div>
-    // Mobile detection
-                    const [isMobile, setIsMobile] = useState(false);
-    useEffect(() => {
-        const checkMobile = () => setIsMobile(window.innerWidth < 768);
-                    checkMobile();
-                    window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
+                    <div className="p-5 md:p-6">
+                        <div className="grid grid-cols-2 gap-4 md:gap-8 items-center">
+                            {/* System Stock Display */}
+                            <div className="flex flex-col items-center p-4 rounded-2xl bg-[#F2F2F7] border border-[#3C3C43]/5 opacity-60">
+                                <span className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide mb-1">Teórico (System)</span>
+                                <span className="text-[32px] md:text-[40px] font-bold text-[#1C1C1E]">{product.stock}</span>
+                            </div>
 
-                    // ... handleCountChange and handleConfirmCount definitions ...
-
-                    return (
-                    // ... (lines 130-366 omitted)
-                    <div className="grid grid-cols-2 gap-4 md:gap-8 items-center">
-                        {/* System Stock Display */}
-                        <div className="flex flex-col items-center p-4 rounded-2xl bg-[#F2F2F7] border border-[#3C3C43]/5 opacity-60">
-                            <span className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide mb-1">Teórico (System)</span>
-                            <span className="text-[32px] md:text-[40px] font-bold text-[#1C1C1E]">{product.stock}</span>
+                            {/* Physical Input */}
+                            <div className="flex flex-col items-center p-4 rounded-2xl bg-white border-2 border-[#007AFF] shadow-lg shadow-[#007AFF]/10 relative w-full">
+                                <span className="text-[13px] font-bold text-[#007AFF] uppercase tracking-wide mb-1">Físico (Real)</span>
+                                <input
+                                    ref={inputRef}
+                                    type="text" // Change to text so inputMode works better
+                                    inputMode="numeric"
+                                    value={physicalCount}
+                                    onChange={(e) => handleCountChange(e.target.value)}
+                                    // On Mobile: ReadOnly to force use of our keypad + prevent keyboard popup
+                                    // On Desktop: Editable so physical keyboard works
+                                    readOnly={isMobile}
+                                    onFocus={(e) => { if (isMobile) e.target.blur(); }}
+                                    placeholder="0"
+                                    className="w-full text-center text-[48px] font-bold text-[#1C1C1E] focus:outline-none placeholder-[#E5E5EA] py-2 leading-none bg-transparent"
+                                />
+                                {countStatus === 'matching' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#34C759] shadow-sm animate-pulse"></div>}
+                                {countStatus === 'discrepancy' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#FF3B30] shadow-sm animate-pulse"></div>}
+                            </div>
                         </div>
 
-                        {/* Physical Input */}
-                        <div className="flex flex-col items-center p-4 rounded-2xl bg-white border-2 border-[#007AFF] shadow-lg shadow-[#007AFF]/10 relative w-full">
-                            <span className="text-[13px] font-bold text-[#007AFF] uppercase tracking-wide mb-1">Físico (Real)</span>
-                            <input
-                                ref={inputRef}
-                                type="text" // Change to text so inputMode works better
-                                inputMode="numeric"
-                                value={physicalCount}
-                                onChange={(e) => handleCountChange(e.target.value)}
-                                // On Mobile: ReadOnly to force use of our keypad + prevent keyboard popup
-                                // On Desktop: Editable so physical keyboard works
-                                readOnly={isMobile}
-                                onFocus={(e) => { if (isMobile) e.target.blur(); }}
-                                placeholder="0"
-                                className="w-full text-center text-[48px] font-bold text-[#1C1C1E] focus:outline-none placeholder-[#E5E5EA] py-2 leading-none bg-transparent"
+                        {/* Custom Numeric Keypad - HIDDEN ON DESKTOP */}
+                        <div className="md:hidden">
+                            <NumericKeypad
+                                onKeyPress={(key) => handleCountChange(physicalCount + key)}
+                                onDelete={() => handleCountChange(physicalCount.slice(0, -1))}
+                                onClear={() => handleCountChange('')}
+                                onConfirm={handleConfirmCount}
+                                isConfirmDisabled={physicalCount === '' || isUpdating}
                             />
-                            {countStatus === 'matching' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#34C759] shadow-sm animate-pulse"></div>}
-                            {countStatus === 'discrepancy' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#FF3B30] shadow-sm animate-pulse"></div>}
                         </div>
-                    </div>
 
-                    {/* Custom Numeric Keypad - HIDDEN ON DESKTOP */}
-                    <div className="md:hidden">
-                        <NumericKeypad
-                            onKeyPress={(key) => handleCountChange(physicalCount + key)}
-                            onDelete={() => handleCountChange(physicalCount.slice(0, -1))}
-                            onClear={() => handleCountChange('')}
-                            onConfirm={handleConfirmCount}
-                            isConfirmDisabled={physicalCount === '' || isUpdating}
-                        />
-                    </div>
-
-                    {/* Desktop Confirm Button (only shows on Desktop) */}
-                    <div className="hidden md:block mt-6">
-                        <button
-                            onClick={handleConfirmCount}
-                            disabled={physicalCount === ''}
-                            className={`w-full py-3.5 rounded-xl font-bold text-[16px] shadow-sm transition-all active:scale-[0.98] ${physicalCount === ''
-                                ? 'bg-[#F2F2F7] text-[#C7C7CC] cursor-not-allowed'
-                                : 'bg-[#007AFF] text-white hover:bg-[#007AFF]/90 shadow-[#007AFF]/30'
-                                }`}
-                        >
-                            {isUpdating ? 'Guardando...' : 'Confirmar Conteo / Confirm Count'}
-                        </button>
+                        {/* Desktop Confirm Button (only shows on Desktop) */}
+                        <div className="hidden md:block mt-6">
+                            <button
+                                onClick={handleConfirmCount}
+                                disabled={physicalCount === ''}
+                                className={`w-full py-3.5 rounded-xl font-bold text-[16px] shadow-sm transition-all active:scale-[0.98] ${physicalCount === ''
+                                    ? 'bg-[#F2F2F7] text-[#C7C7CC] cursor-not-allowed'
+                                    : 'bg-[#007AFF] text-white hover:bg-[#007AFF]/90 shadow-[#007AFF]/30'
+                                    }`}
+                            >
+                                {isUpdating ? 'Guardando...' : 'Confirmar Conteo / Confirm Count'}
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Segmented Control / Tabs */}
-            <div className="mb-6 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto no-scrollbar">
-                <div className="inline-flex bg-[#767680]/10 p-1 rounded-xl whitespace-nowrap">
-                    {['General', 'Attributes', 'Sales', 'Purchase', 'Inventory'].map((tab) => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab.toLowerCase() as any)}
-                            className={`px-4 py-1.5 rounded-lg text-[13px] font-semibold transition-all duration-200 active:scale-95 ${activeTab === tab.toLowerCase()
-                                ? 'bg-white text-[#1C1C1E] shadow-sm'
-                                : 'text-[#8E8E93] hover:text-[#1C1C1E]'
-                                }`}
-                        >
-                            {tab}
-                        </button>
-                    ))}
+                {/* Segmented Control / Tabs */}
+                <div className="mb-6 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto no-scrollbar">
+                    <div className="inline-flex bg-[#767680]/10 p-1 rounded-xl whitespace-nowrap">
+                        {['General', 'Attributes', 'Sales', 'Purchase', 'Inventory'].map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab.toLowerCase() as any)}
+                                className={`px-4 py-1.5 rounded-lg text-[13px] font-semibold transition-all duration-200 active:scale-95 ${activeTab === tab.toLowerCase()
+                                    ? 'bg-white text-[#1C1C1E] shadow-sm'
+                                    : 'text-[#8E8E93] hover:text-[#1C1C1E]'
+                                    }`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-            </div>
 
-            {/* Grouped Inset Forms (Rest of content) */}
-            <div className="space-y-6 opacity-80 hover:opacity-100 transition-opacity">
-                {activeTab === 'general' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Detailed form content same as before ... */}
-                        <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 overflow-hidden">
-                            <div className="px-5 py-3 border-b border-[#3C3C43]/5 bg-[#F2F2F7]/50 backdrop-blur-sm">
-                                <h3 className="text-[16px] font-semibold text-[#1C1C1E]">Basic details</h3>
-                            </div>
-                            <div className="divide-y divide-[#3C3C43]/5 px-5">
-                                <div className="py-3.5 grid grid-cols-1 md:grid-cols-2 items-center gap-2 md:gap-4">
-                                    <label className="text-[15px] text-[#1C1C1E] font-medium md:font-normal">Product Type</label>
-                                    <div className="md:text-left text-[#8E8E93] text-[15px]">Storable Product</div>
+                {/* Grouped Inset Forms (Rest of content) */}
+                <div className="space-y-6 opacity-80 hover:opacity-100 transition-opacity">
+                    {activeTab === 'general' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Detailed form content same as before ... */}
+                            <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 overflow-hidden">
+                                <div className="px-5 py-3 border-b border-[#3C3C43]/5 bg-[#F2F2F7]/50 backdrop-blur-sm">
+                                    <h3 className="text-[16px] font-semibold text-[#1C1C1E]">Basic details</h3>
                                 </div>
-                                <div className="py-3.5 grid grid-cols-1 md:grid-cols-2 items-center gap-2 md:gap-4">
-                                    <label className="text-[15px] text-[#1C1C1E] font-medium md:font-normal">Category</label>
-                                    {isEditing ? (
-                                        <input value={formData.category} onChange={(e) => handleChange('category', e.target.value)} className="text-right border-b border-gray-200 outline-none focus:border-blue-500" />
+                                <div className="divide-y divide-[#3C3C43]/5 px-5">
+                                    <div className="py-3.5 grid grid-cols-1 md:grid-cols-2 items-center gap-2 md:gap-4">
+                                        <label className="text-[15px] text-[#1C1C1E] font-medium md:font-normal">Product Type</label>
+                                        <div className="md:text-left text-[#8E8E93] text-[15px]">Storable Product</div>
+                                    </div>
+                                    <div className="py-3.5 grid grid-cols-1 md:grid-cols-2 items-center gap-2 md:gap-4">
+                                        <label className="text-[15px] text-[#1C1C1E] font-medium md:font-normal">Category</label>
+                                        {isEditing ? (
+                                            <input value={formData.category} onChange={(e) => handleChange('category', e.target.value)} className="text-right border-b border-gray-200 outline-none focus:border-blue-500" />
+                                        ) : (
+                                            <div className="md:text-left text-[#1C1C1E] text-[15px]">{product.category}</div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 overflow-hidden">
+                                <div className="px-5 py-3 border-b border-[#3C3C43]/5 bg-[#F2F2F7]/50 backdrop-blur-sm">
+                                    <h3 className="text-[16px] font-semibold text-[#1C1C1E]">Pricing & Codes</h3>
+                                </div>
+                                <div className="divide-y divide-[#3C3C43]/5 px-5">
+                                    {/* Advanced Pricing Section */}
+                                    <div className="py-3.5">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <h4 className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide">Pricing Logic</h4>
+                                            {!isEditing && <span className="text-[10px] text-[#007AFF] bg-[#007AFF]/10 px-2 py-0.5 rounded">Auto-Calculated</span>}
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-[11px] text-[#8E8E93] mb-1">Competitor ($ Oth)</label>
+                                                {isEditing ? (
+                                                    <input
+                                                        type="number"
+                                                        value={(formData as any).priceOth || ''}
+                                                        onChange={(e) => handleChange('priceOth', e.target.value)}
+                                                        placeholder="0.00"
+                                                        className="w-full text-right border border-yellow-200 bg-yellow-50 rounded px-2 py-1 outline-none focus:border-yellow-400 font-mono text-[#1C1C1E]"
+                                                    />
+                                                ) : (
+                                                    <div className="text-right text-[14px] font-mono text-[#1C1C1E]">${(product.priceOth || 0).toLocaleString()}</div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <label className="block text-[11px] text-[#8E8E93] mb-1">Factory ($ ZG)</label>
+                                                {isEditing ? (
+                                                    <input
+                                                        type="number"
+                                                        value={(formData as any).priceZG || ''}
+                                                        onChange={(e) => handleChange('priceZG', e.target.value)}
+                                                        placeholder="0.00"
+                                                        className="w-full text-right border border-gray-200 bg-gray-50 rounded px-2 py-1 outline-none focus:border-blue-400 font-mono text-[#1C1C1E]"
+                                                    />
+                                                ) : (
+                                                    <div className="text-right text-[14px] font-mono text-[#1C1C1E]">${(product.priceZG || 0).toLocaleString()}</div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-3 pt-3 border-t border-dashed border-gray-200 flex justify-between items-center bg-blue-50/50 p-2 rounded-lg">
+                                            <label className="text-[14px] font-bold text-[#1C1C1E]">Final Price ($ Venta)</label>
+                                            <div className="text-right text-[20px] text-[#007AFF] font-bold">
+                                                ${product.price.toFixed(2)}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="py-3.5 grid grid-cols-1 md:grid-cols-3 items-center gap-1 md:gap-4">
+                                        <label className="text-[15px] text-[#1C1C1E] font-medium md:font-normal">Barcode</label>
+                                        {isEditing ? (
+                                            <input value={formData.barcode} onChange={(e) => handleChange('barcode', e.target.value)} className="md:col-span-2 text-right border-b border-gray-200 outline-none focus:border-blue-500 font-mono text-[#8E8E93]" />
+                                        ) : (
+                                            <div className="md:col-span-2 text-[15px] font-mono text-[#8E8E93] truncate text-right">{product.barcode || '-'}</div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* STOCK HISTORY */}
+                            <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 overflow-hidden">
+                                <div className="border-b border-gray-100 p-4">
+                                    <h3 className="text-[15px] font-semibold text-[#1C1C1E]">Historial de Conteos</h3>
+                                </div>
+                                <div className="divide-y divide-gray-100">
+                                    {logsLoading ? (
+                                        <div className="p-6 text-center text-[#8E8E93]">Cargando...</div>
+                                    ) : stockLogs.length === 0 ? (
+                                        <div className="p-6 text-center text-[#8E8E93]">No hay conteos registrados</div>
                                     ) : (
-                                        <div className="md:text-left text-[#1C1C1E] text-[15px]">{product.category}</div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 overflow-hidden">
-                            <div className="px-5 py-3 border-b border-[#3C3C43]/5 bg-[#F2F2F7]/50 backdrop-blur-sm">
-                                <h3 className="text-[16px] font-semibold text-[#1C1C1E]">Pricing & Codes</h3>
-                            </div>
-                            <div className="divide-y divide-[#3C3C43]/5 px-5">
-                                {/* Advanced Pricing Section */}
-                                <div className="py-3.5">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <h4 className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide">Pricing Logic</h4>
-                                        {!isEditing && <span className="text-[10px] text-[#007AFF] bg-[#007AFF]/10 px-2 py-0.5 rounded">Auto-Calculated</span>}
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-[11px] text-[#8E8E93] mb-1">Competitor ($ Oth)</label>
-                                            {isEditing ? (
-                                                <input
-                                                    type="number"
-                                                    value={(formData as any).priceOth || ''}
-                                                    onChange={(e) => handleChange('priceOth', e.target.value)}
-                                                    placeholder="0.00"
-                                                    className="w-full text-right border border-yellow-200 bg-yellow-50 rounded px-2 py-1 outline-none focus:border-yellow-400 font-mono text-[#1C1C1E]"
-                                                />
-                                            ) : (
-                                                <div className="text-right text-[14px] font-mono text-[#1C1C1E]">${(product.priceOth || 0).toLocaleString()}</div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <label className="block text-[11px] text-[#8E8E93] mb-1">Factory ($ ZG)</label>
-                                            {isEditing ? (
-                                                <input
-                                                    type="number"
-                                                    value={(formData as any).priceZG || ''}
-                                                    onChange={(e) => handleChange('priceZG', e.target.value)}
-                                                    placeholder="0.00"
-                                                    className="w-full text-right border border-gray-200 bg-gray-50 rounded px-2 py-1 outline-none focus:border-blue-400 font-mono text-[#1C1C1E]"
-                                                />
-                                            ) : (
-                                                <div className="text-right text-[14px] font-mono text-[#1C1C1E]">${(product.priceZG || 0).toLocaleString()}</div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-3 pt-3 border-t border-dashed border-gray-200 flex justify-between items-center bg-blue-50/50 p-2 rounded-lg">
-                                        <label className="text-[14px] font-bold text-[#1C1C1E]">Final Price ($ Venta)</label>
-                                        <div className="text-right text-[20px] text-[#007AFF] font-bold">
-                                            ${product.price.toFixed(2)}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="py-3.5 grid grid-cols-1 md:grid-cols-3 items-center gap-1 md:gap-4">
-                                    <label className="text-[15px] text-[#1C1C1E] font-medium md:font-normal">Barcode</label>
-                                    {isEditing ? (
-                                        <input value={formData.barcode} onChange={(e) => handleChange('barcode', e.target.value)} className="md:col-span-2 text-right border-b border-gray-200 outline-none focus:border-blue-500 font-mono text-[#8E8E93]" />
-                                    ) : (
-                                        <div className="md:col-span-2 text-[15px] font-mono text-[#8E8E93] truncate text-right">{product.barcode || '-'}</div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* STOCK HISTORY */}
-                        <div className="bg-white rounded-[20px] shadow-sm border border-[#3C3C43]/5 overflow-hidden">
-                            <div className="border-b border-gray-100 p-4">
-                                <h3 className="text-[15px] font-semibold text-[#1C1C1E]">Historial de Conteos</h3>
-                            </div>
-                            <div className="divide-y divide-gray-100">
-                                {logsLoading ? (
-                                    <div className="p-6 text-center text-[#8E8E93]">Cargando...</div>
-                                ) : stockLogs.length === 0 ? (
-                                    <div className="p-6 text-center text-[#8E8E93]">No hay conteos registrados</div>
-                                ) : (
-                                    stockLogs.map((log: any) => (
-                                        <div key={log.id} className="p-4 hover:bg-gray-50 transition-colors">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-2 h-2 rounded-full ${log.difference > 0 ? 'bg-green-500' : log.difference < 0 ? 'bg-red-500' : 'bg-gray-400'}`}></div>
-                                                    <div>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-[14px] font-medium text-[#1C1C1E]">
-                                                                {log.oldQuantity} → {log.newQuantity}
-                                                            </span>
-                                                            <span className={`text-[13px] font-semibold ${log.difference > 0 ? 'text-green-600' : log.difference < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                                                {log.difference > 0 ? '+' : ''}{log.difference}
-                                                            </span>
-                                                        </div>
-                                                        <div className="text-[12px] text-[#8E8E93] mt-0.5">
-                                                            {new Date(log.timestamp).toLocaleString('es-ES', {
-                                                                day: '2-digit',
-                                                                month: 'short',
-                                                                year: 'numeric',
-                                                                hour: '2-digit',
-                                                                minute: '2-digit'
-                                                            })}
+                                        stockLogs.map((log: any) => (
+                                            <div key={log.id} className="p-4 hover:bg-gray-50 transition-colors">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-2 h-2 rounded-full ${log.difference > 0 ? 'bg-green-500' : log.difference < 0 ? 'bg-red-500' : 'bg-gray-400'}`}></div>
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[14px] font-medium text-[#1C1C1E]">
+                                                                    {log.oldQuantity} → {log.newQuantity}
+                                                                </span>
+                                                                <span className={`text-[13px] font-semibold ${log.difference > 0 ? 'text-green-600' : log.difference < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                                                                    {log.difference > 0 ? '+' : ''}{log.difference}
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-[12px] text-[#8E8E93] mt-0.5">
+                                                                {new Date(log.timestamp).toLocaleString('es-ES', {
+                                                                    day: '2-digit',
+                                                                    month: 'short',
+                                                                    year: 'numeric',
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit'
+                                                                })}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="text-[11px] font-medium text-[#8E8E93] uppercase tracking-wide bg-gray-100 px-2 py-1 rounded">
-                                                        {log.auditor}
+                                                    <div className="text-right">
+                                                        <div className="text-[11px] font-medium text-[#8E8E93] uppercase tracking-wide bg-gray-100 px-2 py-1 rounded">
+                                                            {log.auditor}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))
-                                )}
+                                        ))
+                                    )}
+                                </div>
                             </div>
+
+                            {/* DELETE BUTTON */}
+                            {isEditing && (
+                                <div className="col-span-1 md:col-span-2 flex justify-center pt-8">
+                                    <button
+                                        onClick={handleDelete}
+                                        className="text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg font-medium border border-red-200 transition-colors"
+                                    >
+                                        Delete Product
+                                    </button>
+                                </div>
+                            )}
+
                         </div>
-
-                        {/* DELETE BUTTON */}
-                        {isEditing && (
-                            <div className="col-span-1 md:col-span-2 flex justify-center pt-8">
-                                <button
-                                    onClick={handleDelete}
-                                    className="text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg font-medium border border-red-200 transition-colors"
-                                >
-                                    Delete Product
-                                </button>
-                            </div>
-                        )}
-
-                    </div>
-                )}
-                {activeTab !== 'general' && (
-                    <div className="flex flex-col items-center justify-center py-10 bg-white rounded-[20px] border border-[#3C3C43]/5 text-center">
-                        <p className="text-[#8E8E93]">View only mode active.</p>
-                    </div>
-                )}
-            </div>
+                    )}
+                    {activeTab !== 'general' && (
+                        <div className="flex flex-col items-center justify-center py-10 bg-white rounded-[20px] border border-[#3C3C43]/5 text-center">
+                            <p className="text-[#8E8E93]">View only mode active.</p>
+                        </div>
+                    )}
+                </div>
         </main>
     );
 }
