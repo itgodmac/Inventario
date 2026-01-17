@@ -38,7 +38,7 @@ function searchInFile(filePath: string) {
             }
         }
     } catch (e) {
-        console.error(`Error reading ${filePath}:`, e.message);
+        console.error(`Error reading ${filePath}:`, (e as any).message);
     }
     return false;
 }
