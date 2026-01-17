@@ -370,7 +370,7 @@ export default function InventoryClient() {
                             placeholder="Search name, sku, barcode..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-12 py-2.5 bg-white dark:bg-zinc-800 border border-[#3C3C43]/10 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF]/50 text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] transition-all text-[15px] shadow-sm appearance-none"
+                            className="w-full pl-10 pr-12 py-2.5 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF]/50 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all text-[15px] shadow-sm appearance-none"
                         />
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
                             <div className="relative">
@@ -399,21 +399,21 @@ export default function InventoryClient() {
                         <div className="bg-white dark:bg-zinc-800 rounded-lg border border-[#3C3C43]/10 dark:border-white/10 p-0.5 flex items-center shadow-sm">
                             <button
                                 onClick={() => setViewMode('table')}
-                                className={`p - 2 rounded - md transition - all hidden md:block ${viewMode === 'table' ? 'bg-[#F2F2F7] text-[#1C1C1E] shadow-sm' : 'text-[#8E8E93] hover:text-[#1C1C1E]'} `}
+                                className={`p-2 rounded-md transition-all hidden md:block ${viewMode === 'table' ? 'bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'} `}
                                 title="List View"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
                             </button>
                             <button
                                 onClick={() => setViewMode('compact')}
-                                className={`p - 2 rounded - md transition - all ${viewMode === 'compact' ? 'bg-[#F2F2F7] text-[#1C1C1E] shadow-sm' : 'text-[#8E8E93] hover:text-[#1C1C1E]'} `}
+                                className={`p-2 rounded-md transition-all ${viewMode === 'compact' ? 'bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'} `}
                                 title="Compact Tile View"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /><path d="M4 6v12M10 6v12" strokeWidth={1.5} strokeLinecap="round" /></svg>
                             </button>
                             <button
                                 onClick={() => setViewMode('grid')}
-                                className={`p - 2 rounded - md transition - all ${viewMode === 'grid' ? 'bg-[#F2F2F7] text-[#1C1C1E] shadow-sm' : 'text-[#8E8E93] hover:text-[#1C1C1E]'} `}
+                                className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'} `}
                                 title="Grid View"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
@@ -423,7 +423,7 @@ export default function InventoryClient() {
                         {/* Export Button - Opens Modal */}
                         <button
                             onClick={() => setIsExportModalOpen(true)}
-                            className="bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700 text-[#1C1C1E] dark:text-white border border-[#3C3C43]/20 dark:border-white/20 px-3 py-2 rounded-xl text-[14px] font-medium shadow-sm transition-all flex items-center gap-2 active:scale-95"
+                            className="bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700 border border-gray-200 dark:border-white/20 text-gray-900 dark:text-white px-3 py-2 rounded-xl text-[14px] font-medium shadow-sm transition-all flex items-center gap-2 active:scale-95"
                             title="Export options for InDesign"
                         >
                             <svg className="w-4 h-4 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
@@ -455,25 +455,25 @@ export default function InventoryClient() {
                     {/* Table View */}
                     {viewMode === 'table' && (
                         <>
-                            <div className="hidden md:block bg-white dark:bg-zinc-900 rounded-[10px] shadow-sm border border-[#3C3C43]/5 dark:border-white/5 overflow-hidden">
+                            <div className="hidden md:block bg-white dark:bg-zinc-900 rounded-[10px] shadow-sm border border-gray-200 dark:border-white/5 overflow-hidden">
                                 <div className="overflow-x-auto">
                                     <table className="w-full">
-                                        <thead className="bg-[#F2F2F7]/50 border-b border-[#3C3C43]/5">
+                                        <thead className="bg-[#F2F2F7]/50 dark:bg-white/5 border-b border-gray-200 dark:border-white/5">
                                             <tr>
-                                                <th className="text-left px-4 py-3 text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide">Product</th>
-                                                <th className="text-left px-4 py-3 text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide">Category</th>
-                                                <th className="text-left px-4 py-3 text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide">Status</th>
-                                                <th className="text-right px-4 py-3 text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide">Stock</th>
-                                                <th className="text-right px-4 py-3 text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wide">Price</th>
+                                                <th className="text-left px-4 py-3 text-[13px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Product</th>
+                                                <th className="text-left px-4 py-3 text-[13px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Category</th>
+                                                <th className="text-left px-4 py-3 text-[13px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</th>
+                                                <th className="text-right px-4 py-3 text-[13px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Stock</th>
+                                                <th className="text-right px-4 py-3 text-[13px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Price</th>
                                                 <th className="w-8"></th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-[#3C3C43]/5">
+                                        <tbody className="divide-y divide-gray-200 dark:divide-white/5">
                                             {paginatedProducts.map((product) => (
-                                                <tr key={product.id} className="cursor-pointer hover:bg-[#F2F2F7]/50 transition-colors group" onClick={() => router.push(`/inventory/${product.id}`)}>
+                                                <tr key={product.id} className="cursor-pointer hover:bg-[#F2F2F7]/50 dark:hover:bg-white/5 transition-colors group" onClick={() => router.push(`/inventory/${product.id}`)}>
                                                     <td className="px-4 py-3">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-lg bg-[#F2F2F7] flex-shrink-0 overflow-hidden border border-[#3C3C43]/5">
+                                                            <div className="w-10 h-10 rounded-lg bg-[#F2F2F7] dark:bg-white/10 flex-shrink-0 overflow-hidden border border-gray-200 dark:border-white/5">
                                                                 {product.image ? (
                                                                     <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                                                                 ) : (
@@ -485,23 +485,23 @@ export default function InventoryClient() {
                                                                 )}
                                                             </div>
                                                             <div>
-                                                                <div className="text-[14px] font-medium text-[#1C1C1E]">{product.nameEs || product.name}</div>
+                                                                <div className="text-[14px] font-medium text-gray-900 dark:text-white">{product.nameEs || product.name}</div>
                                                                 {product.nameEn && product.nameEs && (
-                                                                    <div className="text-[12px] text-[#8E8E93]">{product.nameEn}</div>
+                                                                    <div className="text-[12px] text-gray-500 dark:text-gray-400">{product.nameEn}</div>
                                                                 )}
-                                                                <div className="text-[11px] text-[#8E8E93] font-mono mt-0.5">{product.sku}</div>
+                                                                <div className="text-[11px] text-gray-500 dark:text-gray-400 font-mono mt-0.5">{product.sku}</div>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="px-4 py-3"><span className="inline-flex px-2 py-0.5 rounded-md text-[12px] font-medium bg-[#767680]/10 text-[#1C1C1E]">{product.category}</span></td>
+                                                    <td className="px-4 py-3"><span className="inline-flex px-2 py-0.5 rounded-md text-[12px] font-medium bg-[#767680]/10 dark:bg-white/10 text-gray-900 dark:text-white">{product.category}</span></td>
                                                     <td className="px-4 py-3">
-                                                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[12px] font-medium border border-[#3C3C43]/10" style={{ backgroundColor: `${getStockColor(product.status)} 20`, color: getStockColor(product.status), borderColor: `${getStockColor(product.status)} 30` }}>
+                                                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[12px] font-medium border border-gray-200 dark:border-white/10" style={{ backgroundColor: `${getStockColor(product.status)} 20`, color: getStockColor(product.status), borderColor: `${getStockColor(product.status)} 30` }}>
                                                             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getStockColor(product.status) }}></span>
                                                             {product.status === 'in-stock' ? 'In Stock' : product.status === 'low-stock' ? 'Low Stock' : 'Out'}
                                                         </span>
                                                     </td>
-                                                    <td className="px-4 py-3 text-right"><span className="text-[14px] font-medium text-[#1C1C1E]">{product.stock}</span></td>
-                                                    <td className="px-4 py-3 text-right"><span className="text-[14px] font-medium text-[#1C1C1E]">${product.price.toLocaleString()}</span></td>
+                                                    <td className="px-4 py-3 text-right"><span className="text-[14px] font-medium text-gray-900 dark:text-white">{product.stock}</span></td>
+                                                    <td className="px-4 py-3 text-right"><span className="text-[14px] font-medium text-gray-900 dark:text-white">${product.price.toLocaleString()}</span></td>
                                                     <td className="px-2 py-3"><svg className="w-4 h-4 text-[#C7C7CC] group-hover:text-[#007AFF] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg></td>
                                                 </tr>
                                             ))}
@@ -574,14 +574,14 @@ export default function InventoryClient() {
                                 <div
                                     key={product.id}
                                     onClick={() => router.push(`/inventory/${product.id}`)}
-                                    className="bg-white dark:bg-zinc-900 rounded-xl p-2.5 shadow-sm cursor-pointer hover:shadow-md transition-all group flex items-center gap-3 active:scale-[0.98] duration-100"
+                                    className="bg-white dark:bg-zinc-900 rounded-xl p-2.5 shadow-sm cursor-pointer hover:shadow-md transition-all group flex items-center gap-3 active:scale-[0.98] duration-100 border border-transparent dark:border-white/5"
                                 >
-                                    <div className="w-14 h-14 rounded-lg bg-[#F2F2F7] flex-shrink-0 overflow-hidden relative">
+                                    <div className="w-14 h-14 rounded-lg bg-[#F2F2F7] dark:bg-zinc-800 flex-shrink-0 overflow-hidden relative">
                                         {product.image ? (
                                             <img
                                                 src={product.image}
                                                 alt={product.name}
-                                                className="w-full h-full object-cover mix-blend-multiply"
+                                                className="w-full h-full object-cover"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">
@@ -596,11 +596,11 @@ export default function InventoryClient() {
                                     </div>
 
                                     <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-                                        <h3 className="text-[13px] font-semibold text-[#1C1C1E] leading-tight truncate" title={product.nameEs || product.name}>{product.nameEs || product.name}</h3>
-                                        <p className="text-[11px] text-[#8E8E93] font-mono truncate">{product.sku}</p>
+                                        <h3 className="text-[13px] font-semibold text-gray-900 dark:text-white leading-tight truncate" title={product.nameEs || product.name}>{product.nameEs || product.name}</h3>
+                                        <p className="text-[11px] text-gray-500 dark:text-gray-400 font-mono truncate">{product.sku}</p>
                                         <div className="flex items-center justify-between mt-0.5">
-                                            <span className="text-[12px] font-bold text-[#1C1C1E]">${product.price.toLocaleString()}</span>
-                                            <span className="text-[10px] text-[#8E8E93]">Stock: {product.stock}</span>
+                                            <span className="text-[12px] font-bold text-gray-900 dark:text-white">${product.price.toLocaleString()}</span>
+                                            <span className="text-[10px] text-gray-500 dark:text-gray-400">Stock: {product.stock}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -614,14 +614,14 @@ export default function InventoryClient() {
                             {paginatedProducts.map((product) => (
                                 <div
                                     key={product.id}
-                                    className="bg-white dark:bg-zinc-900 rounded-[16px] p-2.5 md:p-3 shadow-sm border border-[#3C3C43]/5 dark:border-white/5 cursor-pointer hover:shadow-md transition-all group relative overflow-hidden flex flex-col active:scale-[0.98] duration-100"
+                                    className="bg-white dark:bg-zinc-900 rounded-[16px] p-2.5 md:p-3 shadow-sm border border-gray-200 dark:border-white/5 cursor-pointer hover:shadow-md transition-all group relative overflow-hidden flex flex-col active:scale-[0.98] duration-100"
                                     onClick={() => router.push(`/inventory/${product.id}`)}
                                 >
-                                    <div className="aspect-square rounded-xl bg-[#F2F2F7] mb-2.5 md:mb-3 overflow-hidden border border-[#3C3C43]/5 relative">
+                                    <div className="aspect-square rounded-xl bg-[#F2F2F7] dark:bg-zinc-800 mb-2.5 md:mb-3 overflow-hidden border border-gray-200 dark:border-white/5 relative">
                                         <img
                                             src={product.image || 'https://placehold.co/100x100?text=No+Image'}
                                             alt={product.name}
-                                            className="w-full h-full object-cover mix-blend-multiply"
+                                            className="w-full h-full object-cover"
                                         />
                                         <div className="absolute top-2 right-2">
                                             <span className={`w - 2.5 h - 2.5 rounded - full block border border - white shadow - sm`} style={{ backgroundColor: getStockColor(product.status) }}></span>
@@ -629,11 +629,11 @@ export default function InventoryClient() {
                                     </div>
 
                                     <div className="space-y-1 flex-1 flex flex-col">
-                                        <h3 className="text-[13px] md:text-[14px] font-semibold text-[#1C1C1E] leading-tight line-clamp-2 h-[2.5em]">{product.name}</h3>
-                                        <p className="text-[11px] md:text-[12px] text-[#8E8E93] font-medium font-mono truncate">{product.sku}</p>
+                                        <h3 className="text-[13px] md:text-[14px] font-semibold text-gray-900 dark:text-white leading-tight line-clamp-2 h-[2.5em]">{product.name}</h3>
+                                        <p className="text-[11px] md:text-[12px] text-gray-500 dark:text-gray-400 font-medium font-mono truncate">{product.sku}</p>
                                         <div className="flex items-center justify-between pt-2 mt-auto">
-                                            <span className="text-[14px] md:text-[15px] font-semibold text-[#1C1C1E]">${product.price.toLocaleString()}</span>
-                                            <span className="px-1.5 py-0.5 bg-[#767680]/10 rounded text-[9px] md:text-[10px] font-semibold uppercase text-[#1C1C1E] truncate max-w-[60px] md:max-w-[80px]">{product.category}</span>
+                                            <span className="text-[14px] md:text-[15px] font-semibold text-gray-900 dark:text-white">${product.price.toLocaleString()}</span>
+                                            <span className="px-1.5 py-0.5 bg-[#767680]/10 dark:bg-white/10 rounded text-[9px] md:text-[10px] font-semibold uppercase text-gray-900 dark:text-white truncate max-w-[60px] md:max-w-[80px]">{product.category}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -644,35 +644,35 @@ export default function InventoryClient() {
                     {/* Empty State */}
                     {filteredProducts.length === 0 && (
                         <div className="text-center py-20">
-                            <div className="w-16 h-16 bg-[#E5E5EA] rounded-full mx-auto flex items-center justify-center mb-4">
-                                <svg className="w-8 h-8 text-[#8E8E93]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            <div className="w-16 h-16 bg-[#E5E5EA] dark:bg-zinc-800 rounded-full mx-auto flex items-center justify-center mb-4">
+                                <svg className="w-8 h-8 text-[#8E8E93] dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                             </div>
-                            <h3 className="text-[20px] font-semibold text-[#1C1C1E]">No Results</h3>
-                            <p className="text-[15px] text-[#8E8E93]">Try a different search term.</p>
+                            <h3 className="text-[20px] font-semibold text-gray-900 dark:text-white">No Results</h3>
+                            <p className="text-[15px] text-gray-500 dark:text-gray-400">Try a different search term.</p>
                         </div>
                     )}
 
                     {/* Pagination Footer */}
                     {filteredProducts.length > 0 && (
-                        <div className="px-6 py-6 mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#3C3C43]/5">
-                            <div className="text-[13px] text-[#8E8E93]">
-                                Showing <span className="font-medium text-[#1C1C1E]">{startIndex + 1}</span> to <span className="font-medium text-[#1C1C1E]">{Math.min(startIndex + itemsPerPage, filteredProducts.length)}</span> of <span className="font-medium text-[#1C1C1E]">{filteredProducts.length}</span> results
+                        <div className="px-6 py-6 mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 dark:border-white/5">
+                            <div className="text-[13px] text-gray-500 dark:text-gray-400">
+                                Showing <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span> to <span className="font-medium text-gray-900 dark:text-white">{Math.min(startIndex + itemsPerPage, filteredProducts.length)}</span> of <span className="font-medium text-gray-900 dark:text-white">{filteredProducts.length}</span> results
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => updatePage(Math.max(1, currentPage - 1))}
                                     disabled={currentPage === 1}
-                                    className="px-3 py-1.5 rounded-lg border border-[#3C3C43]/10 text-[13px] font-medium text-[#1C1C1E] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#F2F2F7] transition-colors active:scale-95"
+                                    className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-[13px] font-medium text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors active:scale-95"
                                 >
                                     Previous
                                 </button>
-                                <div className="text-[13px] font-medium text-[#1C1C1E] tabular-nums">
+                                <div className="text-[13px] font-medium text-gray-900 dark:text-white tabular-nums">
                                     Page {currentPage} of {Math.max(1, totalPages)}
                                 </div>
                                 <button
                                     onClick={() => updatePage(Math.min(totalPages, currentPage + 1))}
                                     disabled={currentPage === totalPages || totalPages === 0}
-                                    className="px-3 py-1.5 rounded-lg border border-[#3C3C43]/10 text-[13px] font-medium text-[#1C1C1E] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#F2F2F7] transition-colors active:scale-95"
+                                    className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-[13px] font-medium text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors active:scale-95"
                                 >
                                     Next
                                 </button>
