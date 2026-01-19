@@ -48,33 +48,31 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
             return NextResponse.json({ status: 'error', message: 'Product not found' }, { status: 404 });
         }
 
-        const userAgent = request.headers.get('User-Agent') || '';
-        const isPrinter = !userAgent.includes('Mozilla');
+        // FORCE FINAL LAYOUT FOR ALL (Ensures printer script gets it)
+        // -----------------------------------------------------------
+        // Field 'uvaNombre' -> Top Right
+        // Field 'nameEs'    -> Middle Big Text
+        // Field 'itemCode'  -> Bottom Small Text
 
-        if (isPrinter) {
-            // FORCE FINAL LAYOUT FOR PRINTER ONLY
-            // -----------------------------------------------------------
-            // Field 'uvaNombre' -> Top Right
-            // Field 'name'      -> Middle Big Text (OEM)
-            // Field 'itemCode'  -> Bottom Small Text (Name)
+        const valUva = product.uvaNombre || '';
+        const valOem = product.itemCode || product.sku || '';
+        const valName = product.nameEs || product.name || '';
 
-            const valUva = product.uvaNombre || '';
-            const valOem = product.itemCode || product.sku || '';
-            const valName = product.nameEs || product.name || '';
+        const layoutProduct = {
+            ...product,
+            // TOP -> UVA
+            uvaNombre: valUva,
 
-            return NextResponse.json({
-                status: 'success',
-                product: {
-                    ...product,
-                    uvaNombre: valUva,
-                    name: valOem,
-                    nameEs: valOem,
-                    itemCode: valName
-                }
-            });
-        }
+            // MIDDLE (Big Text) -> ITEM CODE (OEM)
+            name: valOem,
+            nameEs: valOem,
+            nameEn: valOem,
 
-        return NextResponse.json({ status: 'success', product });
+            // BOTTOM (Small Text) -> Spanish Name
+            itemCode: valName
+        };
+
+        return NextResponse.json({ status: 'success', product: layoutProduct });
     } catch (error: any) {
         console.error("🔥 [API] Fetch Error:", error);
         return NextResponse.json({ status: 'error', message: error.message }, { status: 500 });
