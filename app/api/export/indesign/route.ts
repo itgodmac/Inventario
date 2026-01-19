@@ -110,7 +110,7 @@ async function generateArchiveContent(archive: archiver.Archiver, filters: Filte
             if (product.image && product.image.startsWith('http')) {
                 try {
                     const ext = product.image.split('.').pop()?.split('?')[0] || 'jpg';
-                    imageFilename = `${sku}_${safeName}.${ext}`;
+                    imageFilename = `${sku}.${ext}`; // User requested ONLY ID (SKU) as filename
 
                     // Deduplication check (unlikely but good safety)
                     if (!processedImages.has(imageFilename)) {
@@ -132,7 +132,8 @@ async function generateArchiveContent(archive: archiver.Archiver, filters: Filte
                 'ITEM CODE': sku,
                 'Spanish Name': product.nameEs || product.name,
                 'English Name': product.nameEn || '',
-                'Category': product.category || ''
+                'Category': product.category || '',
+                '@Image': imagePathForCsv
             });
         }
 

@@ -32,6 +32,13 @@ export default function InventoryClient() {
 
     const [filteredProductsState, setFilteredProductsState] = useState<Product[]>([]);
 
+    // Calculate unique categories dynamically from products
+    const uniqueCategories = useMemo(() => {
+        if (!products) return [];
+        const categories = new Set(products.map(p => p.category).filter(Boolean));
+        return Array.from(categories).sort();
+    }, [products]);
+
     // UI state
     const [showScanner, setShowScanner] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -1074,6 +1081,16 @@ export default function InventoryClient() {
                     </div>
                 </div>
             )}
+
+            <ExportModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                initialFilters={{
+                    category: categoryFilter,
+                    sortBy: sortBy
+                }}
+                availableCategories={uniqueCategories}
+            />
         </main>
     );
 }
