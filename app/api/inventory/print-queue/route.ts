@@ -50,14 +50,36 @@ export async function GET() {
             return NextResponse.json({ job: null });
         }
 
-        // Delete it immediately (FIFO - Pop) so it doesn't get printed twice
-        // Note: In a robust system we might mark as 'processing' first, 
-        // but for this simple "fire and forget" requirement, delete on read is fine.
+        // Fetch product details manually
+        // Try finding by SKU first (as productId usually stores SKU)
+        let product = await prisma.product.findFirst({
+            where: { sku: job.productId }
+        });
+
+        // Fallback to ID if no SKU match
+        if (!product) {
+            product = await prisma.product.findUnique({
+                where: { id: job.productId }
+            });
+        }
+
+        // Delete job immediately
         await prisma.printQueue.delete({
             where: { id: job.id }
         });
 
-        return NextResponse.json({ job });
+        // Return job with enriched product data
+        // Explicitly format the data for the printer script
+        return NextResponse.json({
+            job: {
+                ...job,
+                product,
+                // If printer script uses 'barcode' or 'targetCode' property if present
+                barcode: product?.barcode || product?.sku || job.productId,
+                sku: product?.sku || job.productId,
+                name: product?.name || ''
+            }
+        });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to poll queue' }, { status: 500 });
     }

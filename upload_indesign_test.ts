@@ -72,6 +72,7 @@ async function main() {
             const nameEn = row['__EMPTY_2']?.toString()?.trim() || ''; // Nombre Eng
             const nameEs = row['__EMPTY_3']?.toString()?.trim() || ''; // Nombre Esp
             const category = row['__EMPTY_6']?.toString()?.trim() || ''; // Categoria
+            const barcode = row['__EMPTY']?.toString()?.trim() || itemCode; // Barcode real
 
             // Check if image exists using ID (since folder is CON NUMERO)
             const imagePath = path.join(IMAGES_PATH, `${id}.png`);
@@ -87,11 +88,12 @@ async function main() {
                     nameEs,
                     nameEn,
                     category,
+                    barcode: barcode, // Update with correct barcode
                     name: nameEs || nameEn,
                 },
                 create: {
                     sku: itemCode,
-                    barcode: itemCode,
+                    barcode: barcode, // Create with correct barcode
                     nameEs,
                     nameEn,
                     name: nameEs || nameEn,
