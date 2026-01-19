@@ -63,21 +63,27 @@ export async function GET() {
             });
         }
 
+        // Helper to sanitize partial data
+        const clean = (val: string | null | undefined) => (!val || val === 'null' || val === 'undefined') ? null : val;
+
+        const realBarcode = clean(product?.barcode) || clean(product?.sku) || job.productId;
+
         // Delete job immediately
         await prisma.printQueue.delete({
             where: { id: job.id }
         });
 
         // Return job with enriched product data
-        // Explicitly format the data for the printer script
         return NextResponse.json({
             job: {
                 ...job,
                 product,
-                // If printer script uses 'barcode' or 'targetCode' property if present
-                barcode: product?.barcode || product?.sku || job.productId,
-                sku: product?.sku || job.productId,
-                name: product?.name || ''
+                barcode: realBarcode,
+                sku: clean(product?.sku) || job.productId,
+                name: product?.name || '',
+                // Fields requested for label layout (standard access):
+                oem: clean(product?.itemCode) || '',
+                uvaName: clean(product?.uvaNombre) || ''
             }
         });
     } catch (error) {

@@ -39,66 +39,69 @@ export default function PrintLabelBodega({ product, piezas = 1 }: PrintLabelBode
     const unidad = "PIEZA";
 
     return (
-        <div className="flex flex-col h-[100mm] w-[62mm] bg-white p-[4.6mm] box-border relative break-inside-avoid print:break-inside-avoid overflow-hidden font-poppins">
+        <div className="flex flex-col h-[100mm] w-[62mm] bg-white p-[3mm] box-border relative break-inside-avoid print:break-inside-avoid overflow-hidden font-poppins text-black">
             <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+        @media print {
+            * {
+                color: #000000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            body {
+                background-color: white !important;
+            }
+        }
       `}</style>
 
-            {/* Top Row: Image + Text */}
-            <div className="flex flex-row items-center mb-[5mm] gap-[4mm]">
-                <div className="w-[20mm] h-[20mm] shrink-0 flex items-center justify-center bg-white rounded-[2mm] border border-transparent">
+            {/* Top Row: Image + Text (Reduced height) */}
+            <div className="flex flex-row items-center mb-[3mm] gap-[3mm] text-black shrink-0">
+                <div className="w-[15mm] h-[15mm] shrink-0 flex items-center justify-center bg-white rounded-[1mm] border border-transparent">
                     <img
-                        className="w-full h-full object-cover rounded-[2mm]"
+                        className="w-full h-full object-contain rounded-[1mm]"
                         src={imageUrl}
                         alt="Imagen producto"
                     />
                 </div>
-                <div className="flex-1 flex flex-col justify-start overflow-hidden">
-                    <div className="text-[10pt] font-bold uppercase mb-[1mm] leading-[1.1] break-words">
+                <div className="flex-1 flex flex-col justify-center overflow-hidden">
+                    <div className="text-[11pt] font-black uppercase leading-[1.1] break-words text-black">
                         {mainText}
                     </div>
-                    {variantText && (
-                        <div className="text-[14pt] font-normal uppercase -mt-[1mm] whitespace-nowrap overflow-hidden text-ellipsis">
-                            ({variantText})
+                </div>
+            </div>
+
+            {/* Middle Content - Descriptive (Now pushed to bottom) */}
+            <div className="flex-grow flex flex-col justify-end overflow-hidden pb-1">
+                <div className="text-[15.5pt] font-black text-center leading-[1.1] mb-1 uppercase text-black line-clamp-4">
+                    {productName}
+                </div>
+                {idcodeValue && (
+                    <div className="text-[9.5pt] font-bold text-center text-black uppercase">
+                        {idcodeValue}
+                    </div>
+                )}
+            </div>
+
+            {/* Bottom Section: Legal Box + Barcode (Fixed at bottom) */}
+            <div className="shrink-0">
+                <div className="border-[1.2px] border-black p-[3px] text-[6.5pt] font-bold leading-[1.0] text-center mb-[2mm] text-black">
+                    CONTENIDO: {piezas} {unidad.toUpperCase()}{piezas > 1 ? 'S' : ''}<br />
+                    IMPORTADO POR: MCA BIM AND STRUCTURAL SOLUTIONS SA DE CV<br />
+                    MBS160722UD5 | BLVD. LÁZARO CÁRDENAS 17-A COL. LA ESMERALDA CP 22117<br />
+                    TIJUANA, BC, MÉXICO | HECHO EN CHINA
+                </div>
+
+                <div className="w-full text-center pb-2">
+                    {product.barcode && (
+                        <div className="flex flex-col items-center">
+                            <img
+                                src={`https://barcodeapi.org/api/128/${product.barcode}`}
+                                alt="Código de Barras"
+                                className="w-full h-[15mm] object-contain"
+                            />
                         </div>
                     )}
                 </div>
-            </div>
-
-            {/* Middle Content - Pushed to bottom of available space before barcode? 
-          Snippet says .middle-content { margin-top: auto; } 
-      */}
-            <div className="mt-auto">
-                <div className="text-[12pt] font-bold text-center leading-[1.2] mb-0 uppercase">
-                    {productName}
-                    {idcodeValue && (
-                        <>
-                            <br />
-                            <span className="text-[8pt] font-normal">{idcodeValue}</span>
-                        </>
-                    )}
-                </div>
-
-                <div className="border border-black p-[4px] text-[6pt] leading-[1.1] text-center mb-[2mm] mt-[2mm]">
-                    CONTENIDO: {piezas} {unidad.toUpperCase()}{piezas > 1 ? 'S' : ''}<br />
-                    IMPORTADO POR:<br />
-                    MCA BIM AND STRUCTURAL SOLUTIONS SA DE CV<br />
-                    MBS160722UD5<br />
-                    BLVD. LÁZARO CÁRDENAS 17-A COL. LA ESMERALDA CP 22117<br />
-                    TIJUANA, BC, MÉXICO<br />
-                    HECHO EN CHINA
-                </div>
-            </div>
-
-            {/* Footer: Barcode */}
-            <div className="w-full text-center">
-                {product.barcode && (
-                    <img
-                        src={`https://barcodeapi.org/api/128/${product.barcode}`}
-                        alt="Código de Barras"
-                        className="w-full h-[15mm] object-contain"
-                    />
-                )}
             </div>
         </div>
     );

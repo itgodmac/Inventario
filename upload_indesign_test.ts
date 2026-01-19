@@ -73,6 +73,8 @@ async function main() {
             const nameEs = row['__EMPTY_3']?.toString()?.trim() || ''; // Nombre Esp
             const category = row['__EMPTY_6']?.toString()?.trim() || ''; // Categoria
             const barcode = row['__EMPTY']?.toString()?.trim() || itemCode; // Barcode real
+            const uvaNombre = row['__EMPTY_5']?.toString()?.trim() || ''; // UVA Nombre
+            const oem = itemCode; // El usuario dice que ItemCode es OEM
 
             // Check if image exists using ID (since folder is CON NUMERO)
             const imagePath = path.join(IMAGES_PATH, `${id}.png`);
@@ -88,12 +90,16 @@ async function main() {
                     nameEs,
                     nameEn,
                     category,
-                    barcode: barcode, // Update with correct barcode
+                    barcode: barcode,
+                    uvaNombre: uvaNombre, // Actualizar UVA
+                    itemCode: oem, // Actualizar Item Code (OEM)
                     name: nameEs || nameEn,
                 },
                 create: {
                     sku: itemCode,
-                    barcode: barcode, // Create with correct barcode
+                    barcode: barcode,
+                    itemCode: oem, // Guardar Item Code (OEM)
+                    uvaNombre: uvaNombre, // Guardar UVA
                     nameEs,
                     nameEn,
                     name: nameEs || nameEn,

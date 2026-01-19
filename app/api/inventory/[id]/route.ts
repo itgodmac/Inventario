@@ -48,6 +48,32 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
             return NextResponse.json({ status: 'error', message: 'Product not found' }, { status: 404 });
         }
 
+        const userAgent = request.headers.get('User-Agent') || '';
+        const isPrinter = !userAgent.includes('Mozilla');
+
+        if (isPrinter) {
+            // FORCE FINAL LAYOUT FOR PRINTER ONLY
+            // -----------------------------------------------------------
+            // Field 'uvaNombre' -> Top Right
+            // Field 'name'      -> Middle Big Text (OEM)
+            // Field 'itemCode'  -> Bottom Small Text (Name)
+
+            const valUva = product.uvaNombre || '';
+            const valOem = product.itemCode || product.sku || '';
+            const valName = product.nameEs || product.name || '';
+
+            return NextResponse.json({
+                status: 'success',
+                product: {
+                    ...product,
+                    uvaNombre: valUva,
+                    name: valOem,
+                    nameEs: valOem,
+                    itemCode: valName
+                }
+            });
+        }
+
         return NextResponse.json({ status: 'success', product });
     } catch (error: any) {
         console.error("🔥 [API] Fetch Error:", error);
