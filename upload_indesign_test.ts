@@ -22,7 +22,7 @@ async function uploadImage(imagePath: string, productId: string): Promise<string
             body: formData as any,
         });
 
-        const data = await response.json();
+        const data = await response.json() as any;
         if (data.success) {
             console.log(`✅ Uploaded image for ${productId}: ${data.url}`);
             return data.url;
