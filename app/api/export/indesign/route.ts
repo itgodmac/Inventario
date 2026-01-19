@@ -117,11 +117,11 @@ async function generateArchiveContent(archive: archiver.Archiver, filters: Filte
                         const response = await fetch(product.image);
                         if (response.ok) {
                             const arrayBuffer = await response.arrayBuffer();
-                            archive.append(Buffer.from(arrayBuffer), { name: `images/${imageFilename}` });
+                            archive.append(Buffer.from(arrayBuffer), { name: imageFilename });
                             processedImages.add(imageFilename);
                         }
                     }
-                    imagePathForCsv = `images/${imageFilename}`;
+                    imagePathForCsv = imageFilename;
                 } catch (e) {
                     console.error(`Failed individual image download: ${product.image}`, e);
                 }
@@ -129,18 +129,10 @@ async function generateArchiveContent(archive: archiver.Archiver, filters: Filte
 
             // CSV Row
             csvData.push({
-                'SKU': sku,
-                'Name': product.name,
+                'ITEM CODE': sku,
                 'Spanish Name': product.nameEs || product.name,
                 'English Name': product.nameEn || '',
-                'Price': product.price.toFixed(2),
-                'Factory Price': (product.priceZG || 0).toFixed(2),
-                'Competitor Price': (product.priceOth || 0).toFixed(2),
-                'Stock': product.stock,
-                'Barcode': product.barcode || '',
-                'Category': product.category || '',
-                'Status': product.status,
-                '@Image': imagePathForCsv
+                'Category': product.category || ''
             });
         }
 

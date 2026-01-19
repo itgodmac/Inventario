@@ -58,10 +58,40 @@ export default function InventoryClient() {
         }
     }, [products, selectedProduct]);
 
-    // Reset copies when modal opens or product changes
+
+
+    // Reset copies and tab when modal opens or product changes
     useEffect(() => {
         setPrintCopies(1);
+        setModalTab('info');
+        setPhysicalCount('');
+        setCountStatus('idle');
     }, [selectedProduct, isModalOpen]);
+
+    // Block body scroll when modal is open (mobile-friendly)
+    useEffect(() => {
+        if (isModalOpen) {
+            // Save current scroll position
+            const scrollY = window.scrollY;
+            document.body.style.position = 'fixed';
+            document.body.style.top = `-${scrollY}px`;
+            document.body.style.width = '100%';
+        } else {
+            // Restore scroll position
+            const scrollY = document.body.style.top;
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+            window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        }
+
+        // Cleanup
+        return () => {
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+        };
+    }, [isModalOpen]);
 
     // Quick Count State
     const [physicalCount, setPhysicalCount] = useState<string>('');
@@ -89,10 +119,23 @@ export default function InventoryClient() {
             isFirstRun.current = false;
             return;
         }
+
+        // Check if we're on mobile
+        const isMobile = window.innerWidth < 768;
         const params = new URLSearchParams(window.location.search);
-        if (params.get('page') !== '1') {
-            params.set('page', '1');
-            router.replace(`${pathname}?${params.toString()} `, { scroll: false });
+
+        if (isMobile) {
+            // On mobile, remove page parameter entirely
+            if (params.has('page')) {
+                params.delete('page');
+                router.replace(`${pathname}${params.toString() ? '?' + params.toString() : ''}`, { scroll: false });
+            }
+        } else {
+            // On desktop, reset to page 1 when filters change
+            if (params.get('page') !== '1') {
+                params.set('page', '1');
+                router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+            }
         }
     }, [searchQuery, categoryFilter, pathname, router]);
 
@@ -515,55 +558,80 @@ export default function InventoryClient() {
                     {/* MOBILE VIEW - Always shown on mobile, independent of viewMode */}
                     <div className="md:hidden relative">
                         <div className="bg-gray-100 dark:bg-zinc-950/50 rounded-xl p-2.5 mt-4 pb-20">
-                            {paginatedProducts.map((product) => (
-                                <div
-                                    key={product.id}
-                                    onClick={() => {
-                                        setSelectedProduct(product);
-                                        setIsModalOpen(true);
-                                    }}
-                                    className="bg-white dark:bg-zinc-900 rounded-lg p-2.5 flex items-center mb-2 last:mb-0 active:opacity-80 active:scale-[0.99] transition-all text-foreground shadow-sm border border-transparent dark:border-white/10"
-                                >
-                                    <img
-                                        src={product.image || 'https://via.placeholder.com/80'}
-                                        alt={product.name}
-                                        className="w-20 h-20 rounded-[10px] object-cover mr-2.5"
-                                    />
+                            {(isLoading || !products || products.length === 0) && filteredProducts.length === 0 ? (
+                                // Skeleton Loading State
+                                Array.from({ length: 6 }).map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="bg-white dark:bg-zinc-900 rounded-lg p-2.5 flex items-center mb-2 last:mb-0 shadow-sm border border-transparent dark:border-white/10 animate-pulse"
+                                    >
+                                        {/* Image Skeleton */}
+                                        <div className="w-20 h-20 rounded-[10px] bg-gray-200 dark:bg-zinc-800 mr-2.5 flex-shrink-0" />
 
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-center mb-[5px]">
-                                            <h3 className="text-[16px] font-semibold text-card-foreground flex-1 mr-2.5 line-clamp-2">
-                                                {product.nameEs || product.name}
-                                            </h3>
-                                            <span className="text-[16px] text-card-foreground">
-                                                ${product.price.toLocaleString('en-US', {
-                                                    minimumFractionDigits: 2,
-                                                    maximumFractionDigits: 2
-                                                })}
-                                            </span>
+                                        <div className="flex-1 min-w-0">
+                                            {/* Title Skeleton */}
+                                            <div className="h-5 bg-gray-200 dark:bg-zinc-800 rounded w-3/4 mb-2" />
+                                            {/* Subtitle Skeleton */}
+                                            <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-1/2 mb-2" />
+                                            {/* Bottom Row Skeleton */}
+                                            <div className="flex justify-between items-center">
+                                                <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-1/3" />
+                                                <div className="h-6 bg-gray-200 dark:bg-zinc-800 rounded-xl w-20" />
+                                            </div>
                                         </div>
+                                    </div>
+                                ))
+                            ) : filteredProducts.length > 0 ? (
+                                filteredProducts.map((product) => (
+                                    <div
+                                        key={product.id}
+                                        onClick={() => {
+                                            setSelectedProduct(product);
+                                            setIsModalOpen(true);
+                                        }}
+                                        className="bg-white dark:bg-zinc-900 rounded-lg p-2.5 flex items-center mb-2 last:mb-0 active:opacity-80 active:scale-[0.99] transition-all text-foreground shadow-sm border border-transparent dark:border-white/10"
+                                    >
+                                        <img
+                                            src={product.image || 'https://placehold.co/80x80.png'}
+                                            alt={product.name}
+                                            className="w-20 h-20 rounded-[10px] object-cover mr-2.5"
+                                        />
 
-                                        <p className="text-[14px] text-muted-foreground">
-                                            {product.barcode || product.sku}
-                                        </p>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-center mb-[5px]">
+                                                <h3 className="text-[16px] font-semibold text-card-foreground flex-1 mr-2.5 line-clamp-2">
+                                                    {product.nameEs || product.name}
+                                                </h3>
+                                                <span className="text-[16px] text-card-foreground">
+                                                    ${product.price.toLocaleString('en-US', {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2
+                                                    })}
+                                                </span>
+                                            </div>
 
-                                        <div className="flex justify-between items-center mt-1">
-                                            <span className="text-[14px] text-muted-foreground">
-                                                {product.category || 'N/A'}
-                                            </span>
-                                            <div className="flex items-center">
-                                                <div
-                                                    className={`px-3 h-6 rounded-xl flex items-center justify-center ${getStockBadgeClass(product.stock)}`}
-                                                >
-                                                    <span className="text-[12px] font-medium">
-                                                        Stock: {product.stock}
-                                                    </span>
+                                            <p className="text-[14px] text-muted-foreground">
+                                                {product.barcode || product.sku}
+                                            </p>
+
+                                            <div className="flex justify-between items-center mt-1">
+                                                <span className="text-[14px] text-muted-foreground">
+                                                    {product.category || 'N/A'}
+                                                </span>
+                                                <div className="flex items-center">
+                                                    <div
+                                                        className={`px-3 h-6 rounded-xl flex items-center justify-center ${getStockBadgeClass(product.stock)}`}
+                                                    >
+                                                        <span className="text-[12px] font-medium">
+                                                            Stock: {product.stock}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                            ) : null}
                         </div>
 
                     </div>
@@ -642,7 +710,7 @@ export default function InventoryClient() {
                     )}
 
                     {/* Empty State */}
-                    {filteredProducts.length === 0 && (
+                    {!isLoading && products && products.length > 0 && filteredProducts.length === 0 && (
                         <div className="text-center py-20">
                             <div className="w-16 h-16 bg-[#E5E5EA] dark:bg-zinc-800 rounded-full mx-auto flex items-center justify-center mb-4">
                                 <svg className="w-8 h-8 text-[#8E8E93] dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -652,9 +720,9 @@ export default function InventoryClient() {
                         </div>
                     )}
 
-                    {/* Pagination Footer */}
+                    {/* Pagination Footer - Desktop Only */}
                     {filteredProducts.length > 0 && (
-                        <div className="px-6 py-6 mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 dark:border-white/5">
+                        <div className="hidden md:flex px-6 py-6 mt-4 flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 dark:border-white/5">
                             <div className="text-[13px] text-gray-500 dark:text-gray-400">
                                 Showing <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span> to <span className="font-medium text-gray-900 dark:text-white">{Math.min(startIndex + itemsPerPage, filteredProducts.length)}</span> of <span className="font-medium text-gray-900 dark:text-white">{filteredProducts.length}</span> results
                             </div>
@@ -706,127 +774,272 @@ export default function InventoryClient() {
             {/* Mobile Product Detail Modal */}
             {isModalOpen && selectedProduct && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 md:hidden">
-                    {/* Backdrop */}
+                    {/* Simple Black Backdrop */}
                     <div
-                        className="absolute inset-0 bg-black/60 animate-in fade-in duration-200"
+                        className="absolute inset-0 bg-black/70 animate-in fade-in duration-300"
                         onClick={() => setIsModalOpen(false)}
                     />
 
-                    {/* Modal Content - 90% width like Odoo */}
-                    <div className="bg-white dark:bg-zinc-900 rounded-[15px] w-[90%] p-5 shadow-2xl relative animate-in zoom-in-95 duration-200 max-h-[85vh] overflow-y-auto">
-                        {/* Close Button - 36x36 solid black */}
+                    {/* Modal Content - Clean & Minimal */}
+                    <div className="bg-white dark:bg-zinc-900 rounded-3xl w-[90%] p-6 shadow-2xl relative animate-in zoom-in-95 duration-300 max-h-[85vh] overflow-y-auto">
+                        {/* Close Button */}
                         <button
                             onClick={() => setIsModalOpen(false)}
-                            className="absolute right-[15px] top-[15px] z-10 w-9 h-9 bg-white text-black rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-lg"
+                            className="absolute right-4 top-4 z-10 w-8 h-8 bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-white rounded-full flex items-center justify-center active:scale-90 transition-transform"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
 
-                        {/* Product Image - 200x200 centered */}
-                        <img
-                            src={selectedProduct.image || 'https://via.placeholder.com/200'}
-                            alt={selectedProduct.name}
-                            className="w-[200px] h-[200px] rounded-[10px] mb-5 mx-auto object-cover"
-                        />
+                        {/* Product Image */}
+                        <div className="relative mb-5">
+                            <img
+                                src={selectedProduct.image || 'https://placehold.co/400x400.png'}
+                                alt={selectedProduct.name}
+                                className="w-full aspect-square rounded-2xl mx-auto object-cover"
+                            />
+                            {/* Camera Button - Mobile Only */}
+                            <button
+                                onClick={() => document.getElementById('mobile-photo-input')?.click()}
+                                className="absolute bottom-3 right-3 w-12 h-12 bg-gray-900 dark:bg-white text-white dark:text-black rounded-full flex items-center justify-center active:scale-95 transition-transform shadow-lg"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </button>
+                            {/* Hidden File Input */}
+                            <input
+                                id="mobile-photo-input"
+                                type="file"
+                                accept="image/*"
+                                capture="environment"
+                                className="hidden"
+                                onChange={async (e) => {
+                                    if (!e.target.files || !e.target.files[0]) return;
 
-                        {/* Header: Name and Price side by side */}
-                        <div className="flex justify-between items-start w-full mb-2.5">
-                            {/* Name - 60% width */}
-                            <div className="w-[60%] pr-2.5">
-                                <h2 className="text-[24px] font-semibold text-gray-900 dark:text-white leading-7 flex-wrap">
-                                    {selectedProduct.nameEs || selectedProduct.name}
-                                </h2>
-                            </div>
-                            {/* Price - 40% width, right aligned */}
-                            <div className="w-[40%] flex items-end flex-col">
-                                <span className="text-[24px] font-medium text-gray-900 dark:text-white">
-                                    ${selectedProduct.price.toLocaleString('en-US', {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2
-                                    })}
-                                </span>
-                            </div>
+                                    const file = e.target.files[0];
+                                    const toastId = toast.loading('Subiendo imagen...');
+
+                                    try {
+                                        // Upload image
+                                        const formData = new FormData();
+                                        formData.append('file', file);
+                                        formData.append('productId', selectedProduct.sku || selectedProduct.id.toString());
+
+                                        const uploadRes = await fetch('/api/upload', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        const uploadData = await uploadRes.json();
+
+                                        if (!uploadData.success) {
+                                            throw new Error('Error al subir imagen');
+                                        }
+
+                                        // Update product with new image
+                                        const updateRes = await fetch(`/api/inventory/${selectedProduct.id}`, {
+                                            method: 'PATCH',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ image: uploadData.url })
+                                        });
+
+                                        if (!updateRes.ok) {
+                                            throw new Error('Error al actualizar producto');
+                                        }
+
+                                        // Update local state
+                                        setSelectedProduct({ ...selectedProduct, image: uploadData.url });
+                                        refresh(); // Refresh the product list
+                                        toast.success('Imagen actualizada', { id: toastId });
+                                    } catch (error: any) {
+                                        toast.error(error.message || 'Error al actualizar imagen', { id: toastId });
+                                    }
+
+                                    // Reset input
+                                    e.target.value = '';
+                                }}
+                            />
                         </div>
 
-                        {/* Tabs */}
-                        <div className="flex gap-2 mb-4">
-                            <button
-                                onClick={() => setModalTab('info')}
-                                className={`flex-1 py-2 rounded-lg text-[14px] font-semibold transition-all ${modalTab === 'info'
-                                    ? 'bg-white text-black shadow-md'
-                                    : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
-                                    }`}
-                            >
-                                Info
-                            </button>
-                            <button
-                                onClick={() => setModalTab('count')}
-                                className={`flex-1 py-2 rounded-lg text-[14px] font-semibold transition-all ${modalTab === 'count'
-                                    ? 'bg-white text-black shadow-md'
-                                    : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
-                                    }`}
-                            >
-                                Contar
-                            </button>
+                        {/* Header: Name and Price */}
+                        <div className="mb-5">
+                            <h2 className="text-[28px] font-bold text-gray-900 dark:text-white leading-tight">
+                                {selectedProduct.nameEs || selectedProduct.name}
+                            </h2>
+                            {selectedProduct.nameEn && selectedProduct.nameEs && (
+                                <p className="text-[16px] text-gray-600 dark:text-gray-400 mt-1 leading-snug">
+                                    {selectedProduct.nameEn}
+                                </p>
+                            )}
+                            <div className="text-[26px] font-bold text-gray-900 dark:text-white mt-2">
+                                ${selectedProduct.price.toLocaleString('en-US', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </div>
                         </div>
 
                         {/* Tab Content */}
                         {modalTab === 'info' ? (
                             <>
-                                {/* Barcode */}
-                                <p className="text-[16px] text-muted-foreground mb-0">
-                                    {selectedProduct.barcode || selectedProduct.sku}
-                                </p>
+                                {/* Stock Card - Monochrome */}
+                                <button
+                                    onClick={() => setModalTab('count')}
+                                    className="w-full bg-gray-900 dark:bg-white rounded-2xl p-5 mb-3 active:scale-[0.98] transition-all cursor-pointer group relative overflow-hidden"
+                                >
+                                    {/* Tap Indicator */}
+                                    <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-white/20 dark:bg-black/20 text-white dark:text-black px-3 py-1.5 rounded-full text-[11px] font-semibold">
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg>
+                                        <span>Contar</span>
+                                    </div>
 
-                                {/* Bottom row: Measures and Stock */}
-                                <div className="flex justify-between items-center w-full mt-1">
-                                    <span className="text-[14px] text-gray-900 dark:text-white">
-                                        Medidas: {selectedProduct.category || 'N/A'}
-                                    </span>
-                                    <div
-                                        className={`px-3 h-6 rounded-xl flex items-center justify-center ${getStockBadgeClass(selectedProduct.stock)}`}
-                                    >
-                                        <span className="text-[12px] font-medium">
-                                            Stock: {selectedProduct.stock}
+                                    <div className="flex items-center justify-between text-white dark:text-black">
+                                        <div className="text-left flex-1">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <svg className="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                                </svg>
+                                                <span className="text-[13px] font-semibold uppercase tracking-wider opacity-80">Stock Disponible</span>
+                                            </div>
+                                            <div className="text-[56px] font-bold leading-none tabular-nums mb-2">
+                                                {selectedProduct.stock}
+                                            </div>
+                                            <div className="inline-flex px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide bg-white/20 dark:bg-black/20">
+                                                {selectedProduct.stock === 0 ? 'Agotado' : selectedProduct.stock <= 5 ? 'Stock Bajo' : 'Disponible'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </button>
+
+                                {/* Hint */}
+                                <div className="flex items-center justify-center gap-2 mb-4 text-gray-500 dark:text-gray-400 text-[13px]">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                                    </svg>
+                                    <span>Toca el stock para actualizar el conteo</span>
+                                </div>
+
+                                {/* Information List - Monochrome */}
+                                <div className="bg-gray-50 dark:bg-zinc-800 rounded-2xl overflow-hidden mb-4 border border-gray-200 dark:border-zinc-700">
+                                    {/* SKU/OEM */}
+                                    {selectedProduct.sku && (
+                                        <>
+                                            <div className="flex items-center justify-between px-4 py-3.5">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 flex items-center justify-center">
+                                                        <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                                        </svg>
+                                                    </div>
+                                                    <span className="text-[15px] text-gray-900 dark:text-white">OEM</span>
+                                                </div>
+                                                <span className="text-[15px] font-semibold text-gray-900 dark:text-white font-mono">
+                                                    {selectedProduct.sku}
+                                                </span>
+                                            </div>
+                                            <div className="h-px bg-gray-200 dark:bg-zinc-700 mx-4"></div>
+                                        </>
+                                    )}
+
+                                    {/* Barcode */}
+                                    {selectedProduct.barcode && (
+                                        <>
+                                            <div className="flex items-center justify-between px-4 py-3.5">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 flex items-center justify-center">
+                                                        <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 4h2v16H3V4zm5 0h2v16H8V4zm5 0h2v16h-2V4zm5 0h3v16h-3V4z" />
+                                                        </svg>
+                                                    </div>
+                                                    <span className="text-[15px] text-gray-900 dark:text-white">Código de Barras</span>
+                                                </div>
+                                                <span className="text-[15px] font-semibold text-gray-900 dark:text-white font-mono">
+                                                    {selectedProduct.barcode}
+                                                </span>
+                                            </div>
+                                            <div className="h-px bg-gray-200 dark:bg-zinc-700 mx-4"></div>
+                                        </>
+                                    )}
+
+                                    {/* Category */}
+                                    <div className="flex items-center justify-between px-4 py-3.5">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 flex items-center justify-center">
+                                                <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                                </svg>
+                                            </div>
+                                            <span className="text-[15px] text-gray-900 dark:text-white">Categoría</span>
+                                        </div>
+                                        <span className="text-[15px] font-semibold text-gray-900 dark:text-white">
+                                            {selectedProduct.category || 'Sin categoría'}
                                         </span>
                                     </div>
                                 </div>
 
-                                {/* Action Button */}
-                                {/* Action Button */}
-                                <div className="flex items-center gap-3 mt-4">
-                                    <div className="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-xl p-1 shrink-0 h-[52px]">
-                                        <button
-                                            onClick={() => setPrintCopies(Math.max(1, printCopies - 1))}
-                                            className="w-10 h-full flex items-center justify-center text-gray-500 dark:text-gray-400 active:bg-gray-200 dark:active:bg-zinc-700 rounded-lg transition-colors"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
-                                        </button>
-                                        <div className="w-8 flex justify-center text-[18px] font-bold text-gray-900 dark:text-white tabular-nums">
-                                            {printCopies}
+                                {/* Print Action - Monochrome */}
+                                <div className="bg-gray-50 dark:bg-zinc-800 rounded-2xl p-4 border border-gray-200 dark:border-zinc-700">
+                                    <div className="flex items-center gap-3">
+                                        {/* Copies Stepper */}
+                                        <div className="flex items-center bg-white dark:bg-zinc-700 rounded-full overflow-hidden border border-gray-300 dark:border-zinc-600">
+                                            <button
+                                                onClick={() => setPrintCopies(Math.max(1, printCopies - 1))}
+                                                className="w-11 h-11 flex items-center justify-center text-gray-900 dark:text-white active:bg-gray-100 dark:active:bg-zinc-600 transition-colors"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+                                                </svg>
+                                            </button>
+                                            <div className="w-10 flex justify-center text-[17px] font-bold text-gray-900 dark:text-white tabular-nums">
+                                                {printCopies}
+                                            </div>
+                                            <button
+                                                onClick={() => setPrintCopies(printCopies + 1)}
+                                                className="w-11 h-11 flex items-center justify-center text-gray-900 dark:text-white active:bg-gray-100 dark:active:bg-zinc-600 transition-colors"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                                </svg>
+                                            </button>
                                         </div>
+
+                                        {/* Print Button - Black */}
                                         <button
-                                            onClick={() => setPrintCopies(printCopies + 1)}
-                                            className="w-10 h-full flex items-center justify-center text-gray-500 dark:text-gray-400 active:bg-gray-200 dark:active:bg-zinc-700 rounded-lg transition-colors"
+                                            onClick={handleRemotePrint}
+                                            className="flex-1 bg-gray-900 dark:bg-white text-white dark:text-black h-11 rounded-full font-semibold text-[17px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                            </svg>
+                                            Imprimir
                                         </button>
                                     </div>
-                                    <button
-                                        onClick={handleRemotePrint}
-                                        className="flex-1 bg-[#007AFF] text-white h-[52px] rounded-xl font-semibold text-[16px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg shadow-blue-500/20"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                        </svg>
-                                        Imprimir
-                                    </button>
                                 </div>
                             </>
                         ) : (
                             <>
+                                {/* Back Button Header */}
+                                <div className="flex items-center gap-3 mb-4">
+                                    <button
+                                        onClick={() => setModalTab('info')}
+                                        className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white active:scale-95 transition-all"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                        <span className="text-[15px] font-semibold">Volver</span>
+                                    </button>
+                                    <div className="flex-1 text-center">
+                                        <h3 className="text-[18px] font-bold text-gray-900 dark:text-white">Actualizar Stock</h3>
+                                    </div>
+                                    <div className="w-16"></div> {/* Spacer for centering */}
+                                </div>
+
                                 {/* Quick Count Interface */}
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
@@ -837,13 +1050,13 @@ export default function InventoryClient() {
                                         </div>
 
                                         {/* Physical Count Input */}
-                                        <div className="flex flex-col items-center p-4 rounded-xl bg-white dark:bg-zinc-800 border-2 border-[#007AFF] relative">
-                                            <span className="text-[11px] font-bold text-[#007AFF] uppercase mb-1">Físico</span>
+                                        <div className="flex flex-col items-center p-4 rounded-xl bg-white dark:bg-zinc-900 border-2 border-gray-900 dark:border-white relative">
+                                            <span className="text-[11px] font-bold text-gray-900 dark:text-white uppercase mb-1">Físico</span>
                                             <div className="text-[32px] font-bold text-gray-900 dark:text-white leading-none">
                                                 {physicalCount || '0'}
                                             </div>
-                                            {countStatus === 'matching' && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#34C759] animate-pulse" />}
-                                            {countStatus === 'discrepancy' && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#FF3B30] animate-pulse" />}
+                                            {countStatus === 'matching' && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gray-900 dark:bg-white animate-pulse" />}
+                                            {countStatus === 'discrepancy' && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gray-900 dark:bg-white animate-pulse" />}
                                         </div>
                                     </div>
 
