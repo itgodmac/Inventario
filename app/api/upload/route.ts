@@ -11,16 +11,30 @@ export async function POST(request: NextRequest) {
         });
 
         const formData = await request.formData();
-        const file = formData.get('file') as File;
+        const file = formData.get('file');
         const productId = formData.get('productId') as string;
 
         if (!file) {
-            return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+            return NextResponse.json({ success: false, error: 'No file provided' }, { status: 400 });
         }
 
-        // Convert file to buffer
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
+        let buffer: Buffer;
+
+        // Handle different file types (File from browser or ReadableStream from server)
+        if (file instanceof File) {
+            // Browser upload
+            const bytes = await file.arrayBuffer();
+            buffer = Buffer.from(bytes);
+        } else if (typeof file === 'object' && 'pipe' in file) {
+            // Server-side stream (from node-fetch FormData)
+            const chunks: any[] = [];
+            for await (const chunk of file as any) {
+                chunks.push(chunk);
+            }
+            buffer = Buffer.concat(chunks);
+        } else {
+            return NextResponse.json({ success: false, error: 'Invalid file format' }, { status: 400 });
+        }
 
         // Upload to Cloudinary with product ID as filename
         const result = await new Promise((resolve, reject) => {
@@ -44,6 +58,6 @@ export async function POST(request: NextRequest) {
         });
     } catch (error: any) {
         console.error('Upload error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }

@@ -16,6 +16,7 @@ interface Product {
     sku: string | null;
     barcode: string | null;
     itemCode: string | null;
+    photoId: string | null;
     category: string | null;
     stock: number;
     price: number;
@@ -46,6 +47,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
         nameEs: product.nameEs || '',
         sku: product.sku || '',
         itemCode: product.itemCode || '',
+        photoId: product.photoId || '',
         barcode: product.barcode || '',
         price: product.price,
         category: product.category || '',
@@ -64,6 +66,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                 nameEs: product.nameEs || '',
                 sku: product.sku || '',
                 itemCode: product.itemCode || '',
+                photoId: product.photoId || '',
                 barcode: product.barcode || '',
                 price: product.price,
                 category: product.category || '',
@@ -308,19 +311,29 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                             className="w-full text-2xl font-bold border-b border-gray-200 focus:border-blue-500 outline-none py-1"
                                         />
                                     </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-xs font-semibold text-gray-500 uppercase">ID (Col A)</label>
+                                            <input
+                                                value={formData.photoId}
+                                                onChange={(e) => handleChange('photoId', e.target.value)}
+                                                className="w-full text-lg font-mono text-blue-600 border-b border-gray-200 focus:border-blue-500 outline-none py-1"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-semibold text-gray-500 uppercase">OEM (Item Code)</label>
+                                            <input
+                                                value={formData.itemCode}
+                                                onChange={(e) => handleChange('itemCode', e.target.value)}
+                                                className="w-full text-lg text-gray-600 border-b border-gray-200 focus:border-blue-500 outline-none py-1"
+                                            />
+                                        </div>
+                                    </div>
                                     <div>
                                         <label className="text-xs font-semibold text-gray-500 uppercase">SKU</label>
                                         <input
                                             value={formData.sku}
                                             onChange={(e) => handleChange('sku', e.target.value)}
-                                            className="w-full text-lg text-gray-600 border-b border-gray-200 focus:border-blue-500 outline-none py-1"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-semibold text-gray-500 uppercase">OEM (Item Code)</label>
-                                        <input
-                                            value={formData.itemCode}
-                                            onChange={(e) => handleChange('itemCode', e.target.value)}
                                             className="w-full text-lg text-gray-600 border-b border-gray-200 focus:border-blue-500 outline-none py-1"
                                         />
                                     </div>
@@ -338,7 +351,14 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                         <p className="text-[16px] md:text-[18px] text-[#8E8E93] mb-2 font-medium">{product.nameEn}</p>
                                     )}
                                     <div className="flex items-center gap-3 mt-3 flex-wrap">
-                                        <span className="text-[15px] font-mono text-muted-foreground bg-secondary px-3 py-1.5 rounded-lg">{product.sku}</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-bold text-blue-500 uppercase ml-1">ID</span>
+                                            <span className="text-[15px] font-mono font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg">{product.photoId || '-'}</span>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-bold text-muted-foreground uppercase ml-1">SKU</span>
+                                            <span className="text-[15px] font-mono text-muted-foreground bg-secondary px-3 py-1.5 rounded-lg">{product.sku}</span>
+                                        </div>
                                         {product.barcode && (
                                             <span className="text-[15px] font-mono text-muted-foreground bg-secondary px-3 py-1.5 rounded-lg">{product.barcode}</span>
                                         )}

@@ -5,37 +5,47 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 const prisma = globalForPrisma.prisma || new PrismaClient();
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-export const dynamic = 'force-dynamic';
-
 export async function GET() {
     try {
-        // Get all products with numeric SKUs
-        const products = await prisma.product.findMany({
-            select: { sku: true },
-            where: {
-                sku: {
-                    not: null
-                }
-            }
+        // 1. Get next Barcode (Max + 1)
+        let nextBarcode = '75045892565';
+        const lastBarcodeProduct = await prisma.product.findFirst({
+            where: { barcode: { not: null } },
+            orderBy: { barcode: 'desc' },
+            select: { barcode: true }
         });
 
-        // Find max numeric SKU
-        let maxId = 999; // Start from 999, so first will be 1000
-
-        products.forEach(p => {
-            if (p.sku) {
-                const numId = parseInt(p.sku);
-                if (!isNaN(numId) && numId > maxId) {
-                    maxId = numId;
-                }
+        if (lastBarcodeProduct && lastBarcodeProduct.barcode) {
+            try {
+                const currentNumeric = BigInt(lastBarcodeProduct.barcode);
+                nextBarcode = (currentNumeric + BigInt(1)).toString();
+            } catch (e) {
+                // ignore
             }
+        }
+
+        // 2. Get next PhotoID (Max + 1)
+        let nextPhotoId = '1';
+        const lastPhotoIdProduct = await prisma.product.findFirst({
+            where: { photoId: { not: null } },
+            orderBy: { photoId: 'desc' }, // simple string sort proxy
+            select: { photoId: true }
         });
 
-        const nextId = maxId + 1;
+        if (lastPhotoIdProduct && lastPhotoIdProduct.photoId) {
+            const currentId = parseInt(lastPhotoIdProduct.photoId);
+            if (!isNaN(currentId)) {
+                nextPhotoId = (currentId + 1).toString();
+            }
+        }
 
-        return NextResponse.json({ nextId: String(nextId) });
+        return NextResponse.json({
+            status: 'success',
+            nextBarcode,
+            nextPhotoId
+        });
+
     } catch (error: any) {
-        console.error('Next ID Error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ status: 'error', message: error.message }, { status: 500 });
     }
 }

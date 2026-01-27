@@ -1,195 +1,177 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-import Link from 'next/link';
-
-// Theme configurations for each company
-const themes = {
-    bigm: {
-        primary: '#C8D900', // Lime green from Big Machines logo
-        secondary: '#5A6670', // Gray from Big Machines logo
-        name: 'Big Machines',
-        domain: '@big-m.mx'
-    },
-    mca: {
-        primary: '#1B3A57', // Navy blue from MCA logo
-        secondary: '#9BA5AE', // Light gray from MCA logo
-        name: 'MCA Corporation',
-        domain: '@macorporation.com'
-    },
-    default: {
-        primary: '#1A73E8', // Google Blue
-        secondary: '#5F6368',
-        name: 'RIPODOO',
-        domain: ''
-    }
-};
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
+import { Loader2, Mail, Lock, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
 
 export default function LoginPage() {
-    const container = useRef(null);
-    const formRef = useRef(null);
-    const logoRef = useRef(null);
-
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [currentTheme, setCurrentTheme] = useState(themes.default);
+    const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
 
-    // Detect company from email domain
-    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setEmail(value);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
 
-        if (value.includes('@big-m.mx')) {
-            setCurrentTheme(themes.bigm);
-        } else if (value.includes('@macorporation.com')) {
-            setCurrentTheme(themes.mca);
-        } else {
-            setCurrentTheme(themes.default);
+        try {
+            const result = await signIn('credentials', {
+                email,
+                password,
+                redirect: false,
+            });
+
+            if (result?.error) {
+                toast.error('Credenciales inválidas');
+            } else {
+                toast.success('¡Bienvenido!');
+                router.push('/inventory');
+                router.refresh();
+            }
+        } catch (error) {
+            toast.error('Ocurrió un error al iniciar sesión');
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // Magnetic button effect removed
-
-    useGSAP(() => {
-        const tl = gsap.timeline();
-
-        tl.from(logoRef.current, {
-            scale: 0.8,
-            opacity: 0,
-            duration: 0.6,
-            ease: "back.out(1.7)",
-        })
-            .from(formRef.current, {
-                y: 40,
-                opacity: 0,
-                duration: 0.8,
-                ease: "power3.out",
-            }, "-=0.3");
-
-    }, { scope: container });
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log('Login attempt:', { email, company: currentTheme.name });
-    };
-
     return (
-        <main
-            ref={container}
-            className="min-h-screen flex items-center justify-center p-6"
-            style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}15 0%, ${currentTheme.secondary}10 100%)`
-            }}
-        >
-            <div className="w-full max-w-md">
-                {/* Logo */}
-                <div ref={logoRef} className="text-center mb-8">
-                    <div
-                        className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 transition-all duration-500"
-                        style={{ backgroundColor: currentTheme.primary }}
-                    >
-                        <span className="text-white text-3xl font-bold">
-                            {currentTheme.name === 'Big Machines' ? 'BM' :
-                                currentTheme.name === 'MCA Corporation' ? 'MC' : 'R'}
-                        </span>
-                    </div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white transition-all duration-500">
-                        {currentTheme.name}
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">Sign in to your account</p>
+        <div className="min-h-screen flex flex-col lg:flex-row bg-white dark:bg-zinc-950 font-sans">
+            {/* Left Side - Video & Branding */}
+            <div className="relative hidden lg:flex lg:w-1/2 min-h-screen overflow-hidden bg-zinc-950">
+                <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover opacity-95"
+                >
+                    <source src="/Video.mp4" type="video/mp4" />
+                </video>
+                {/* Overlay with glass effect branding */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-zinc-950/90 via-zinc-950/40 to-transparent" />
+
+                <div className="absolute top-8 left-8 flex items-start gap-3">
+                    <Image src="/LOGO.png" alt="Big Maq" width={150} height={50} className="object-contain" priority />
                 </div>
 
-                {/* Form */}
-                <div
-                    ref={formRef}
-                    className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-gray-200 dark:border-zinc-800"
-                >
+                <div className="absolute bottom-24 left-12 max-w-lg space-y-4">
+                    <h2 className="text-5xl font-bold text-white leading-tight animate-in slide-in-from-bottom-8 duration-700">
+                        Controla En Grande
+                    </h2>
+                    <p className="text-zinc-300 text-lg animate-in slide-in-from-bottom-6 duration-1000 delay-100">
+                        Control total sobre tus piezas, auditorías y órdenes en una sola plataforma unificada.
+                    </p>
+
+                    {/* Navigation Dots Simulation */}
+                    <div className="flex gap-2 pt-4">
+                        <div className="w-8 h-1.5 rounded-full bg-white" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Right Side - Login Form */}
+            <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-12 lg:p-24 relative overflow-hidden bg-zinc-50 dark:bg-zinc-950">
+                {/* Mobile Header */}
+                <div className="lg:hidden absolute top-6 left-6 flex items-start gap-3">
+                    <Image src="/LOGO.png" alt="Big Maq" width={120} height={40} className="object-contain" priority />
+                </div>
+
+                <div className="w-full max-w-md space-y-10 animate-in fade-in duration-700">
+                    <div className="space-y-3">
+                        <h1 className="text-4xl font-bold text-zinc-900 dark:text-white tracking-tight">
+                            Bienvenido de nuevo
+                        </h1>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-base">
+                            Ingresa tus credenciales para acceder al sistema
+                        </p>
+                    </div>
+
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Email */}
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Email address
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 px-1">
+                                Correo electrónico
                             </label>
-                            <input
-                                id="email"
-                                type="email"
-                                required
-                                value={email}
-                                onChange={handleEmailChange}
-                                className="w-full px-4 py-3 border border-gray-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 transition-all duration-300 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white"
-                                onFocus={(e) => e.target.style.borderColor = currentTheme.primary}
-                                onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
-                                placeholder="you@company.com"
-                            />
-                            {email && currentTheme.domain && (
-                                <p className="text-xs mt-2 transition-all duration-500" style={{ color: currentTheme.primary }}>
-                                    Detected: {currentTheme.name}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Password */}
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Password
-                            </label>
-                            <input
-                                id="password"
-                                type="password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 transition-all bg-white dark:bg-zinc-800 text-gray-900 dark:text-white"
-                                onFocus={(e) => e.target.style.borderColor = currentTheme.primary}
-                                onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
-                                placeholder="••••••••"
-                            />
-                        </div>
-
-                        {/* Remember */}
-                        <div className="flex items-center">
-                            <label className="flex items-center">
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <Mail className="h-5 w-5 text-zinc-400 group-focus-within:text-white transition-colors" />
+                                </div>
                                 <input
-                                    type="checkbox"
-                                    className="w-4 h-4 rounded border-gray-300 transition-all"
-                                    style={{ accentColor: currentTheme.primary }}
+                                    type="email"
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="block w-full pl-11 pr-4 py-3.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[14px] text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white transition-all text-sm"
+                                    placeholder="usuario@dominio.com"
                                 />
-                                <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Remember me</span>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between px-1">
+                                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                                    Contraseña
+                                </label>
+                            </div>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <Lock className="h-5 w-5 text-zinc-400 group-focus-within:text-white transition-colors" />
+                                </div>
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="block w-full pl-11 pr-12 py-3.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[14px] text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white transition-all text-sm"
+                                    placeholder="••••••••"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                                >
+                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2 px-1">
+                            <input
+                                type="checkbox"
+                                id="remember"
+                                className="w-4 h-4 rounded border-zinc-300 text-black focus:ring-black accent-black dark:accent-white dark:bg-zinc-900 dark:border-zinc-800 transition-all"
+                            />
+                            <label htmlFor="remember" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 cursor-pointer">
+                                Mantener sesión iniciada
                             </label>
                         </div>
 
-                        {/* Submit Button */}
                         <button
                             type="submit"
-                            disabled={!email || !password}
-                            className={`w-full py-3 px-4 rounded-full font-medium transition-all duration-300 ${(!email || !password) ? 'cursor-not-allowed opacity-70' : 'hover:shadow-lg shadow-md active:scale-95'}`}
-                            style={{
-                                backgroundColor: (!email || !password) ? '#E5E7EB' : currentTheme.primary,
-                                color: (!email || !password) ? '#9CA3AF' : 'white',
-                            }}
+                            disabled={isLoading}
+                            className="w-full flex items-center justify-center gap-2 py-4 px-4 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed text-white dark:text-zinc-950 text-base font-bold rounded-[14px] shadow-xl shadow-zinc-950/10 dark:shadow-white/5 transition-all active:scale-[0.98]"
                         >
-                            Sign in
+                            {isLoading ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                "Iniciar Sesión"
+                            )}
                         </button>
                     </form>
 
-
-                </div>
-
-                {/* Back to Home */}
-                <div className="mt-6 text-center">
-                    <Link
-                        href="/"
-                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all inline-flex items-center gap-1"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Back to home
-                    </Link>
+                    <div className="pt-8 text-center">
+                        <p className="text-sm text-zinc-500 dark:text-zinc-500">
+                            &copy; {new Date().getFullYear()} Big Machines Sa de cv.
+                        </p>
+                    </div>
                 </div>
             </div>
-        </main>
+        </div>
     );
 }

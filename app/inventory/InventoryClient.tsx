@@ -1,16 +1,19 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useRef, useMemo, useEffect, Suspense, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import useSWR from 'swr';
+import { useSession } from 'next-auth/react';
 import { useRealtimeInventory } from '@/app/hooks/useRealtimeInventory';
 import { Product } from '@/app/lib/types';
 import NumericKeypad from '@/app/components/NumericKeypad';
 import Loading from './loading';
 import toast from 'react-hot-toast';
+import { Users } from 'lucide-react';
 import ExportModal from '../components/ExportModal';
+import InventoryHeader from '../components/InventoryHeader';
 import GradualBlur from '@/app/components/GradualBlur';
 
 const BarcodeScanner = dynamic(() => import('./BarcodeScanner'), { ssr: false });
@@ -22,6 +25,7 @@ const themes = {
 };
 
 export default function InventoryClient() {
+    const { data: session } = useSession();
     const container = useRef(null);
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -46,7 +50,7 @@ export default function InventoryClient() {
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'stock-asc' | 'stock-desc'>('stock-desc');
     const [isSortOpen, setIsSortOpen] = useState(false);
-    const [viewMode, setViewMode] = useState<'table' | 'grid' | 'compact'>('grid');
+    const [viewMode, setViewMode] = useState<'table' | 'grid' | 'compact' | 'excel'>('grid');
     // Export Modal State
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
@@ -152,9 +156,9 @@ export default function InventoryClient() {
             const term = searchQuery.toLowerCase();
             const matchesSearch = product.name.toLowerCase().includes(term) ||
                 (product.nameEn?.toLowerCase().includes(term)) ||
-                (product.nameEs?.toLowerCase().includes(term)) ||
                 (product.sku?.toLowerCase().includes(term)) ||
                 (product.barcode && product.barcode.toLowerCase().includes(term)) ||
+                (product.photoId && product.photoId.toLowerCase().includes(term)) ||
                 (product.category?.toLowerCase().includes(term));
             const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
             return matchesSearch && matchesCategory;
@@ -257,7 +261,7 @@ export default function InventoryClient() {
 
     const handleRemotePrint = async () => {
         if (!selectedProduct) return;
-        const toastId = toast.loading('Enviando a impresión...');
+        const toastId = toast.loading('Enviando a impresiÃ³n...');
         try {
             const res = await fetch('/api/inventory/print-queue', {
                 method: 'POST',
@@ -266,13 +270,13 @@ export default function InventoryClient() {
             });
 
             if (res.ok) {
-                toast.success('Enviado a Estación de Impresión', { id: toastId });
+                toast.success('Enviado a EstaciÃ³n de ImpresiÃ³n', { id: toastId });
             } else {
                 toast.error('Error al enviar', { id: toastId });
             }
         } catch (e) {
             console.error(e);
-            toast.error('Error de conexión', { id: toastId });
+            toast.error('Error de conexiÃ³n', { id: toastId });
         }
     };
 
@@ -300,7 +304,20 @@ export default function InventoryClient() {
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            // Ignore if user is typing in an input field
+            // Ctrl/Cmd + F for search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                e.preventDefault();
+                setSearchVisible(true);
+                // Focus the search input with a slight delay to ensure visibility
+                setTimeout(() => {
+                    const input = document.querySelector('input[placeholder*="Buscar"], input[placeholder*="Search"]') as HTMLInputElement;
+                    input?.focus();
+                    input?.select();
+                }, 100);
+                return;
+            }
+
+            // Existing scanner logic...
             const target = e.target as HTMLElement;
             if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
                 return;
@@ -309,7 +326,6 @@ export default function InventoryClient() {
             const currentTime = Date.now();
             const char = e.key;
 
-            // Scanner inputs are very fast. If too much time passes, reset buffer.
             if (currentTime - lastKeyTimeRef.current > 500) {
                 bufferRef.current = '';
             }
@@ -318,8 +334,8 @@ export default function InventoryClient() {
 
             if (char === 'Enter' || char === 'Tab') {
                 if (bufferRef.current.length > 2) {
-                    e.preventDefault(); // Prevent default browser action
-                    console.log('🚀 Scanner Triggered:', bufferRef.current);
+                    e.preventDefault();
+                    console.log('ðŸš€ Scanner Triggered:', bufferRef.current);
                     handleScanSuccess(bufferRef.current);
                     bufferRef.current = '';
                 }
@@ -408,88 +424,18 @@ export default function InventoryClient() {
                 </div>
             </div>
 
-            {/* DESKTOP HEADER - Original */}
-            <div className="hidden md:block max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-4 md:mt-6 mb-4 md:mb-6">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
-                    <div className="relative group w-full md:max-w-md z-20">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8E8E93] group-focus-within:text-[#007AFF] transition-colors">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                        </span>
-                        <input
-                            type="text"
-                            placeholder="Search name, sku, barcode..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-12 py-2.5 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF]/50 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all text-[15px] shadow-sm appearance-none"
-                        />
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
-                            <div className="relative">
-                                <button
-                                    onClick={() => setIsSortOpen(!isSortOpen)}
-                                    className="p-1 hover:bg-[#F2F2F7] rounded-md transition-colors text-[#8E8E93]"
-                                    title="Sort"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
-                                </button>
 
-                                {isSortOpen && (
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white/90 backdrop-blur-xl rounded-xl shadow-xl border border-[#3C3C43]/10 p-1 animate-in fade-in zoom-in-95 duration-100 transform origin-top-right z-50">
-                                        <div className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider px-3 py-2">Sort By</div>
-                                        <button onClick={() => { setSortBy('stock-desc'); setIsSortOpen(false); }} className={`w - full text - left px - 3 py - 2 rounded - lg text - [13px] ${sortBy === 'stock-desc' ? 'bg-[#007AFF]/10 text-[#007AFF]' : 'text-[#1C1C1E] hover:bg-[#F2F2F7]'} `}>Highest Stock</button>
-                                        <button onClick={() => { setSortBy('stock-asc'); setIsSortOpen(false); }} className={`w - full text - left px - 3 py - 2 rounded - lg text - [13px] ${sortBy === 'stock-asc' ? 'bg-[#007AFF]/10 text-[#007AFF]' : 'text-[#1C1C1E] hover:bg-[#F2F2F7]'} `}>Lowest Stock</button>
-                                        <button onClick={() => { setSortBy('price-desc'); setIsSortOpen(false); }} className={`w - full text - left px - 3 py - 2 rounded - lg text - [13px] ${sortBy === 'price-desc' ? 'bg-[#007AFF]/10 text-[#007AFF]' : 'text-[#1C1C1E] hover:bg-[#F2F2F7]'} `}>Highest Price</button>
-                                        <button onClick={() => { setSortBy('price-asc'); setIsSortOpen(false); }} className={`w - full text - left px - 3 py - 2 rounded - lg text - [13px] ${sortBy === 'price-asc' ? 'bg-[#007AFF]/10 text-[#007AFF]' : 'text-[#1C1C1E] hover:bg-[#F2F2F7]'} `}>Lowest Price</button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+            {/* DESKTOP HEADER - Material Design Component */}
+            <InventoryHeader
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                onExportClick={() => setIsExportModalOpen(true)}
+            />
 
-                    <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-                        <div className="bg-white dark:bg-zinc-800 rounded-lg border border-[#3C3C43]/10 dark:border-white/10 p-0.5 flex items-center shadow-sm">
-                            <button
-                                onClick={() => setViewMode('table')}
-                                className={`p-2 rounded-md transition-all hidden md:block ${viewMode === 'table' ? 'bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'} `}
-                                title="List View"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
-                            </button>
-                            <button
-                                onClick={() => setViewMode('compact')}
-                                className={`p-2 rounded-md transition-all ${viewMode === 'compact' ? 'bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'} `}
-                                title="Compact Tile View"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /><path d="M4 6v12M10 6v12" strokeWidth={1.5} strokeLinecap="round" /></svg>
-                            </button>
-                            <button
-                                onClick={() => setViewMode('grid')}
-                                className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'} `}
-                                title="Grid View"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-                            </button>
-                        </div>
-
-                        {/* Export Button - Opens Modal */}
-                        <button
-                            onClick={() => setIsExportModalOpen(true)}
-                            className="bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700 border border-gray-200 dark:border-white/20 text-gray-900 dark:text-white px-3 py-2 rounded-xl text-[14px] font-medium shadow-sm transition-all flex items-center gap-2 active:scale-95"
-                            title="Export options for InDesign"
-                        >
-                            <svg className="w-4 h-4 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                            <span className="hidden lg:inline">Export</span>
-                        </button>
-
-                        <button
-                            onClick={() => router.push('/inventory/new')}
-                            className="flex-1 md:flex-none px-4 py-2 bg-[#007AFF] hover:bg-[#007AFF]/90 text-white rounded-xl text-[15px] font-medium shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-                            <span className="md:inline">New Product</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
 
             {/* ERROR STATE */}
             {error && (
@@ -502,6 +448,91 @@ export default function InventoryClient() {
             {/* CONTENT */}
             {isLoading && !error ? <Loading /> : (
                 <div className="md:max-w-[1400px] md:mx-auto md:px-4 sm:px-6 lg:px-8 md:mt-4 animate-in fade-in duration-500">
+                    {/* Excel Sheet View */}
+                    {viewMode === 'excel' && (
+                        <div className="hidden md:block bg-white dark:bg-zinc-900 rounded-[10px] shadow-xl border border-gray-200 dark:border-white/5 overflow-hidden">
+                            <div className="overflow-x-auto overflow-y-auto max-h-[70vh] relative custom-scrollbar">
+                                <table className="w-full text-left border-collapse min-w-[2500px]">
+                                    <thead className="sticky top-0 z-30 bg-[#F2F2F7]/95 dark:bg-zinc-950/95 backdrop-blur shadow-sm">
+                                        <tr className="divide-x divide-gray-200 dark:divide-white/10 uppercase font-mono cursor-pointer select-none">
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 sticky left-0 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 w-16 text-center">ID</th>
+                                            <th onClick={() => setSortBy(sortBy === 'name-asc' ? 'name-desc' : 'name-asc')} className="px-3 py-2 text-[10px] font-bold text-gray-500 sticky left-16 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 min-w-[350px] hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors">Nombre EspaÃ±ol</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">OEM (Item Code)</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Barcode</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Nombre Eng</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">UVA Nombre</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Categoria</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Rot.</th>
+                                            <th onClick={() => setSortBy(sortBy === 'stock-asc' ? 'stock-desc' : 'stock-asc')} className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors">Stock</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Sts</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">$ ZG (Fab)</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">$ Oth (Com)</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">$ BM (Big)</th>
+                                            <th onClick={() => setSortBy(sortBy === 'price-asc' ? 'price-desc' : 'price-asc')} className="px-3 py-2 text-[10px] font-bold text-white border-b border-blue-600 bg-blue-600 hover:bg-blue-700 transition-colors">PVP ($ Venta)</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Dolar Ptj</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Pesos Ptj</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Rentab.</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Notas</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100 dark:divide-white/5 bg-white dark:bg-zinc-900">
+                                        {filteredProducts.map((p, idx) => (
+                                            <tr
+                                                key={p.id}
+                                                className={`divide-x divide-gray-100 dark:divide-white/5 hover:bg-blue-50/50 dark:hover:bg-blue-900/30 transition-colors group text-[12px] leading-tight ${idx % 2 === 0 ? 'bg-white dark:bg-zinc-900' : 'bg-[#FAFAFA] dark:bg-zinc-900/40'}`}
+                                                onClick={() => router.push(`/inventory/${p.id}`)}
+                                            >
+                                                <td className="px-3 py-1 sticky left-0 z-20 bg-inherit font-mono font-bold text-blue-600 dark:text-blue-400 border-r border-gray-200 dark:border-white/10 text-center w-16 italic">{p.photoId || '-'}</td>
+                                                <td className="px-3 py-1 sticky left-16 z-20 bg-inherit font-medium text-gray-900 dark:text-zinc-100 border-r border-gray-200 dark:border-white/10 whitespace-nowrap overflow-hidden text-ellipsis max-w-[350px]" title={p.nameEs || p.name}>
+                                                    {searchQuery ? (
+                                                        <span dangerouslySetInnerHTML={{
+                                                            __html: (p.nameEs || p.name).replace(new RegExp(`(${searchQuery})`, 'gi'), '<mark class="bg-yellow-200 dark:bg-yellow-600/50 rounded-sm">$1</mark>')
+                                                        }} />
+                                                    ) : (p.nameEs || p.name)}
+                                                </td>
+                                                <td className="px-3 py-1 font-mono text-blue-600 dark:text-blue-400 whitespace-nowrap">{p.itemCode}</td>
+                                                <td className="px-3 py-1 text-gray-500 dark:text-gray-400 font-mono tracking-tighter">{p.barcode}</td>
+                                                <td className="px-3 py-1 text-gray-500 dark:text-gray-400 italic whitespace-nowrap truncate max-w-[200px]">{p.nameEn || '-'}</td>
+                                                <td className="px-3 py-1 text-gray-600 dark:text-zinc-400 whitespace-nowrap">{p.uvaNombre || '-'}</td>
+                                                <td className="px-3 py-1"><span className="px-1.5 py-0 rounded bg-gray-100 dark:bg-zinc-800 text-[10px] font-semibold border border-gray-200 dark:border-white/5 uppercase">{p.category}</span></td>
+                                                <td className="px-3 py-1 text-center font-bold text-gray-600 dark:text-zinc-400">{p.rotacion || '-'}</td>
+                                                <td className={`px-3 py-1 text-right font-bold ${p.stock <= 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>{p.stock}</td>
+                                                <td className="px-3 py-1">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getStockColor(p.status) }}></div>
+                                                        <span className="text-[10px] font-bold uppercase opacity-60">{p.status.split('-')[0]}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-3 py-1 text-right tabular-nums text-gray-500 bg-black/5 dark:bg-white/5 font-mono text-[11px]">
+                                                    {p.priceZG ? `$${p.priceZG.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '0.00'}
+                                                </td>
+                                                <td className="px-3 py-1 text-right tabular-nums text-gray-500 bg-black/5 dark:bg-white/5 font-mono text-[11px]">
+                                                    {p.priceOth ? `$${p.priceOth.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '0.00'}
+                                                </td>
+                                                <td className="px-3 py-1 text-right tabular-nums font-bold text-blue-600 dark:text-blue-400 bg-blue-50/20 dark:bg-blue-900/10 font-mono">
+                                                    {p.priceBM ? `$${p.priceBM.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '0.00'}
+                                                </td>
+                                                <td className="px-3 py-1 text-right tabular-nums font-black text-white bg-[#007AFF] shadow-inner font-mono text-[13px]">
+                                                    ${p.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                </td>
+                                                <td className="px-3 py-1 text-right tabular-nums text-gray-400 font-mono text-[11px]">
+                                                    {p.ptijDll ? `$${p.ptijDll.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '0.00'}
+                                                </td>
+                                                <td className="px-3 py-1 text-right tabular-nums text-gray-400 font-mono text-[11px]">
+                                                    {p.ptijMxn ? `$${p.ptijMxn.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '0.00'}
+                                                </td>
+                                                <td className={`px-3 py-1 text-center font-black ${p.vecesG > 1 ? 'text-green-600' : 'text-orange-500'}`}>
+                                                    {p.vecesG ? p.vecesG.toFixed(2) : '0.00'}
+                                                </td>
+                                                <td className="px-3 py-1 text-gray-400 italic max-w-xs truncate text-[11px]" title={p.notes || ''}>{p.notes || '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Table View */}
                     {viewMode === 'table' && (
                         <>
@@ -963,7 +994,7 @@ export default function InventoryClient() {
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M3 4h2v16H3V4zm5 0h2v16H8V4zm5 0h2v16h-2V4zm5 0h3v16h-3V4z" />
                                                         </svg>
                                                     </div>
-                                                    <span className="text-[15px] text-gray-900 dark:text-white">Código de Barras</span>
+                                                    <span className="text-[15px] text-gray-900 dark:text-white">CÃ³digo de Barras</span>
                                                 </div>
                                                 <span className="text-[15px] font-semibold text-gray-900 dark:text-white font-mono">
                                                     {selectedProduct.barcode}
@@ -981,10 +1012,10 @@ export default function InventoryClient() {
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                                 </svg>
                                             </div>
-                                            <span className="text-[15px] text-gray-900 dark:text-white">Categoría</span>
+                                            <span className="text-[15px] text-gray-900 dark:text-white">CategorÃ­a</span>
                                         </div>
                                         <span className="text-[15px] font-semibold text-gray-900 dark:text-white">
-                                            {selectedProduct.category || 'Sin categoría'}
+                                            {selectedProduct.category || 'Sin categorÃ­a'}
                                         </span>
                                     </div>
                                 </div>
@@ -1058,7 +1089,7 @@ export default function InventoryClient() {
 
                                         {/* Physical Count Input */}
                                         <div className="flex flex-col items-center p-4 rounded-xl bg-white dark:bg-zinc-900 border-2 border-gray-900 dark:border-white relative">
-                                            <span className="text-[11px] font-bold text-gray-900 dark:text-white uppercase mb-1">Físico</span>
+                                            <span className="text-[11px] font-bold text-gray-900 dark:text-white uppercase mb-1">FÃ­sico</span>
                                             <div className="text-[32px] font-bold text-gray-900 dark:text-white leading-none">
                                                 {physicalCount || '0'}
                                             </div>

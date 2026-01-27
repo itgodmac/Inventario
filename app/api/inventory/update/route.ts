@@ -18,9 +18,10 @@ const redis = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { id, quantity, difference, auditor } = body;
+        // Extract specialized fields for stock logic, keep rest for dynamic update
+        const { id, quantity, difference, auditor, ...otherFields } = body;
 
-        console.log("📝 [API] Updating Product:", { id, quantity, auditor });
+        console.log("📝 [API] Updating Product:", { id, ...body });
 
         if (!id) {
             return NextResponse.json({ status: 'error', message: "Missing ID" }, { status: 400 });
@@ -35,27 +36,40 @@ export async function POST(request: Request) {
             return NextResponse.json({ status: 'error', message: "Product not found" }, { status: 404 });
         }
 
+        // Prepare update data
+        const updateData: any = { ...otherFields };
+
+        // Handle legacy 'quantity' field mapping to 'stock'
+        if (quantity !== undefined) {
+            updateData.stock = quantity;
+            updateData.lastAuditor = auditor;
+        }
+
         // 2. Update Database
         const updatedProduct = await prisma.product.update({
             where: { id: id },
-            data: {
-                stock: quantity,
-                lastAuditor: auditor,
-            }
+            data: updateData
         });
 
-        // 3. Create Stock Log
-        await prisma.stockLog.create({
-            data: {
-                productId: updatedProduct.id,
-                productSku: updatedProduct.sku,
-                productName: updatedProduct.nameEs || updatedProduct.name,
-                oldQuantity: currentProduct.stock,
-                newQuantity: quantity,
-                difference: difference,
-                auditor: auditor || 'TEST',
+        // 3. Create Stock Log ONLY if stock changed
+        if (quantity !== undefined || updateData.stock !== undefined) {
+            const newStock = quantity !== undefined ? quantity : updateData.stock;
+            const seedDiff = difference !== undefined ? difference : (newStock - currentProduct.stock);
+
+            if (seedDiff !== 0) {
+                await prisma.stockLog.create({
+                    data: {
+                        productId: updatedProduct.id,
+                        productSku: updatedProduct.sku,
+                        productName: updatedProduct.nameEs || updatedProduct.name,
+                        oldQuantity: currentProduct.stock,
+                        newQuantity: newStock,
+                        difference: seedDiff,
+                        auditor: auditor || 'ADMIN',
+                    }
+                });
             }
-        });
+        }
 
         // 4. Broadcast to SSE clients via Redis list
         if (redis) {

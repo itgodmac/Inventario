@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
+import Image from 'next/image';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -70,10 +71,7 @@ export default function Home() {
             <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200 dark:border-white/10">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <span className="text-white font-bold text-lg">R</span>
-                        </div>
-                        <span className="text-xl font-semibold text-gray-900 dark:text-white">RIPODOO</span>
+                        <Image src="/LOGO.png" alt="Big Maq" width={140} height={47} className="object-contain" />
                     </div>
                     <div className="hidden md:flex items-center gap-8">
                         <a href="#features" className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors">Features</a>
@@ -112,9 +110,7 @@ export default function Home() {
 
                 {/* Floating Logo */}
                 <div className="flex justify-center mt-20">
-                    <div className="floating-logo w-24 h-24 bg-gradient-to-br from-blue-600 to-blue-400 rounded-3xl shadow-2xl flex items-center justify-center">
-                        <span className="text-white text-5xl font-bold">R</span>
-                    </div>
+                    <Image src="/LOGO.png" alt="Big Maq" width={200} height={67} className="floating-logo object-contain" />
                 </div>
             </section>
 
@@ -223,10 +219,7 @@ export default function Home() {
             <footer className="py-12 px-6 bg-gray-50 dark:bg-zinc-950 border-t border-gray-200 dark:border-white/10">
                 <div className="max-w-7xl mx-auto text-center">
                     <div className="flex items-center justify-center gap-2 mb-4">
-                        <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
-                            <span className="text-white font-bold text-sm">R</span>
-                        </div>
-                        <span className="text-lg font-semibold text-gray-900 dark:text-white">RIPODOO</span>
+                        <Image src="/LOGO.png" alt="Big Maq" width={120} height={40} className="object-contain" />
                     </div>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">
                         Built with Next.js, Prisma, and GSAP
