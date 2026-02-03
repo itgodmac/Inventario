@@ -50,7 +50,7 @@ export default function NewProductPage() {
             try {
                 const res = await fetch('/api/inventory/next-id');
                 const data = await res.json();
-                const nextId = data.nextId || '1000';
+                const nextId = data.nextPhotoId || '1000';
 
                 // Generate barcode: 750458 + last 5 digits of ID padded
                 const idNum = parseInt(nextId);
@@ -100,6 +100,7 @@ export default function NewProductPage() {
                 stock: formData.stock,
                 priceZG: formData.priceZG,
                 priceOth: formData.priceOth,
+                photoId: formData.id,
                 image: imageUrl || null
             })
         });
@@ -107,7 +108,7 @@ export default function NewProductPage() {
         if (res.ok) {
             const data = await res.json();
             toast.success('Producto creado exitosamente');
-            router.push(`/inventory/${data.product.id}`);
+            router.push(`/inventory/${data.product.photoId}`);
         } else {
             toast.error('Error al crear producto');
         }

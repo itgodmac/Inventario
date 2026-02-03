@@ -10,6 +10,7 @@ export interface Product {
     sku: string | null;
     barcode: string | null;
     itemCode: string | null;
+    photoId: string | null;
     category: string | null;
     stock: number;
     price: number;
@@ -74,7 +75,7 @@ export function useProductDetail(product: Product) {
         const fetchLogs = async () => {
             setLogsLoading(true);
             try {
-                const res = await fetch(`/api/inventory/${product.id}/logs`);
+                const res = await fetch(`/api/inventory/${product.photoId}/logs`);
                 const data = await res.json();
                 setStockLogs(data.logs || []);
             } catch (error) {
@@ -84,7 +85,7 @@ export function useProductDetail(product: Product) {
             }
         };
         fetchLogs();
-    }, [product.id]);
+    }, [product.photoId]);
 
     const handleChange = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -92,7 +93,7 @@ export function useProductDetail(product: Product) {
 
     const handleSave = async () => {
         try {
-            const res = await fetch(`/api/inventory/${product.id}`, {
+            const res = await fetch(`/api/inventory/${product.photoId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -109,7 +110,7 @@ export function useProductDetail(product: Product) {
     const handleDelete = async () => {
         if (!confirm('Are you sure you want to delete this product? This cannot be undone.')) return;
         try {
-            const res = await fetch(`/api/inventory/${product.id}`, { method: 'DELETE' });
+            const res = await fetch(`/api/inventory/${product.photoId}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Failed to delete');
             toast.success('Producto eliminado');
             router.push('/inventory');
@@ -171,7 +172,7 @@ export function useProductDetail(product: Product) {
                 setPhysicalCount('');
 
                 // Refresh logs manually if needed, or rely on useEffect/refresh
-                const res = await fetch(`/api/inventory/${product.id}/logs`);
+                const res = await fetch(`/api/inventory/${product.photoId}/logs`);
                 const logsData = await res.json();
                 setStockLogs(logsData.logs || []);
             } else {

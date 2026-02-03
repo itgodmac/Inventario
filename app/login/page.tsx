@@ -89,7 +89,7 @@ export default function LoginPage() {
                             Bienvenido de nuevo
                         </h1>
                         <p className="text-zinc-500 dark:text-zinc-400 text-base">
-                            Ingresa tus credenciales para acceder al sistema
+                            Ingresa tus credenciales para acceder al sistema BigLink™
                         </p>
                     </div>
 

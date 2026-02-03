@@ -493,7 +493,7 @@ export default function InventoryClient() {
                                             <tr
                                                 key={p.id}
                                                 className={`divide-x divide-gray-100 dark:divide-white/5 hover:bg-blue-50/50 dark:hover:bg-blue-900/30 transition-colors group text-[12px] leading-tight ${idx % 2 === 0 ? 'bg-white dark:bg-zinc-900' : 'bg-[#FAFAFA] dark:bg-zinc-900/40'}`}
-                                                onClick={() => router.push(`/inventory/${p.id}`)}
+                                                onClick={() => router.push(`/inventory/${p.photoId}`)}
                                             >
                                                 <td className="px-3 py-1 sticky left-0 z-20 bg-inherit font-mono font-bold text-blue-600 dark:text-blue-400 border-r border-gray-200 dark:border-white/10 text-center w-16 italic">{p.photoId || '-'}</td>
                                                 <td className="px-3 py-1 sticky left-16 z-20 bg-inherit font-medium text-gray-900 dark:text-zinc-100 border-r border-gray-200 dark:border-white/10 whitespace-nowrap overflow-hidden text-ellipsis max-w-[350px]" title={p.nameEs || p.name}>
@@ -564,7 +564,7 @@ export default function InventoryClient() {
                                         </thead>
                                         <tbody className="divide-y divide-gray-200 dark:divide-white/5">
                                             {paginatedProducts.map((product) => (
-                                                <tr key={product.id} className="cursor-pointer hover:bg-[#F2F2F7]/50 dark:hover:bg-white/5 transition-colors group" onClick={() => router.push(`/inventory/${product.id}`)}>
+                                                <tr key={product.id} className="cursor-pointer hover:bg-[#F2F2F7]/50 dark:hover:bg-white/5 transition-colors group" onClick={() => router.push(`/inventory/${product.photoId}`)}>
                                                     <td className="px-4 py-3">
                                                         <div className="flex items-center gap-3">
                                                             <div className="w-10 h-10 rounded-lg bg-[#F2F2F7] dark:bg-white/10 flex-shrink-0 overflow-hidden border border-gray-200 dark:border-white/5">
@@ -692,7 +692,7 @@ export default function InventoryClient() {
                             {paginatedProducts.map((product) => (
                                 <div
                                     key={product.id}
-                                    onClick={() => router.push(`/inventory/${product.id}`)}
+                                    onClick={() => router.push(`/inventory/${product.photoId}`)}
                                     className="bg-white dark:bg-zinc-900 rounded-xl p-2.5 shadow-sm cursor-pointer hover:shadow-md transition-all group flex items-center gap-3 active:scale-[0.98] duration-100 border border-transparent dark:border-white/5"
                                 >
                                     <div className="w-14 h-14 rounded-lg bg-[#F2F2F7] dark:bg-zinc-800 flex-shrink-0 overflow-hidden relative">
@@ -734,7 +734,7 @@ export default function InventoryClient() {
                                 <div
                                     key={product.id}
                                     className="bg-white dark:bg-zinc-900 rounded-[16px] p-2.5 md:p-3 shadow-sm border border-gray-200 dark:border-white/5 cursor-pointer hover:shadow-md transition-all group relative overflow-hidden flex flex-col active:scale-[0.98] duration-100"
-                                    onClick={() => router.push(`/inventory/${product.id}`)}
+                                    onClick={() => router.push(`/inventory/${product.photoId}`)}
                                 >
                                     <div className="aspect-square rounded-xl bg-[#F2F2F7] dark:bg-zinc-800 mb-2.5 md:mb-3 overflow-hidden border border-gray-200 dark:border-white/5 relative">
                                         <img

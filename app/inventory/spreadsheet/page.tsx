@@ -200,7 +200,7 @@ const Row = memo(({ product, rowIndex, selectedColKey, isEditing, globalEditValu
             <td className="sticky left-[50px] bg-white dark:bg-zinc-900 px-2 py-2 border-b border-r border-gray-200 dark:border-white/10 z-20 w-[40px] text-center">
                 {!product.isPhantom && (
                     <Link
-                        href={`/inventory/${product.id}`}
+                        href={`/inventory/${product.photoId}`}
                         target="_blank"
                         className="text-blue-500 hover:text-blue-700 flex justify-center"
                         tabIndex={-1}

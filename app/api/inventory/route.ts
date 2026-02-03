@@ -64,7 +64,7 @@ export async function POST(request: Request) {
         const body = await request.json();
         const {
             name, nameEn, nameEs,
-            sku, barcode, itemCode, uniCode,
+            sku, barcode, itemCode, uniCode, photoId,
             uvaNombre, description,
             category, montaje, tipo, status,
             stock, priceZG, priceOth, image
@@ -99,6 +99,7 @@ export async function POST(request: Request) {
                 barcode: barcode || null,
                 itemCode: itemCode || null,
                 uniCode: uniCode || null,
+                photoId: photoId || null,
 
                 uvaNombre: uvaNombre || null,
                 description: description || null,

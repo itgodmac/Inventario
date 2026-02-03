@@ -40,8 +40,8 @@ async function getPricingSettings(prisma: PrismaClient) {
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
-        const product = await prisma.product.findUnique({
-            where: { id }
+        const product = await prisma.product.findFirst({
+            where: { photoId: id }
         });
 
         if (!product) {
@@ -106,8 +106,18 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
         const finalPriceMxn = bm_usd * config.I1;
 
+        // Find product first to get internal ID
+        const targetProduct = await prisma.product.findFirst({
+            where: { photoId: id },
+            select: { id: true }
+        });
+
+        if (!targetProduct) {
+            return NextResponse.json({ status: 'error', message: 'Product not found' }, { status: 404 });
+        }
+
         const updatedProduct = await prisma.product.update({
-            where: { id },
+            where: { id: targetProduct.id },
             data: {
                 name: name || nameEn || 'Unnamed',
                 nameEn: nameEn || null,
@@ -166,10 +176,19 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
-        console.log(`🗑️ [API] Deleting Product ${id}`);
+        console.log(`🗑️ [API] Deleting Product with photoId ${id}`);
+
+        const targetProduct = await prisma.product.findFirst({
+            where: { photoId: id },
+            select: { id: true }
+        });
+
+        if (!targetProduct) {
+            return NextResponse.json({ status: 'error', message: 'Product not found' }, { status: 404 });
+        }
 
         await prisma.product.delete({
-            where: { id }
+            where: { id: targetProduct.id }
         });
 
         // 3. Broadcast delete

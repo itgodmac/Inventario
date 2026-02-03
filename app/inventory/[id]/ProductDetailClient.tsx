@@ -100,7 +100,7 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
         const fetchLogs = async () => {
             setLogsLoading(true);
             try {
-                const res = await fetch(`/api/inventory/${initialProduct.id}/logs`);
+                const res = await fetch(`/api/inventory/${initialProduct.photoId}/logs`);
                 const data = await res.json();
                 setStockLogs(data.logs || []);
             } catch (error) {
@@ -118,7 +118,7 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
 
     const handleSave = async () => {
         try {
-            const res = await fetch(`/api/inventory/${liveProduct.id}`, {
+            const res = await fetch(`/api/inventory/${liveProduct.photoId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -139,7 +139,7 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
     const handleDelete = async () => {
         if (!confirm('Are you sure you want to delete this product? This cannot be undone.')) return;
         try {
-            const res = await fetch(`/api/inventory/${liveProduct.id}`, { method: 'DELETE' });
+            const res = await fetch(`/api/inventory/${liveProduct.photoId}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Failed to delete');
             toast.success('Producto eliminado');
             router.push('/inventory');
@@ -228,7 +228,7 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
                 setPhysicalCount(''); // Clear input
 
                 // Refresh logs
-                const res = await fetch(`/api/inventory/${liveProduct.id}/logs`);
+                const res = await fetch(`/api/inventory/${liveProduct.photoId}/logs`);
                 const logsData = await res.json();
                 setStockLogs(logsData.logs || []);
             } else {

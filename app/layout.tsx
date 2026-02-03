@@ -5,7 +5,7 @@ import { ThemeProvider } from "./components/theme-provider";
 import { NextAuthProvider } from "@/components/providers/session-provider";
 
 export const metadata: Metadata = {
-    title: "Big Maq - Sistema de Gestión de Inventario",
+    title: "BigLink - Sistema de Gestión de Inventario by BigMaq",
     description: "Advanced ERP System built with Next.js, featuring modern architecture and seamless workflows",
 };
 

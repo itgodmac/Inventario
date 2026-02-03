@@ -29,9 +29,11 @@ export const revalidate = 0; // No caching for detail page
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 
-    // Fetch fresh data from DB
-    const product = await prisma.product.findUnique({
-        where: { id: id },
+    // Fetch fresh data from DB - Search strictly by photoId (ID in Excel)
+    const product = await prisma.product.findFirst({
+        where: {
+            photoId: id
+        },
     });
 
     if (!product) {
