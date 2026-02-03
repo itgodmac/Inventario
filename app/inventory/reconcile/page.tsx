@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useRealtimeInventory } from '@/app/hooks/useRealtimeInventory';
 import toast from 'react-hot-toast';
+import { CloudinaryPresets } from '@/lib/cloudinary';
 
 interface ImageCandidate {
     url: string;
@@ -39,8 +40,9 @@ export default function ReconcilePage() {
     // Drag and Drop state
     const [draggingImage, setDraggingImage] = useState<ImageCandidate | null>(null);
 
-    // Track edited names for each product
+    // Track edited names and SKU for each product
     const [editedNames, setEditedNames] = useState<Map<string, { nameEn: string; nameEs: string }>>(new Map());
+    const [editedSkus, setEditedSkus] = useState<Map<string, string>>(new Map());
     // Search filter
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -102,11 +104,18 @@ export default function ReconcilePage() {
             }
         }
 
-        // Sort by relevance (highest first), then by candidates count, then by SKU
+        // Sort by photoId (ID), then by relevance, then by candidates count
         return (results as any).sort((a: any, b: any) => {
+            // Primary sort: by photoId (ID)
+            const aId = a.photoId || '';
+            const bId = b.photoId || '';
+            if (aId !== bId) return aId.localeCompare(bId);
+
+            // Secondary sort: by relevance
             if (b.relevance !== a.relevance) return b.relevance - a.relevance;
-            if (b.candidateImages.length !== a.candidateImages.length) return b.candidateImages.length - a.candidateImages.length;
-            return a.sku.localeCompare(b.sku);
+
+            // Tertiary sort: by candidates count
+            return b.candidateImages.length - a.candidateImages.length;
         });
     }, [dbProducts, scannedCandidates, searchQuery]);
 
@@ -182,38 +191,102 @@ export default function ReconcilePage() {
     }, []);
 
     const handleSaveNames = useCallback(async (productId: string) => {
-        const edited = editedNames.get(productId);
-        if (!edited) {
+        const editedName = editedNames.get(productId);
+        const editedSku = editedSkus.get(productId);
+
+        if (!editedName && editedSku === undefined) {
             toast.error('No hay cambios para guardar');
             return;
         }
 
-        const toastId = toast.loading('Guardando nombres...');
+        const toastId = toast.loading('Guardando cambios...');
 
         try {
-            const res = await fetch('/api/inventory/reconcile/update-names', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId, ...edited }),
+            let namesSuccess = true;
+            let skuSuccess = true;
+
+            // Update names if edited
+            if (editedName) {
+                const namesRes = await fetch('/api/inventory/reconcile/update-names', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId, ...editedName }),
+                });
+                const namesData = await namesRes.json();
+                namesSuccess = namesData.success;
+                if (!namesSuccess) {
+                    console.error('Error updating names:', namesData);
+                }
+            }
+
+            // Update SKU if edited
+            if (editedSku !== undefined) {
+                const product = dbProducts?.find(p => p.id === productId);
+                if (!product) {
+                    throw new Error('Producto no encontrado');
+                }
+
+                console.log('Updating SKU:', { productId, oldSku: product.sku, newSku: editedSku });
+
+                const skuRes = await fetch(`/api/inventory/${productId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: product.name || product.nameEn || 'Unnamed',
+                        nameEn: product.nameEn,
+                        nameEs: product.nameEs,
+                        sku: editedSku,
+                        barcode: product.barcode,
+                        itemCode: product.itemCode,
+                        category: product.category,
+                        stock: product.stock,
+                        status: product.status,
+                        priceZG: product.priceZG || 0,
+                        priceOth: product.priceOth || 0,
+                        image: product.image,
+                    }),
+                });
+
+                const skuData = await skuRes.json();
+                console.log('SKU update response:', skuData);
+
+                if (skuData.status !== 'success') {
+                    skuSuccess = false;
+                    const errorMsg = skuData.message || skuData.error || JSON.stringify(skuData);
+                    console.error('Error updating SKU:', errorMsg);
+
+                    // Check if it's a duplicate SKU error
+                    if (errorMsg.includes('Unique constraint failed') && errorMsg.includes('sku')) {
+                        toast.error(`El SKU "${editedSku}" ya existe en otro producto`, { id: toastId });
+                        return;
+                    }
+                }
+            }
+
+            if (!namesSuccess || !skuSuccess) {
+                toast.error('Error al guardar algunos cambios', { id: toastId });
+                return;
+            }
+
+            // Clear edited states only if successful
+            setEditedNames(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(productId);
+                return newMap;
+            });
+            setEditedSkus(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(productId);
+                return newMap;
             });
 
-            const data = await res.json();
-            if (data.success) {
-                setEditedNames(prev => {
-                    const newMap = new Map(prev);
-                    newMap.delete(productId);
-                    return newMap;
-                });
-                await refresh();
-                toast.success('Nombres guardados correctamente', { id: toastId });
-            } else {
-                toast.error('Error al guardar nombres', { id: toastId });
-            }
+            await refresh();
+            toast.success('Cambios guardados correctamente', { id: toastId });
         } catch (error) {
-            console.error('Error saving names:', error);
-            toast.error('Error al guardar nombres', { id: toastId });
+            console.error('Error saving changes:', error);
+            toast.error(`Error al guardar cambios: ${error instanceof Error ? error.message : 'Unknown error'}`, { id: toastId });
         }
-    }, [refresh, editedNames]);
+    }, [refresh, editedNames, editedSkus, dbProducts]);
 
     const handleConfirmImage = useCallback(async () => {
         if (!confirmModal) return;
@@ -243,8 +316,13 @@ export default function ReconcilePage() {
 
             const data = await res.json();
             if (data.success) {
-                // Remove from edited names
+                // Remove from edited names and SKUs
                 setEditedNames(prev => {
+                    const newMap = new Map(prev);
+                    newMap.delete(productId);
+                    return newMap;
+                });
+                setEditedSkus(prev => {
                     const newMap = new Map(prev);
                     newMap.delete(productId);
                     return newMap;
@@ -276,8 +354,21 @@ export default function ReconcilePage() {
         });
     }, [dbProducts]);
 
+    const handleSkuChange = useCallback((productId: string, value: string) => {
+        setEditedSkus(prev => {
+            const newMap = new Map(prev);
+            newMap.set(productId, value);
+            return newMap;
+        });
+    }, []);
+
     const handleCancelEdit = useCallback((productId: string) => {
         setEditedNames(prev => {
+            const newMap = new Map(prev);
+            newMap.delete(productId);
+            return newMap;
+        });
+        setEditedSkus(prev => {
             const newMap = new Map(prev);
             newMap.delete(productId);
             return newMap;
@@ -518,7 +609,7 @@ export default function ReconcilePage() {
                                                             <div className="aspect-square rounded-lg overflow-hidden bg-[#F2F2F7] dark:bg-zinc-800 border-2 border-gray-200 dark:border-white/10 group relative">
                                                                 {product.currentImage ? (
                                                                     <img
-                                                                        src={product.currentImage}
+                                                                        src={CloudinaryPresets.small(product.currentImage)}
                                                                         alt="Imagen actual"
                                                                         className="w-full h-full object-cover"
                                                                     />
@@ -549,9 +640,13 @@ export default function ReconcilePage() {
                                                                     <label className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
                                                                         SKU
                                                                     </label>
-                                                                    <div className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-zinc-800/50 text-gray-700 dark:text-gray-300 text-[13px] border border-gray-200 dark:border-white/5">
-                                                                        {product.sku}
-                                                                    </div>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={editedSkus.get(product.id) ?? product.sku}
+                                                                        onChange={(e) => handleSkuChange(product.id, e.target.value)}
+                                                                        placeholder="SKU"
+                                                                        className="w-full px-3 py-2 rounded-lg bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 border border-gray-300 dark:border-white/10 text-[13px] focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
+                                                                    />
                                                                 </div>
                                                             </div>
 
@@ -602,7 +697,7 @@ export default function ReconcilePage() {
                                                         <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                                                             Imágenes Candidatas ({product.candidateImages.length}):
                                                         </p>
-                                                        {editedNames.has(product.id) && (
+                                                        {(editedNames.has(product.id) || editedSkus.has(product.id)) && (
                                                             <div className="flex gap-2">
                                                                 <button
                                                                     onClick={() => handleCancelEdit(product.id)}
@@ -614,7 +709,7 @@ export default function ReconcilePage() {
                                                                     onClick={() => handleSaveNames(product.id)}
                                                                     className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[11px] font-semibold transition-colors"
                                                                 >
-                                                                    Guardar Nombres
+                                                                    Guardar Cambios
                                                                 </button>
                                                             </div>
                                                         )}
@@ -766,7 +861,7 @@ export default function ReconcilePage() {
                                     <div className="aspect-square bg-[#F2F2F7] dark:bg-zinc-800 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10">
                                         {confirmModal.currentImage ? (
                                             <img
-                                                src={confirmModal.currentImage}
+                                                src={confirmModal.currentImage.includes('cloudinary') ? CloudinaryPresets.medium(confirmModal.currentImage) : confirmModal.currentImage}
                                                 alt="Current"
                                                 className="w-full h-full object-contain"
                                             />

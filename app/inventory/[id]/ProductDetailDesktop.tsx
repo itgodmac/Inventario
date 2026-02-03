@@ -1,9 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import ImageUpload from '@/app/components/ImageUpload';
 import { Product, Theme, useProductDetail } from '@/hooks/useProductDetail';
 import { Toaster } from 'react-hot-toast';
+import { CloudinaryPresets } from '@/lib/cloudinary';
+import { canEdit, canCount } from '@/lib/permissions';
 
 interface Props {
     product: Product;
@@ -11,6 +14,10 @@ interface Props {
 }
 
 export default function ProductDetailDesktop({ product, currentTheme }: Props) {
+    const { data: session } = useSession();
+    const userCanEdit = canEdit(session);
+    const userCanCount = canCount(session);
+
     const {
         activeTab, setActiveTab,
         isEditing, setIsEditing,
@@ -133,42 +140,44 @@ export default function ProductDetailDesktop({ product, currentTheme }: Props) {
                                             productId={product.sku || product.id}
                                         />
                                     ) : product.image ? (
-                                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                        <img src={CloudinaryPresets.medium(product.image)} alt={product.name} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="text-gray-400">No Image</div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Desktop Quick Count */}
-                            <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
-                                <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-[#007AFF]"></span> Quick Inventory
-                                </h3>
+                            {/* Desktop Quick Count - Only for users with count permission */}
+                            {userCanCount && (
+                                <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
+                                    <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-[#007AFF]"></span> Quick Inventory
+                                    </h3>
 
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm text-gray-500 dark:text-gray-400">Current Stock</span>
-                                    <span className="text-xl font-mono font-bold">{product.stock}</span>
-                                </div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">Current Stock</span>
+                                        <span className="text-xl font-mono font-bold">{product.stock}</span>
+                                    </div>
 
-                                <div className="flex gap-2 mt-4">
-                                    <input
-                                        ref={inputRef}
-                                        type="number"
-                                        placeholder="Physical Qty"
-                                        value={physicalCount}
-                                        onChange={(e) => handleCountChange(e.target.value)}
-                                        className="flex-1 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-white/10 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                    <button
-                                        onClick={handleConfirmCount}
-                                        disabled={!physicalCount || isUpdating}
-                                        className="bg-[#007AFF] text-white px-4 py-2 rounded-md font-medium disabled:opacity-50 hover:bg-[#007AFF]/90 transition-colors"
-                                    >
-                                        {isUpdating ? 'Saving...' : 'Confirm'}
-                                    </button>
+                                    <div className="flex gap-2 mt-4">
+                                        <input
+                                            ref={inputRef}
+                                            type="number"
+                                            placeholder="Physical Qty"
+                                            value={physicalCount}
+                                            onChange={(e) => handleCountChange(e.target.value)}
+                                            className="flex-1 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-white/10 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                                        />
+                                        <button
+                                            onClick={handleConfirmCount}
+                                            disabled={!physicalCount || isUpdating}
+                                            className="bg-[#007AFF] text-white px-4 py-2 rounded-md font-medium disabled:opacity-50 hover:bg-[#007AFF]/90 transition-colors"
+                                        >
+                                            {isUpdating ? 'Saving...' : 'Confirm'}
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
 
                         {/* Right Column: Dynamic Tabs Content */}
@@ -239,12 +248,12 @@ export default function ProductDetailDesktop({ product, currentTheme }: Props) {
                                                         {isEditing ? (
                                                             <input type="number" value={formData.priceZG || 0} onChange={(e) => handleChange('priceZG', e.target.value)} className="block w-32 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-white/5 rounded px-2 py-1" />
                                                         ) : (
-                                                            <div className="text-lg font-semibold text-gray-900 dark:text-white">${(product.priceZG || 0).toFixed(2)}</div>
+                                                            <div className="text-lg font-semibold text-gray-900 dark:text-white">${(product.priceZG || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                                                         )}
                                                     </div>
                                                     <div>
                                                         <label className="text-xs text-gray-500 dark:text-gray-400 uppercase">Sales Price</label>
-                                                        <div className="text-2xl font-bold text-[#007AFF]">${product.price.toFixed(2)}</div>
+                                                        <div className="text-2xl font-bold text-[#007AFF]">${product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                                                     </div>
                                                 </div>
                                             </div>

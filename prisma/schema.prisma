@@ -10,7 +10,7 @@ datasource db {
 model Product {
   id          String   @id @default(uuid())
   // Identification
-  sku         String?  @unique
+  sku         String?
   barcode     String?
   itemCode    String?
   uniCode     String?

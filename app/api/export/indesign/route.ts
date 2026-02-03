@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import archiver from 'archiver';
 import Papa from 'papaparse';
 import { PassThrough } from 'stream';
+import { CloudinaryPresets } from '@/lib/cloudinary';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 const prisma = globalForPrisma.prisma || new PrismaClient();
@@ -106,7 +107,7 @@ async function generateArchiveContent(archive: archiver.Archiver, filters: Filte
             let imageFilename = '';
             let imagePathForCsv = '';
 
-            // Handle Image Download
+            // Handle Image Download - Use ORIGINAL size for InDesign
             if (product.image && product.image.startsWith('http')) {
                 try {
                     const ext = product.image.split('.').pop()?.split('?')[0] || 'jpg';
@@ -114,7 +115,9 @@ async function generateArchiveContent(archive: archiver.Archiver, filters: Filte
 
                     // Deduplication check (unlikely but good safety)
                     if (!processedImages.has(imageFilename)) {
-                        const response = await fetch(product.image);
+                        // Use Cloudinary indesign preset for ORIGINAL size (no transformations)
+                        const originalUrl = CloudinaryPresets.indesign(product.image);
+                        const response = await fetch(originalUrl);
                         if (response.ok) {
                             const arrayBuffer = await response.arrayBuffer();
                             archive.append(Buffer.from(arrayBuffer), { name: imageFilename });

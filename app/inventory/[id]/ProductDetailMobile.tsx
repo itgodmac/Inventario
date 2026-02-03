@@ -1,28 +1,55 @@
 'use client';
 
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import ImageUpload from '@/app/components/ImageUpload';
 import NumericKeypad from '@/app/components/NumericKeypad';
 import { Product, Theme, useProductDetail } from '@/hooks/useProductDetail';
+import { CloudinaryPresets } from '@/lib/cloudinary';
+import { canEdit, canCount } from '@/lib/permissions';
+import { useRealtimeInventory } from '@/app/hooks/useRealtimeInventory';
 
 interface Props {
     product: Product;
     currentTheme: Theme;
 }
 
-export default function ProductDetailMobile({ product, currentTheme }: Props) {
+export default function ProductDetailMobile(props: Props) {
+    const { data: session } = useSession();
+    const userCanEdit = canEdit(session);
+    const userCanCount = canCount(session);
+    const { product: initialProduct, currentTheme } = props;
+
+    // Real-time hook for mobile
+    const { products, updateProduct: mutateLocal } = useRealtimeInventory();
+    const liveProduct = products.find(p => p.id === initialProduct.id) || initialProduct;
+
     const {
         activeTab, setActiveTab,
         isEditing, setIsEditing,
         isFavorite,
         formData, handleChange,
-        handleSave, handleDelete,
+        handleSave: baseSave, handleDelete,
         stockLogs, logsLoading,
         physicalCount, handleCountChange,
         countStatus,
         inputRef,
-        isUpdating, handleConfirmCount
-    } = useProductDetail(product);
+        isUpdating, handleConfirmCount: baseConfirm
+    } = useProductDetail(liveProduct);
+
+    // Optimized handlers that use the real-time hook's local mutation
+    const handleSave = async () => {
+        await baseSave();
+        mutateLocal(liveProduct.id, formData);
+    };
+
+    const handleConfirmCount = async () => {
+        const count = parseInt(physicalCount);
+        await baseConfirm();
+        if (!isNaN(count)) {
+            mutateLocal(liveProduct.id, { stock: count });
+        }
+    };
 
     return (
         <main className="min-h-screen bg-white dark:bg-zinc-950 text-gray-900 dark:text-white pb-24 font-sans selection:bg-[#007AFF]/20 selection:text-[#007AFF]">
@@ -36,32 +63,36 @@ export default function ProductDetailMobile({ product, currentTheme }: Props) {
                         </Link>
                         <span className="text-muted-foreground/30 text-[17px] hidden sm:inline">/</span>
                         <span className="text-[17px] font-semibold tracking-tight text-foreground truncate">
-                            {isEditing ? 'Editing Product' : (product.nameEs || product.name)}
+                            {isEditing ? 'Editing Product' : (liveProduct.nameEs || liveProduct.name)}
                         </span>
                     </div>
 
                     <div className="flex items-center gap-3 flex-shrink-0">
-                        {!isEditing ? (
-                            <button
-                                onClick={() => setIsEditing(true)}
-                                className="text-[15px] font-medium text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"
-                            >
-                                Edit
-                            </button>
-                        ) : (
+                        {userCanEdit && (
                             <>
-                                <button
-                                    onClick={() => { setIsEditing(false); }}
-                                    className="text-[15px] font-medium text-[#FF3B30] hover:bg-[#FF3B30]/10 px-3 py-1.5 rounded-lg transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleSave}
-                                    className="text-[15px] font-semibold text-[#007AFF] hover:bg-[#007AFF]/10 px-3 py-1.5 rounded-lg transition-colors"
-                                >
-                                    Done
-                                </button>
+                                {!isEditing ? (
+                                    <button
+                                        onClick={() => setIsEditing(true)}
+                                        className="text-[15px] font-medium text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"
+                                    >
+                                        Edit
+                                    </button>
+                                ) : (
+                                    <>
+                                        <button
+                                            onClick={() => { setIsEditing(false); }}
+                                            className="text-[15px] font-medium text-[#FF3B30] hover:bg-[#FF3B30]/10 px-3 py-1.5 rounded-lg transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleSave}
+                                            className="text-[15px] font-semibold text-[#007AFF] hover:bg-[#007AFF]/10 px-3 py-1.5 rounded-lg transition-colors"
+                                        >
+                                            Done
+                                        </button>
+                                    </>
+                                )}
                             </>
                         )}
                         <button className="w-8 h-8 flex items-center justify-center rounded-full bg-[#767680]/10 hover:bg-[#767680]/20 transition-colors text-[#007AFF]">
@@ -122,15 +153,15 @@ export default function ProductDetailMobile({ product, currentTheme }: Props) {
                                         <span className="text-[12px] md:text-[13px] font-semibold text-[#8E8E93] tracking-wide uppercase">Product</span>
                                     </div>
                                     <h1 className="text-[28px] md:text-[36px] font-bold text-foreground tracking-tight leading-tight mb-1">
-                                        {product.nameEs || product.name || 'Unnamed Product'}
+                                        {liveProduct.nameEs || liveProduct.name || 'Unnamed Product'}
                                     </h1>
-                                    {product.nameEn && product.nameEs && (
-                                        <p className="text-[16px] md:text-[18px] text-[#8E8E93] mb-2 font-medium">{product.nameEn}</p>
+                                    {liveProduct.nameEn && liveProduct.nameEs && (
+                                        <p className="text-[16px] md:text-[18px] text-[#8E8E93] mb-2 font-medium">{liveProduct.nameEn}</p>
                                     )}
                                     <div className="flex items-center gap-3 mt-3 flex-wrap">
-                                        <span className="text-[15px] font-mono text-muted-foreground bg-secondary px-3 py-1.5 rounded-lg">{product.sku}</span>
-                                        {product.barcode && (
-                                            <span className="text-[15px] font-mono text-muted-foreground bg-secondary px-3 py-1.5 rounded-lg">{product.barcode}</span>
+                                        <span className="text-[15px] font-mono text-muted-foreground bg-secondary px-3 py-1.5 rounded-lg">{liveProduct.sku}</span>
+                                        {liveProduct.barcode && (
+                                            <span className="text-[15px] font-mono text-muted-foreground bg-secondary px-3 py-1.5 rounded-lg">{liveProduct.barcode}</span>
                                         )}
                                         <div className="flex gap-2 ml-auto">
                                             <div className="flex items-center gap-1.5 bg-secondary px-3 py-1.5 rounded-lg">
@@ -138,7 +169,7 @@ export default function ProductDetailMobile({ product, currentTheme }: Props) {
                                                 <span className="text-[11px] font-medium text-muted-foreground uppercase">Sales</span>
                                             </div>
                                             <div className="flex items-center gap-1.5 bg-secondary px-3 py-1.5 rounded-lg">
-                                                <span className="text-[15px] font-semibold text-[#34C759]">{product.stock}</span>
+                                                <span className="text-[15px] font-semibold text-[#34C759]">{liveProduct.stock}</span>
                                                 <span className="text-[11px] font-medium text-muted-foreground uppercase">Stock</span>
                                             </div>
                                         </div>
@@ -153,12 +184,12 @@ export default function ProductDetailMobile({ product, currentTheme }: Props) {
                                 <ImageUpload
                                     onUpload={(url) => handleChange('image', url)}
                                     currentImage={formData.image}
-                                    productId={product.sku || product.id}
+                                    productId={liveProduct.sku || liveProduct.id}
                                 />
-                            ) : product.image ? (
+                            ) : liveProduct.image ? (
                                 <img
-                                    src={product.image}
-                                    alt={product.name}
+                                    src={CloudinaryPresets.medium(liveProduct.image || '')}
+                                    alt={liveProduct.name}
                                     className="w-full aspect-square object-cover rounded-xl border border-gray-200 shadow-sm"
                                 />
                             ) : (
@@ -172,54 +203,57 @@ export default function ProductDetailMobile({ product, currentTheme }: Props) {
                     </div>
                 </div>
 
-                {/* QUICK COUNT INTERFACE (Primary Action) */}
-                <div className="bg-white dark:bg-zinc-900 rounded-[20px] shadow-md border border-gray-200 dark:border-white/5 overflow-hidden mb-8 ring-4 ring-[#007AFF]/10">
-                    <div className="px-5 py-3 border-b border-gray-200 dark:border-white/5 bg-[#007AFF]/5 backdrop-blur-sm flex justify-between items-center">
-                        <h3 className="text-[16px] font-bold text-[#007AFF] flex items-center gap-2">
-                            Conteo Rápido / Cycle Count
-                        </h3>
-                        <span className="text-[12px] font-medium text-[#007AFF]/70 uppercase tracking-wider">Ready to Scan</span>
-                    </div>
-                    <div className="p-5 md:p-6">
-                        <div className="grid grid-cols-2 gap-4 md:gap-8 items-center">
-                            {/* System Stock Display */}
-                            <div className="flex flex-col items-center p-4 rounded-2xl bg-secondary border border-border opacity-80">
-                                <span className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Teórico (System)</span>
-                                <span className="text-[32px] md:text-[40px] font-bold text-foreground">{product.stock}</span>
+
+                {/* QUICK COUNT INTERFACE (Primary Action) - Only for users with count permission */}
+                {userCanCount && (
+                    <div className="bg-white dark:bg-zinc-900 rounded-[20px] shadow-md border border-gray-200 dark:border-white/5 overflow-hidden mb-8 ring-4 ring-[#007AFF]/10">
+                        <div className="px-5 py-3 border-b border-gray-200 dark:border-white/5 bg-[#007AFF]/5 backdrop-blur-sm flex justify-between items-center">
+                            <h3 className="text-[16px] font-bold text-[#007AFF] flex items-center gap-2">
+                                Conteo Rápido / Cycle Count
+                            </h3>
+                            <span className="text-[12px] font-medium text-[#007AFF]/70 uppercase tracking-wider">Ready to Scan</span>
+                        </div>
+                        <div className="p-5 md:p-6">
+                            <div className="grid grid-cols-2 gap-4 md:gap-8 items-center">
+                                {/* System Stock Display */}
+                                <div className="flex flex-col items-center p-4 rounded-2xl bg-secondary border border-border opacity-80">
+                                    <span className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Teórico (System)</span>
+                                    <span className="text-[32px] md:text-[40px] font-bold text-foreground">{liveProduct.stock}</span>
+                                </div>
+
+                                {/* Physical Input */}
+                                <div className="flex flex-col items-center p-4 rounded-2xl bg-white dark:bg-zinc-900 border-2 border-primary shadow-lg shadow-primary/10 relative w-full">
+                                    <span className="text-[13px] font-bold text-primary uppercase tracking-wide mb-1">Físico (Real)</span>
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={physicalCount}
+                                        onChange={(e) => handleCountChange(e.target.value)}
+                                        // Make readOnly on Mobile to force numpad
+                                        readOnly={true}
+                                        onFocus={(e) => e.target.blur()}
+                                        placeholder="0"
+                                        className="w-full text-center text-[48px] font-bold text-foreground focus:outline-none placeholder-muted-foreground py-2 leading-none bg-transparent"
+                                    />
+                                    {countStatus === 'matching' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#34C759] shadow-sm animate-pulse"></div>}
+                                    {countStatus === 'discrepancy' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#FF3B30] shadow-sm animate-pulse"></div>}
+                                </div>
                             </div>
 
-                            {/* Physical Input */}
-                            <div className="flex flex-col items-center p-4 rounded-2xl bg-white dark:bg-zinc-900 border-2 border-primary shadow-lg shadow-primary/10 relative w-full">
-                                <span className="text-[13px] font-bold text-primary uppercase tracking-wide mb-1">Físico (Real)</span>
-                                <input
-                                    ref={inputRef}
-                                    type="text"
-                                    inputMode="numeric"
-                                    value={physicalCount}
-                                    onChange={(e) => handleCountChange(e.target.value)}
-                                    // Make readOnly on Mobile to force numpad
-                                    readOnly={true}
-                                    onFocus={(e) => e.target.blur()}
-                                    placeholder="0"
-                                    className="w-full text-center text-[48px] font-bold text-foreground focus:outline-none placeholder-muted-foreground py-2 leading-none bg-transparent"
+                            {/* Custom Numeric Keypad - ALWAYS ON FOR MOBILE VIEW */}
+                            <div>
+                                <NumericKeypad
+                                    onKeyPress={(key) => handleCountChange(physicalCount + key)}
+                                    onDelete={() => handleCountChange(physicalCount.slice(0, -1))}
+                                    onClear={() => handleCountChange('')}
+                                    onConfirm={handleConfirmCount}
+                                    isConfirmDisabled={physicalCount === '' || isUpdating}
                                 />
-                                {countStatus === 'matching' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#34C759] shadow-sm animate-pulse"></div>}
-                                {countStatus === 'discrepancy' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#FF3B30] shadow-sm animate-pulse"></div>}
                             </div>
                         </div>
-
-                        {/* Custom Numeric Keypad - ALWAYS ON FOR MOBILE VIEW */}
-                        <div>
-                            <NumericKeypad
-                                onKeyPress={(key) => handleCountChange(physicalCount + key)}
-                                onDelete={() => handleCountChange(physicalCount.slice(0, -1))}
-                                onClear={() => handleCountChange('')}
-                                onConfirm={handleConfirmCount}
-                                isConfirmDisabled={physicalCount === '' || isUpdating}
-                            />
-                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Segmented Control / Tabs */}
                 <div className="mb-6 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto no-scrollbar">
@@ -258,7 +292,7 @@ export default function ProductDetailMobile({ product, currentTheme }: Props) {
                                         {isEditing ? (
                                             <input value={formData.category} onChange={(e) => handleChange('category', e.target.value)} className="text-right border-b border-gray-200 outline-none focus:border-blue-500" />
                                         ) : (
-                                            <div className="md:text-left text-[#1C1C1E] text-[15px]">{product.category}</div>
+                                            <div className="md:text-left text-[#1C1C1E] text-[15px]">{liveProduct.category}</div>
                                         )}
                                     </div>
                                 </div>
@@ -289,7 +323,7 @@ export default function ProductDetailMobile({ product, currentTheme }: Props) {
                                                         className="w-full text-right border border-yellow-200 bg-yellow-50 rounded px-2 py-1 outline-none focus:border-yellow-400 font-mono text-[#1C1C1E]"
                                                     />
                                                 ) : (
-                                                    <div className="text-right text-[14px] font-mono text-[#1C1C1E]">${(product.priceOth || 0).toLocaleString()}</div>
+                                                    <div className="text-right text-[14px] font-mono text-[#1C1C1E]">${(liveProduct.priceOth || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                                                 )}
                                             </div>
                                             <div>
@@ -303,7 +337,7 @@ export default function ProductDetailMobile({ product, currentTheme }: Props) {
                                                         className="w-full text-right border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-zinc-800 rounded px-2 py-1 outline-none focus:border-blue-400 font-mono text-gray-900 dark:text-white"
                                                     />
                                                 ) : (
-                                                    <div className="text-right text-[14px] font-mono text-[#1C1C1E]">${(product.priceZG || 0).toLocaleString()}</div>
+                                                    <div className="text-right text-[14px] font-mono text-[#1C1C1E]">${(liveProduct.priceZG || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                                                 )}
                                             </div>
                                         </div>
@@ -311,7 +345,7 @@ export default function ProductDetailMobile({ product, currentTheme }: Props) {
                                         <div className="mt-3 pt-3 border-t border-dashed border-gray-200 flex justify-between items-center bg-blue-50/50 p-2 rounded-lg">
                                             <label className="text-[14px] font-bold text-[#1C1C1E]">Final Price ($ Venta)</label>
                                             <div className="text-right text-[20px] text-[#007AFF] font-bold">
-                                                ${product.price.toFixed(2)}
+                                                ${liveProduct.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </div>
                                         </div>
                                     </div>
@@ -321,7 +355,7 @@ export default function ProductDetailMobile({ product, currentTheme }: Props) {
                                         {isEditing ? (
                                             <input value={formData.barcode} onChange={(e) => handleChange('barcode', e.target.value)} className="md:col-span-2 text-right border-b border-gray-200 outline-none focus:border-blue-500 font-mono text-[#8E8E93]" />
                                         ) : (
-                                            <div className="md:col-span-2 text-[15px] font-mono text-[#8E8E93] truncate text-right">{product.barcode || '-'}</div>
+                                            <div className="md:col-span-2 text-[15px] font-mono text-[#8E8E93] truncate text-right">{liveProduct.barcode || '-'}</div>
                                         )}
                                     </div>
                                 </div>

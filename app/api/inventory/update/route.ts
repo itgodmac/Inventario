@@ -73,22 +73,27 @@ export async function POST(request: Request) {
 
         // 4. Broadcast to SSE clients via Redis list
         if (redis) {
-            const event = {
-                type: 'STOCK_UPDATE',
-                payload: {
-                    id: updatedProduct.id,
-                    stock: updatedProduct.stock,
-                    auditor: auditor,
-                    timestamp: new Date().toISOString()
-                }
-            };
+            try {
+                const event = {
+                    type: 'STOCK_UPDATE',
+                    payload: {
+                        id: updatedProduct.id,
+                        stock: updatedProduct.stock,
+                        auditor: auditor,
+                        timestamp: new Date().toISOString()
+                    }
+                };
 
-            // Push event to Redis list for SSE endpoints to consume
-            await redis.lpush('inventory-events', JSON.stringify(event));
-            // Set TTL to auto-cleanup old events (5 seconds)
-            await redis.expire('inventory-events', 5);
+                // Push event to Redis list for SSE endpoints to consume
+                await redis.lpush('inventory-events', JSON.stringify(event));
+                // Set TTL to auto-cleanup old events (5 seconds)
+                await redis.expire('inventory-events', 5);
 
-            console.log("📡 [API] Broadcasted inventory update");
+                console.log("📡 [API] Broadcasted inventory update");
+            } catch (redisError: any) {
+                // Log error but don't fail the request - realtime is optional
+                console.warn("⚠️ [API] Redis broadcast failed (non-critical):", redisError.message);
+            }
         } else {
             console.warn("⚠️ [API] Redis not configured, skipping realtime broadcast");
         }

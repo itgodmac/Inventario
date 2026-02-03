@@ -89,7 +89,7 @@ const Cell = memo(({
     }, [isSelected, isEditing, column.type, editStartMode]);
 
     const displayValue = column.type === 'number' && value != null
-        ? value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        ? value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
         : (value || '');
 
     // RENDER LOGIC

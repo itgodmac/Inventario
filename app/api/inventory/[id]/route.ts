@@ -138,12 +138,22 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
             }
         });
 
-        // Broadcast update
+        // 3. Broadcast to SSE clients via Redis list
         if (redis) {
-            await redis.publish('inventory-updates', JSON.stringify({
-                type: 'PRODUCT_UPDATE',
-                payload: updatedProduct
-            }));
+            try {
+                const event = {
+                    type: 'PRODUCT_UPDATE',
+                    payload: {
+                        id: updatedProduct.id,
+                        timestamp: new Date().toISOString()
+                    }
+                };
+                await redis.lpush('inventory-events', JSON.stringify(event));
+                await redis.expire('inventory-events', 10);
+                console.log("📡 [API] Broadcasted product update");
+            } catch (e) {
+                console.warn("⚠️ [API] Redis broadcast failed:", e);
+            }
         }
 
         return NextResponse.json({ status: 'success', product: updatedProduct });
@@ -162,12 +172,19 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
             where: { id }
         });
 
-        // Broadcast delete
+        // 3. Broadcast delete
         if (redis) {
-            await redis.publish('inventory-updates', JSON.stringify({
-                type: 'PRODUCT_DELETE',
-                payload: { id }
-            }));
+            try {
+                const event = {
+                    type: 'PRODUCT_DELETE',
+                    payload: { id, timestamp: new Date().toISOString() }
+                };
+                await redis.lpush('inventory-events', JSON.stringify(event));
+                await redis.expire('inventory-events', 10);
+                console.log("📡 [API] Broadcasted product deletion");
+            } catch (e) {
+                console.warn("⚠️ [API] Redis broadcast failed:", e);
+            }
         }
 
         return NextResponse.json({ status: 'success' });

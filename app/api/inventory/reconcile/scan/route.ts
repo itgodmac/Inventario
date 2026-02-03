@@ -84,10 +84,20 @@ export async function POST(req: NextRequest) {
         for (const product of allProducts) {
             const candidates: { url: string; filename: string; relativePath: string }[] = [];
 
+            // Helper function to normalize strings for matching (remove spaces, hyphens, underscores)
+            const normalize = (str: string) => str.toLowerCase().replace(/[\s\-_]/g, '');
+
             // Priority 1: Exact match on SKU or Photo ID (most reliable)
             const exactMatches: string[] = [];
-            if (product.sku) exactMatches.push(product.sku.toLowerCase());
-            if (product.photoId) exactMatches.push(product.photoId.toLowerCase());
+            const exactMatchesNormalized: string[] = [];
+            if (product.sku) {
+                exactMatches.push(product.sku.toLowerCase());
+                exactMatchesNormalized.push(normalize(product.sku));
+            }
+            if (product.photoId) {
+                exactMatches.push(product.photoId.toLowerCase());
+                exactMatchesNormalized.push(normalize(product.photoId));
+            }
 
             // Priority 2: Full name matches (less reliable, needs to be more specific)
             const nameMatches: string[] = [];
@@ -97,12 +107,19 @@ export async function POST(req: NextRequest) {
 
             for (const imageFile of imageFiles) {
                 const filenameWithoutExt = path.parse(imageFile.filename).name.toLowerCase();
+                const filenameNormalized = normalize(filenameWithoutExt);
                 let matched = false;
 
                 // Check exact matches (SKU, Photo ID) - HIGHEST PRIORITY
-                for (const exactTerm of exactMatches) {
+                // First try exact match, then normalized match for variations like "ABC-123" vs "ABC123"
+                for (let i = 0; i < exactMatches.length; i++) {
+                    const exactTerm = exactMatches[i];
+                    const normalizedTerm = exactMatchesNormalized[i];
+
                     if (filenameWithoutExt === exactTerm ||
-                        filenameWithoutExt.includes(exactTerm)) {
+                        filenameWithoutExt.includes(exactTerm) ||
+                        filenameNormalized === normalizedTerm ||
+                        filenameNormalized.includes(normalizedTerm)) {
                         matched = true;
                         break;
                     }

@@ -4,6 +4,7 @@ import path from 'path';
 import Papa from 'papaparse';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
+import { CloudinaryPresets } from '../lib/cloudinary';
 
 const prisma = new PrismaClient();
 
@@ -62,13 +63,15 @@ async function main() {
 
         let imagePath = '';
 
-        // Download image if exists
+        // Download image if exists - Use ORIGINAL for InDesign
         if (product.image) {
             // Check if it's a Cloudinary URL or already local
             if (product.image.startsWith('http')) {
+                // Use Cloudinary indesign preset for original size (no transformations)
+                const originalUrl = CloudinaryPresets.indesign(product.image);
                 const ext = path.extname(product.image) || '.jpg';
                 const filename = `${sku}_${safeName}${ext}`;
-                const relativePath = await downloadImage(product.image, filename);
+                const relativePath = await downloadImage(originalUrl, filename);
                 if (relativePath) imagePath = relativePath;
             }
         } else {

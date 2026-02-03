@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { auth } from '@/auth';
+import { canSeeZeroStock } from '@/lib/permissions';
 
 // Prevent multiple instances in dev
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
@@ -10,7 +12,18 @@ export const dynamic = 'force-dynamic'; // Always fetch fresh data
 
 export async function GET() {
     try {
+        const session = await auth();
+
+        // Build query filter
+        const where: any = {};
+
+        // Filter zero-stock products for viewers
+        if (!canSeeZeroStock(session)) {
+            where.stock = { gt: 0 };
+        }
+
         const products = await prisma.product.findMany({
+            where,
             orderBy: {
                 updatedAt: 'desc'
             }

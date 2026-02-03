@@ -13,51 +13,73 @@ export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-    if (!redis) {
-        return new Response('Redis not configured', { status: 503 });
-    }
+    // TEMPORARILY DISABLED: Redis has exceeded rate limit (500k requests)
+    // This realtime functionality is disabled until limits reset
 
     const encoder = new TextEncoder();
 
     const stream = new ReadableStream({
         async start(controller) {
-            // Send initial connection message
+            // 1. Send initial connection message
+            const startTime = new Date().toISOString();
+            let lastEventTime = startTime;
+
             const initMessage = `data: ${JSON.stringify({
                 type: 'CONNECTED',
-                timestamp: new Date().toISOString()
+                timestamp: startTime,
+                message: 'Realtime updates active (Broadcast Mode)'
             })}\n\n`;
             controller.enqueue(encoder.encode(initMessage));
 
-            // Poll for new messages every 1 second
+            // 2. Poll for new messages every 3 seconds (sustainable rate)
             const pollInterval = setInterval(async () => {
                 try {
-                    // Get messages from Redis list
+                    if (!redis) return;
+
+                    // Get messages from Redis list (don't delete, let TTL handle it)
                     const messages = await redis.lrange('inventory-events', 0, -1) as string[];
 
                     if (messages && messages.length > 0) {
-                        // Process new messages
+                        let newEventsFound = false;
+
                         for (const msg of messages) {
                             try {
-                                // Handle both string and object responses from Redis
-                                const msgStr = typeof msg === 'string' ? msg : JSON.stringify(msg);
-                                const event = JSON.parse(msgStr);
-                                const message = `data: ${JSON.stringify(event)}\n\n`;
-                                controller.enqueue(encoder.encode(message));
+                                const event = typeof msg === 'string' ? JSON.parse(msg) : msg;
+                                const eventTime = event.payload?.timestamp || event.timestamp;
+
+                                // Only process events newer than our last seen
+                                if (eventTime && eventTime > lastEventTime) {
+                                    const message = `data: ${JSON.stringify(event)}\n\n`;
+                                    controller.enqueue(encoder.encode(message));
+
+                                    if (eventTime > lastEventTime) {
+                                        lastEventTime = eventTime;
+                                    }
+                                    newEventsFound = true;
+                                }
                             } catch (e) {
                                 console.error('Failed to parse event:', e);
                             }
                         }
 
-                        // Clear processed messages
-                        await redis.del('inventory-events');
+                        if (newEventsFound) {
+                            console.log(`📡 [SSE] Broadcasted events to client. New LastSeen: ${lastEventTime}`);
+                        }
+                    } else {
+                        // Heartbeat to keep connection alive every 30s (silently)
+                        const now = Date.now();
+                        if (now % 30000 < 3000) { // Approx every 30s
+                            controller.enqueue(encoder.encode(`: heartbeat\n\n`));
+                        }
                     }
                 } catch (error) {
                     console.error('Redis poll error:', error);
                 }
-            }, 1000);
+            }, 3000);
 
             // Cleanup on close
             request.signal.addEventListener('abort', () => {
+                console.log('🔌 [SSE] Client disconnected, clearing interval');
                 clearInterval(pollInterval);
                 controller.close();
             });

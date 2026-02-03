@@ -3,10 +3,14 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import DashboardHeader from '../../components/DashboardHeader';
 import ImageUpload from '@/app/components/ImageUpload';
 import NumericKeypad from '@/app/components/NumericKeypad';
 import toast from 'react-hot-toast';
+import { CloudinaryPresets } from '@/lib/cloudinary';
+import { canEdit, canPrint, canCount } from '@/lib/permissions';
+import { useRealtimeInventory } from '@/app/hooks/useRealtimeInventory';
 
 interface Product {
     id: string;
@@ -35,49 +39,57 @@ interface Theme {
     name: string;
 }
 
-export default function ProductDetailClient({ product, currentTheme }: { product: Product; currentTheme: Theme }) {
+export default function ProductDetailClient({ product: initialProduct, currentTheme }: { product: any; currentTheme: any }) {
     const router = useRouter();
+    const { data: session } = useSession();
+
+    // Real-time hook
+    const { products, updateProduct: mutateLocal } = useRealtimeInventory();
+
+    // Find the current product in the real-time cache
+    const liveProduct = products.find(p => p.id === initialProduct.id) || initialProduct;
+
     const [activeTab, setActiveTab] = useState<'general' | 'attributes' | 'sales' | 'purchase' | 'inventory' | 'accounting'>('general');
     const [isEditing, setIsEditing] = useState(false);
     const [isFavorite, setIsFavorite] = useState(true);
 
     // Form State
     const [formData, setFormData] = useState({
-        name: product.name,
-        nameEs: product.nameEs || '',
-        sku: product.sku || '',
-        itemCode: product.itemCode || '',
-        photoId: product.photoId || '',
-        barcode: product.barcode || '',
-        price: product.price,
-        category: product.category || '',
-        stock: product.stock,
-        status: product.status,
-        priceZG: product.priceZG || 0,
-        priceOth: product.priceOth || 0,
-        image: product.image || ''
+        name: liveProduct.name,
+        nameEs: liveProduct.nameEs || '',
+        sku: liveProduct.sku || '',
+        itemCode: liveProduct.itemCode || '',
+        photoId: liveProduct.photoId || '',
+        barcode: liveProduct.barcode || '',
+        price: liveProduct.price,
+        category: liveProduct.category || '',
+        stock: liveProduct.stock,
+        status: liveProduct.status,
+        priceZG: liveProduct.priceZG || 0,
+        priceOth: liveProduct.priceOth || 0,
+        image: liveProduct.image || ''
     });
 
-    // Sync form with product prop updates (e.g. from background refresh)
+    // Sync form with liveProduct when not editing
     useEffect(() => {
         if (!isEditing) {
             setFormData({
-                name: product.name,
-                nameEs: product.nameEs || '',
-                sku: product.sku || '',
-                itemCode: product.itemCode || '',
-                photoId: product.photoId || '',
-                barcode: product.barcode || '',
-                price: product.price,
-                category: product.category || '',
-                stock: product.stock,
-                status: product.status,
-                priceZG: product.priceZG || 0,
-                priceOth: product.priceOth || 0,
-                image: product.image || ''
+                name: liveProduct.name,
+                nameEs: liveProduct.nameEs || '',
+                sku: liveProduct.sku || '',
+                itemCode: liveProduct.itemCode || '',
+                photoId: liveProduct.photoId || '',
+                barcode: liveProduct.barcode || '',
+                price: liveProduct.price,
+                category: liveProduct.category || '',
+                stock: liveProduct.stock,
+                status: liveProduct.status,
+                priceZG: liveProduct.priceZG || 0,
+                priceOth: liveProduct.priceOth || 0,
+                image: liveProduct.image || ''
             });
         }
-    }, [product, isEditing]);
+    }, [liveProduct, isEditing]);
 
     // Stock Logs State
     const [stockLogs, setStockLogs] = useState<any[]>([]);
@@ -88,7 +100,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
         const fetchLogs = async () => {
             setLogsLoading(true);
             try {
-                const res = await fetch(`/api/inventory/${product.id}/logs`);
+                const res = await fetch(`/api/inventory/${initialProduct.id}/logs`);
                 const data = await res.json();
                 setStockLogs(data.logs || []);
             } catch (error) {
@@ -98,7 +110,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
             }
         };
         fetchLogs();
-    }, [product.id]);
+    }, [initialProduct.id]);
 
     const handleChange = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -106,12 +118,16 @@ export default function ProductDetailClient({ product, currentTheme }: { product
 
     const handleSave = async () => {
         try {
-            const res = await fetch(`/api/inventory/${product.id}`, {
+            const res = await fetch(`/api/inventory/${liveProduct.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
             if (!res.ok) throw new Error('Failed to update');
+
+            // Immediate local update
+            mutateLocal(liveProduct.id, formData);
+
             toast.success('Producto actualizado correctamente');
             setIsEditing(false);
             router.refresh();
@@ -123,7 +139,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
     const handleDelete = async () => {
         if (!confirm('Are you sure you want to delete this product? This cannot be undone.')) return;
         try {
-            const res = await fetch(`/api/inventory/${product.id}`, { method: 'DELETE' });
+            const res = await fetch(`/api/inventory/${liveProduct.id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Failed to delete');
             toast.success('Producto eliminado');
             router.push('/inventory');
@@ -162,7 +178,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
             setCountStatus('idle');
             return;
         }
-        if (count === product.stock) {
+        if (count === liveProduct.stock) {
             setCountStatus('matching');
         } else {
             setCountStatus('discrepancy');
@@ -183,9 +199,9 @@ export default function ProductDetailClient({ product, currentTheme }: { product
         setIsUpdating(true);
 
         const payload = {
-            id: product.id,
+            id: liveProduct.id,
             quantity: parseInt(physicalCount),
-            difference: parseInt(physicalCount) - product.stock,
+            difference: parseInt(physicalCount) - liveProduct.stock,
             auditor: 'TEST'
         };
 
@@ -203,12 +219,16 @@ export default function ProductDetailClient({ product, currentTheme }: { product
 
             if (response.ok && data.status === 'success') {
                 console.log("✅ [CLIENT] Success!");
+
+                // Immediate local update for the physical count
+                mutateLocal(liveProduct.id, { stock: parseInt(physicalCount) });
+
                 toast.success('Inventario actualizado');
                 router.refresh(); // Refresh server data
                 setPhysicalCount(''); // Clear input
 
                 // Refresh logs
-                const res = await fetch(`/api/inventory/${product.id}/logs`);
+                const res = await fetch(`/api/inventory/${liveProduct.id}/logs`);
                 const logsData = await res.json();
                 setStockLogs(logsData.logs || []);
             } else {
@@ -234,22 +254,22 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                         </Link>
                         <span className="text-muted-foreground/30 text-[17px] hidden sm:inline">/</span>
                         <span className="text-[17px] font-semibold tracking-tight text-foreground truncate">
-                            {isEditing ? 'Editing Product' : (product.nameEs || product.name)}
+                            {isEditing ? 'Editing Product' : (liveProduct.nameEs || liveProduct.name)}
                         </span>
                     </div>
 
                     <div className="flex items-center gap-3 flex-shrink-0">
-                        {!isEditing ? (
+                        {!isEditing && canEdit(session) ? (
                             <button
                                 onClick={() => setIsEditing(true)}
                                 className="text-[15px] font-medium text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"
                             >
                                 Edit
                             </button>
-                        ) : (
+                        ) : isEditing ? (
                             <>
                                 <button
-                                    onClick={() => { setIsEditing(false); setFormData({ ...product } as any); }} // Reset
+                                    onClick={() => setIsEditing(false)}
                                     className="text-[15px] font-medium text-[#FF3B30] hover:bg-[#FF3B30]/10 px-3 py-1.5 rounded-lg transition-colors"
                                 >
                                     Cancel
@@ -261,9 +281,13 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                     Done
                                 </button>
                             </>
-                        )}
+                        ) : null}
                         <div className="hidden md:flex items-center gap-2 mr-2">
-                            {['Update Quantity', 'Replenish', 'Print Labels'].map((action) => (
+                            {['Update Quantity', 'Replenish', 'Print Labels'].filter(action => {
+                                if (action === 'Print Labels') return canPrint(session);
+                                if (action === 'Update Quantity') return canCount(session);
+                                return true;
+                            }).map((action) => (
                                 <button key={action} className="text-[13px] font-medium text-foreground hover:bg-black/5 dark:hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors">
                                     {action}
                                 </button>
@@ -278,7 +302,11 @@ export default function ProductDetailClient({ product, currentTheme }: { product
 
             {/* Action Sheet - Mobile Only */}
             <div className="md:hidden bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-white/5 px-4 py-3 flex gap-3 overflow-x-auto no-scrollbar">
-                {['Update Quantity', 'Replenish', 'Print Labels'].map((action) => (
+                {['Update Quantity', 'Replenish', 'Print Labels'].filter(action => {
+                    if (action === 'Print Labels') return canPrint(session);
+                    if (action === 'Update Quantity') return canCount(session);
+                    return true;
+                }).map((action) => (
                     <button key={action} className="flex-shrink-0 bg-[#767680]/10 hover:bg-[#767680]/20 active:bg-[#767680]/30 transition-colors px-4 py-2 rounded-lg text-[13px] font-medium text-[#1C1C1E] whitespace-nowrap active:scale-95 duration-100">
                         {action}
                     </button>
@@ -345,22 +373,22 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                         <span className="text-[12px] md:text-[13px] font-semibold text-[#8E8E93] tracking-wide uppercase">Product</span>
                                     </div>
                                     <h1 className="text-[28px] md:text-[36px] font-bold text-foreground tracking-tight leading-tight mb-1">
-                                        {product.nameEs || product.name || 'Unnamed Product'}
+                                        {liveProduct.nameEs || liveProduct.name || 'Unnamed Product'}
                                     </h1>
-                                    {product.nameEn && product.nameEs && (
-                                        <p className="text-[16px] md:text-[18px] text-[#8E8E93] mb-2 font-medium">{product.nameEn}</p>
+                                    {liveProduct.nameEn && liveProduct.nameEs && (
+                                        <p className="text-[16px] md:text-[18px] text-[#8E8E93] mb-2 font-medium">{liveProduct.nameEn}</p>
                                     )}
                                     <div className="flex items-center gap-3 mt-3 flex-wrap">
                                         <div className="flex flex-col">
                                             <span className="text-[10px] font-bold text-blue-500 uppercase ml-1">ID</span>
-                                            <span className="text-[15px] font-mono font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg">{product.photoId || '-'}</span>
+                                            <span className="text-[15px] font-mono font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg">{liveProduct.photoId || '-'}</span>
                                         </div>
                                         <div className="flex flex-col">
                                             <span className="text-[10px] font-bold text-muted-foreground uppercase ml-1">SKU</span>
-                                            <span className="text-[15px] font-mono text-muted-foreground bg-secondary px-3 py-1.5 rounded-lg">{product.sku}</span>
+                                            <span className="text-[15px] font-mono text-muted-foreground bg-secondary px-3 py-1.5 rounded-lg">{liveProduct.sku}</span>
                                         </div>
-                                        {product.barcode && (
-                                            <span className="text-[15px] font-mono text-muted-foreground bg-secondary px-3 py-1.5 rounded-lg">{product.barcode}</span>
+                                        {liveProduct.barcode && (
+                                            <span className="text-[15px] font-mono text-muted-foreground bg-secondary px-3 py-1.5 rounded-lg">{liveProduct.barcode}</span>
                                         )}
                                         <div className="flex gap-2 ml-auto">
                                             <div className="flex items-center gap-1.5 bg-secondary px-3 py-1.5 rounded-lg">
@@ -368,7 +396,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                                 <span className="text-[11px] font-medium text-muted-foreground uppercase">Sales</span>
                                             </div>
                                             <div className="flex items-center gap-1.5 bg-secondary px-3 py-1.5 rounded-lg">
-                                                <span className="text-[15px] font-semibold text-[#34C759]">{product.stock}</span>
+                                                <span className="text-[15px] font-semibold text-[#34C759]">{liveProduct.stock}</span>
                                                 <span className="text-[11px] font-medium text-muted-foreground uppercase">Stock</span>
                                             </div>
                                         </div>
@@ -383,12 +411,12 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                 <ImageUpload
                                     onUpload={(url) => handleChange('image', url)}
                                     currentImage={formData.image}
-                                    productId={product.sku || product.id}
+                                    productId={liveProduct.sku || liveProduct.id}
                                 />
-                            ) : product.image ? (
+                            ) : liveProduct.image ? (
                                 <img
-                                    src={product.image}
-                                    alt={product.name}
+                                    src={CloudinaryPresets.medium(liveProduct.image)}
+                                    alt={liveProduct.name}
                                     className="w-full aspect-square object-cover rounded-xl border border-gray-200 shadow-sm"
                                 />
                             ) : (
@@ -463,7 +491,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                                 {isEditing ? (
                                                     <input value={formData.category} onChange={(e) => handleChange('category', e.target.value)} className="text-right bg-transparent dark:text-white border-b border-gray-200 dark:border-white/10 outline-none focus:border-blue-500" />
                                                 ) : (
-                                                    <div className="md:text-left text-foreground text-[15px]">{product.category}</div>
+                                                    <div className="md:text-left text-foreground text-[15px]">{liveProduct.category}</div>
                                                 )}
                                             </div>
                                         </div>
@@ -493,7 +521,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                                                 className="w-full text-right border border-yellow-200 dark:border-yellow-900/50 bg-yellow-50 dark:bg-yellow-900/10 rounded px-2 py-1 outline-none focus:border-yellow-400 font-mono text-gray-900 dark:text-yellow-100"
                                                             />
                                                         ) : (
-                                                            <div className="text-right text-[14px] font-mono text-gray-900 dark:text-white">${(product.priceOth || 0).toLocaleString()}</div>
+                                                            <div className="text-right text-[14px] font-mono text-gray-900 dark:text-white">${(liveProduct.priceOth || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                                                         )}
                                                     </div>
                                                     <div>
@@ -507,7 +535,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                                                 className="w-full text-right border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-zinc-800 rounded px-2 py-1 outline-none focus:border-blue-400 font-mono text-gray-900 dark:text-white"
                                                             />
                                                         ) : (
-                                                            <div className="text-right text-[14px] font-mono text-gray-900 dark:text-white">${(product.priceZG || 0).toLocaleString()}</div>
+                                                            <div className="text-right text-[14px] font-mono text-gray-900 dark:text-white">${(liveProduct.priceZG || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                                                         )}
                                                     </div>
                                                 </div>
@@ -515,7 +543,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                                 <div className="mt-3 pt-3 border-t border-dashed border-gray-200 dark:border-white/10 flex justify-between items-center bg-blue-50/50 dark:bg-blue-900/10 p-2 rounded-lg">
                                                     <label className="text-[14px] font-bold text-gray-900 dark:text-white">Final Price ($ Venta)</label>
                                                     <div className="text-right text-[20px] text-[#007AFF] font-bold">
-                                                        ${product.price.toFixed(2)}
+                                                        ${liveProduct.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </div>
                                                 </div>
                                             </div>
@@ -525,7 +553,7 @@ export default function ProductDetailClient({ product, currentTheme }: { product
                                                 {isEditing ? (
                                                     <input value={formData.barcode} onChange={(e) => handleChange('barcode', e.target.value)} className="md:col-span-2 text-right bg-transparent dark:text-white border-b border-gray-200 dark:border-white/10 outline-none focus:border-blue-500 font-mono text-[#8E8E93]" />
                                                 ) : (
-                                                    <div className="md:col-span-2 text-[15px] font-mono text-[#8E8E93] truncate text-right">{product.barcode || '-'}</div>
+                                                    <div className="md:col-span-2 text-[15px] font-mono text-[#8E8E93] truncate text-right">{liveProduct.barcode || '-'}</div>
                                                 )}
                                             </div>
                                         </div>
@@ -604,65 +632,67 @@ export default function ProductDetailClient({ product, currentTheme }: { product
 
                     {/* RIGHT COLUMN: QUICK COUNT & WIDGETS */}
                     <div className="lg:col-span-1 order-1 lg:order-2">
-                        {/* QUICK COUNT INTERFACE (Moved here) */}
-                        <div className="bg-white dark:bg-zinc-900 rounded-[20px] shadow-md border border-gray-200 dark:border-white/5 overflow-hidden mb-6 ring-4 ring-primary/10 sticky top-24">
-                            <div className="px-5 py-3 border-b border-gray-200 dark:border-white/5 bg-primary/5 backdrop-blur-sm flex justify-between items-center">
-                                <h3 className="text-[14px] font-bold text-[#007AFF] flex items-center gap-2">
-                                    Quick Count
-                                </h3>
-                                <span className="text-[10px] font-medium text-[#007AFF]/70 uppercase tracking-wider">Ready</span>
+                        {/* QUICK COUNT INTERFACE (Moved here) - Only for users with count permission */}
+                        {canCount(session) && (
+                            <div className="bg-white dark:bg-zinc-900 rounded-[20px] shadow-md border border-gray-200 dark:border-white/5 overflow-hidden mb-6 ring-4 ring-primary/10 sticky top-24">
+                                <div className="px-5 py-3 border-b border-gray-200 dark:border-white/5 bg-primary/5 backdrop-blur-sm flex justify-between items-center">
+                                    <h3 className="text-[14px] font-bold text-[#007AFF] flex items-center gap-2">
+                                        Quick Count
+                                    </h3>
+                                    <span className="text-[10px] font-medium text-[#007AFF]/70 uppercase tracking-wider">Ready</span>
+                                </div>
+                                <div className="p-4">
+                                    {/* System Stock Display */}
+                                    <div className="flex justify-between items-center mb-4 p-3 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-white/5">
+                                        <span className="text-[12px] font-medium text-muted-foreground uppercase">System</span>
+                                        <span className="text-[20px] font-bold text-foreground">{liveProduct.stock}</span>
+                                    </div>
+
+                                    {/* Physical Input */}
+                                    <div className="relative w-full mb-4">
+                                        <span className="absolute -top-2.5 left-3 bg-white dark:bg-zinc-900 px-1 text-[11px] font-bold text-primary uppercase">Physical</span>
+                                        <input
+                                            ref={inputRef}
+                                            type="text"
+                                            inputMode="numeric"
+                                            value={physicalCount}
+                                            onChange={(e) => handleCountChange(e.target.value)}
+                                            readOnly={isMobile}
+                                            onFocus={(e) => { if (isMobile) e.target.blur(); }}
+                                            placeholder="0"
+                                            className="w-full text-center text-[32px] font-bold text-foreground border-2 border-primary rounded-xl py-3 focus:outline-none focus:ring-4 focus:ring-primary/10 bg-transparent"
+                                        />
+                                        {countStatus === 'matching' && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-[#34C759] shadow-sm animate-pulse"></div>}
+                                        {countStatus === 'discrepancy' && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-[#FF3B30] shadow-sm animate-pulse"></div>}
+                                    </div>
+
+                                    {/* Custom Numeric Keypad - HIDDEN ON DESKTOP */}
+                                    <div className="md:hidden">
+                                        <NumericKeypad
+                                            onKeyPress={(key) => handleCountChange(physicalCount + key)}
+                                            onDelete={() => handleCountChange(physicalCount.slice(0, -1))}
+                                            onClear={() => handleCountChange('')}
+                                            onConfirm={handleConfirmCount}
+                                            isConfirmDisabled={physicalCount === '' || isUpdating}
+                                        />
+                                    </div>
+
+                                    {/* Desktop Confirm Button */}
+                                    <div className="hidden md:block">
+                                        <button
+                                            onClick={handleConfirmCount}
+                                            disabled={physicalCount === ''}
+                                            className={`w-full py-2.5 rounded-xl font-bold text-[14px] shadow-sm transition-all active:scale-[0.98] ${physicalCount === ''
+                                                ? 'bg-[#F2F2F7] text-[#C7C7CC] cursor-not-allowed'
+                                                : 'bg-[#007AFF] text-white hover:bg-[#007AFF]/90 shadow-[#007AFF]/30'
+                                                }`}
+                                        >
+                                            {isUpdating ? 'Saving...' : 'Confirm'}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="p-4">
-                                {/* System Stock Display */}
-                                <div className="flex justify-between items-center mb-4 p-3 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-white/5">
-                                    <span className="text-[12px] font-medium text-muted-foreground uppercase">System</span>
-                                    <span className="text-[20px] font-bold text-foreground">{product.stock}</span>
-                                </div>
-
-                                {/* Physical Input */}
-                                <div className="relative w-full mb-4">
-                                    <span className="absolute -top-2.5 left-3 bg-white dark:bg-zinc-900 px-1 text-[11px] font-bold text-primary uppercase">Physical</span>
-                                    <input
-                                        ref={inputRef}
-                                        type="text"
-                                        inputMode="numeric"
-                                        value={physicalCount}
-                                        onChange={(e) => handleCountChange(e.target.value)}
-                                        readOnly={isMobile}
-                                        onFocus={(e) => { if (isMobile) e.target.blur(); }}
-                                        placeholder="0"
-                                        className="w-full text-center text-[32px] font-bold text-foreground border-2 border-primary rounded-xl py-3 focus:outline-none focus:ring-4 focus:ring-primary/10 bg-transparent"
-                                    />
-                                    {countStatus === 'matching' && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-[#34C759] shadow-sm animate-pulse"></div>}
-                                    {countStatus === 'discrepancy' && <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-[#FF3B30] shadow-sm animate-pulse"></div>}
-                                </div>
-
-                                {/* Custom Numeric Keypad - HIDDEN ON DESKTOP */}
-                                <div className="md:hidden">
-                                    <NumericKeypad
-                                        onKeyPress={(key) => handleCountChange(physicalCount + key)}
-                                        onDelete={() => handleCountChange(physicalCount.slice(0, -1))}
-                                        onClear={() => handleCountChange('')}
-                                        onConfirm={handleConfirmCount}
-                                        isConfirmDisabled={physicalCount === '' || isUpdating}
-                                    />
-                                </div>
-
-                                {/* Desktop Confirm Button */}
-                                <div className="hidden md:block">
-                                    <button
-                                        onClick={handleConfirmCount}
-                                        disabled={physicalCount === ''}
-                                        className={`w-full py-2.5 rounded-xl font-bold text-[14px] shadow-sm transition-all active:scale-[0.98] ${physicalCount === ''
-                                            ? 'bg-[#F2F2F7] text-[#C7C7CC] cursor-not-allowed'
-                                            : 'bg-[#007AFF] text-white hover:bg-[#007AFF]/90 shadow-[#007AFF]/30'
-                                            }`}
-                                    >
-                                        {isUpdating ? 'Saving...' : 'Confirm'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>

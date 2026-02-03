@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { v2 as cloudinary } from 'cloudinary';
+import { Redis } from '@upstash/redis';
 import * as fs from 'fs';
 
 const prisma = new PrismaClient();
+
+const redis = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN
+    ? new Redis({
+        url: process.env.KV_REST_API_URL,
+        token: process.env.KV_REST_API_TOKEN,
+    })
+    : null;
 
 export async function POST(req: NextRequest) {
     try {
@@ -77,6 +85,20 @@ export async function POST(req: NextRequest) {
                 updatedAt: new Date(),
             },
         });
+
+        // 3. Broadcast to SSE clients
+        if (redis) {
+            try {
+                const event = {
+                    type: 'PRODUCT_UPDATE',
+                    payload: { id: productId, timestamp: new Date().toISOString() }
+                };
+                await redis.lpush('inventory-events', JSON.stringify(event));
+                await redis.expire('inventory-events', 10);
+            } catch (e) {
+                console.warn("⚠️ [API] Redis broadcast failed:", e);
+            }
+        }
 
         return NextResponse.json({ success: true, imageUrl: finalImageUrl });
     } catch (error) {

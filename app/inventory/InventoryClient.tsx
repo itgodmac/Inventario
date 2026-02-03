@@ -15,6 +15,8 @@ import { Users } from 'lucide-react';
 import ExportModal from '../components/ExportModal';
 import InventoryHeader from '../components/InventoryHeader';
 import GradualBlur from '@/app/components/GradualBlur';
+import { CloudinaryPresets } from '@/lib/cloudinary';
+import { canEdit, canPrint, canCount } from '@/lib/permissions';
 
 const BarcodeScanner = dynamic(() => import('./BarcodeScanner'), { ssr: false });
 
@@ -32,7 +34,18 @@ export default function InventoryClient() {
     const pathname = usePathname();
 
     // Realtime Updates Hook
-    const { products, isLoading, error, isConnected, refresh } = useRealtimeInventory();
+    const { products, isLoading, error, isConnected, refresh, isValidating } = useRealtimeInventory();
+
+    useEffect(() => {
+        console.log('🏛️ InventoryClient: Component mounted');
+        return () => console.log('🏛️ InventoryClient: Component unmounted');
+    }, []);
+
+    useEffect(() => {
+        if (products && products.length > 0) {
+            console.log(`✨ InventoryClient: Received ${products.length} products from hook`);
+        }
+    }, [products?.length]);
 
     const [filteredProductsState, setFilteredProductsState] = useState<Product[]>([]);
 
@@ -261,7 +274,7 @@ export default function InventoryClient() {
 
     const handleRemotePrint = async () => {
         if (!selectedProduct) return;
-        const toastId = toast.loading('Enviando a impresiÃ³n...');
+        const toastId = toast.loading('Enviando a impresión...');
         try {
             const res = await fetch('/api/inventory/print-queue', {
                 method: 'POST',
@@ -270,13 +283,13 @@ export default function InventoryClient() {
             });
 
             if (res.ok) {
-                toast.success('Enviado a EstaciÃ³n de ImpresiÃ³n', { id: toastId });
+                toast.success('Enviado a Estación de Impresión', { id: toastId });
             } else {
                 toast.error('Error al enviar', { id: toastId });
             }
         } catch (e) {
             console.error(e);
-            toast.error('Error de conexiÃ³n', { id: toastId });
+            toast.error('Error de conexión', { id: toastId });
         }
     };
 
@@ -456,7 +469,7 @@ export default function InventoryClient() {
                                     <thead className="sticky top-0 z-30 bg-[#F2F2F7]/95 dark:bg-zinc-950/95 backdrop-blur shadow-sm">
                                         <tr className="divide-x divide-gray-200 dark:divide-white/10 uppercase font-mono cursor-pointer select-none">
                                             <th className="px-3 py-2 text-[10px] font-bold text-gray-500 sticky left-0 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 w-16 text-center">ID</th>
-                                            <th onClick={() => setSortBy(sortBy === 'name-asc' ? 'name-desc' : 'name-asc')} className="px-3 py-2 text-[10px] font-bold text-gray-500 sticky left-16 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 min-w-[350px] hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors">Nombre EspaÃ±ol</th>
+                                            <th onClick={() => setSortBy(sortBy === 'name-asc' ? 'name-desc' : 'name-asc')} className="px-3 py-2 text-[10px] font-bold text-gray-500 sticky left-16 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 min-w-[350px] hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors">Nombre Español</th>
                                             <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">OEM (Item Code)</th>
                                             <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Barcode</th>
                                             <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Nombre Eng</th>
@@ -504,22 +517,22 @@ export default function InventoryClient() {
                                                     </div>
                                                 </td>
                                                 <td className="px-3 py-1 text-right tabular-nums text-gray-500 bg-black/5 dark:bg-white/5 font-mono text-[11px]">
-                                                    {p.priceZG ? `$${p.priceZG.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '0.00'}
+                                                    {p.priceZG ? `$${p.priceZG.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
                                                 </td>
                                                 <td className="px-3 py-1 text-right tabular-nums text-gray-500 bg-black/5 dark:bg-white/5 font-mono text-[11px]">
-                                                    {p.priceOth ? `$${p.priceOth.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '0.00'}
+                                                    {p.priceOth ? `$${p.priceOth.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
                                                 </td>
                                                 <td className="px-3 py-1 text-right tabular-nums font-bold text-blue-600 dark:text-blue-400 bg-blue-50/20 dark:bg-blue-900/10 font-mono">
-                                                    {p.priceBM ? `$${p.priceBM.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '0.00'}
+                                                    {p.priceBM ? `$${p.priceBM.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
                                                 </td>
                                                 <td className="px-3 py-1 text-right tabular-nums font-black text-white bg-[#007AFF] shadow-inner font-mono text-[13px]">
-                                                    ${p.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                    ${p.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                                 </td>
                                                 <td className="px-3 py-1 text-right tabular-nums text-gray-400 font-mono text-[11px]">
-                                                    {p.ptijDll ? `$${p.ptijDll.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '0.00'}
+                                                    {p.ptijDll ? `$${p.ptijDll.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
                                                 </td>
                                                 <td className="px-3 py-1 text-right tabular-nums text-gray-400 font-mono text-[11px]">
-                                                    {p.ptijMxn ? `$${p.ptijMxn.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '0.00'}
+                                                    {p.ptijMxn ? `$${p.ptijMxn.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
                                                 </td>
                                                 <td className={`px-3 py-1 text-center font-black ${p.vecesG > 1 ? 'text-green-600' : 'text-orange-500'}`}>
                                                     {p.vecesG ? p.vecesG.toFixed(2) : '0.00'}
@@ -556,7 +569,7 @@ export default function InventoryClient() {
                                                         <div className="flex items-center gap-3">
                                                             <div className="w-10 h-10 rounded-lg bg-[#F2F2F7] dark:bg-white/10 flex-shrink-0 overflow-hidden border border-gray-200 dark:border-white/5">
                                                                 {product.image ? (
-                                                                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                                                    <img src={CloudinaryPresets.thumbnail(product.image)} alt={product.name} className="w-full h-full object-cover" />
                                                                 ) : (
                                                                     <div className="w-full h-full flex items-center justify-center">
                                                                         <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -582,7 +595,7 @@ export default function InventoryClient() {
                                                         </span>
                                                     </td>
                                                     <td className="px-4 py-3 text-right"><span className="text-[14px] font-medium text-gray-900 dark:text-white">{product.stock}</span></td>
-                                                    <td className="px-4 py-3 text-right"><span className="text-[14px] font-medium text-gray-900 dark:text-white">${product.price.toLocaleString()}</span></td>
+                                                    <td className="px-4 py-3 text-right"><span className="text-[14px] font-medium text-gray-900 dark:text-white">${product.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></td>
                                                     <td className="px-2 py-3"><svg className="w-4 h-4 text-[#C7C7CC] group-hover:text-[#007AFF] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg></td>
                                                 </tr>
                                             ))}
@@ -630,7 +643,7 @@ export default function InventoryClient() {
                                         className="bg-white dark:bg-zinc-900 rounded-lg p-2.5 flex items-center mb-2 last:mb-0 active:opacity-80 active:scale-[0.99] transition-all text-foreground shadow-sm border border-transparent dark:border-white/10"
                                     >
                                         <img
-                                            src={product.image || 'https://placehold.co/80x80.png'}
+                                            src={product.image ? CloudinaryPresets.thumbnail(product.image) : 'https://placehold.co/80x80.png'}
                                             alt={product.name}
                                             className="w-20 h-20 rounded-[10px] object-cover mr-2.5"
                                         />
@@ -685,7 +698,7 @@ export default function InventoryClient() {
                                     <div className="w-14 h-14 rounded-lg bg-[#F2F2F7] dark:bg-zinc-800 flex-shrink-0 overflow-hidden relative">
                                         {product.image ? (
                                             <img
-                                                src={product.image}
+                                                src={CloudinaryPresets.thumbnail(product.image)}
                                                 alt={product.name}
                                                 className="w-full h-full object-cover"
                                             />
@@ -705,7 +718,7 @@ export default function InventoryClient() {
                                         <h3 className="text-[13px] font-semibold text-gray-900 dark:text-white leading-tight truncate" title={product.nameEs || product.name}>{product.nameEs || product.name}</h3>
                                         <p className="text-[11px] text-gray-500 dark:text-gray-400 font-mono truncate">{product.sku}</p>
                                         <div className="flex items-center justify-between mt-0.5">
-                                            <span className="text-[12px] font-bold text-gray-900 dark:text-white">${product.price.toLocaleString()}</span>
+                                            <span className="text-[12px] font-bold text-gray-900 dark:text-white">${product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                             <span className="text-[10px] text-gray-500 dark:text-gray-400">Stock: {product.stock}</span>
                                         </div>
                                     </div>
@@ -725,7 +738,7 @@ export default function InventoryClient() {
                                 >
                                     <div className="aspect-square rounded-xl bg-[#F2F2F7] dark:bg-zinc-800 mb-2.5 md:mb-3 overflow-hidden border border-gray-200 dark:border-white/5 relative">
                                         <img
-                                            src={product.image || 'https://placehold.co/100x100?text=No+Image'}
+                                            src={product.image ? CloudinaryPresets.small(product.image) : 'https://placehold.co/100x100?text=No+Image'}
                                             alt={product.name}
                                             className="w-full h-full object-cover"
                                         />
@@ -738,7 +751,7 @@ export default function InventoryClient() {
                                         <h3 className="text-[13px] md:text-[14px] font-semibold text-gray-900 dark:text-white leading-tight line-clamp-2 h-[2.5em]">{product.name}</h3>
                                         <p className="text-[11px] md:text-[12px] text-gray-500 dark:text-gray-400 font-medium font-mono truncate">{product.sku}</p>
                                         <div className="flex items-center justify-between pt-2 mt-auto">
-                                            <span className="text-[14px] md:text-[15px] font-semibold text-gray-900 dark:text-white">${product.price.toLocaleString()}</span>
+                                            <span className="text-[14px] md:text-[15px] font-semibold text-gray-900 dark:text-white">${product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                             <span className="px-1.5 py-0.5 bg-[#767680]/10 dark:bg-white/10 rounded text-[9px] md:text-[10px] font-semibold uppercase text-gray-900 dark:text-white truncate max-w-[60px] md:max-w-[80px]">{product.category}</span>
                                         </div>
                                     </div>
@@ -923,18 +936,20 @@ export default function InventoryClient() {
                         {/* Tab Content */}
                         {modalTab === 'info' ? (
                             <>
-                                {/* Stock Card - Monochrome */}
+                                {/* Stock Card - Monochrome (Clickable to count only if permitted) */}
                                 <button
-                                    onClick={() => setModalTab('count')}
-                                    className="w-full bg-gray-900 dark:bg-white rounded-2xl p-5 mb-3 active:scale-[0.98] transition-all cursor-pointer group relative overflow-hidden"
+                                    onClick={() => canCount(session) && setModalTab('count')}
+                                    className={`w-full bg-gray-900 dark:bg-white rounded-2xl p-5 mb-3 transition-all group relative overflow-hidden ${canCount(session) ? 'active:scale-[0.98] cursor-pointer' : 'cursor-default'}`}
                                 >
-                                    {/* Tap Indicator */}
-                                    <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-white/20 dark:bg-black/20 text-white dark:text-black px-3 py-1.5 rounded-full text-[11px] font-semibold">
-                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                        </svg>
-                                        <span>Contar</span>
-                                    </div>
+                                    {/* Tap Indicator - Only show if can count */}
+                                    {canCount(session) && (
+                                        <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-white/20 dark:bg-black/20 text-white dark:text-black px-3 py-1.5 rounded-full text-[11px] font-semibold">
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                            </svg>
+                                            <span>Contar</span>
+                                        </div>
+                                    )}
 
                                     <div className="flex items-center justify-between text-white dark:text-black">
                                         <div className="text-left flex-1">
@@ -954,13 +969,15 @@ export default function InventoryClient() {
                                     </div>
                                 </button>
 
-                                {/* Hint */}
-                                <div className="flex items-center justify-center gap-2 mb-4 text-gray-500 dark:text-gray-400 text-[13px]">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-                                    </svg>
-                                    <span>Toca el stock para actualizar el conteo</span>
-                                </div>
+                                {/* Hint - Only show if can count */}
+                                {canCount(session) && (
+                                    <div className="flex items-center justify-center gap-2 mb-4 text-gray-500 dark:text-gray-400 text-[13px]">
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                                        </svg>
+                                        <span>Toca el stock para actualizar el conteo</span>
+                                    </div>
+                                )}
 
                                 {/* Information List - Monochrome */}
                                 <div className="bg-gray-50 dark:bg-zinc-800 rounded-2xl overflow-hidden mb-4 border border-gray-200 dark:border-zinc-700">
@@ -994,7 +1011,7 @@ export default function InventoryClient() {
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M3 4h2v16H3V4zm5 0h2v16H8V4zm5 0h2v16h-2V4zm5 0h3v16h-3V4z" />
                                                         </svg>
                                                     </div>
-                                                    <span className="text-[15px] text-gray-900 dark:text-white">CÃ³digo de Barras</span>
+                                                    <span className="text-[15px] text-gray-900 dark:text-white">Código de Barras</span>
                                                 </div>
                                                 <span className="text-[15px] font-semibold text-gray-900 dark:text-white font-mono">
                                                     {selectedProduct.barcode}
@@ -1012,52 +1029,54 @@ export default function InventoryClient() {
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                                 </svg>
                                             </div>
-                                            <span className="text-[15px] text-gray-900 dark:text-white">CategorÃ­a</span>
+                                            <span className="text-[15px] text-gray-900 dark:text-white">Categoría</span>
                                         </div>
                                         <span className="text-[15px] font-semibold text-gray-900 dark:text-white">
-                                            {selectedProduct.category || 'Sin categorÃ­a'}
+                                            {selectedProduct.category || 'Sin categoría'}
                                         </span>
                                     </div>
                                 </div>
 
-                                {/* Print Action - Monochrome */}
-                                <div className="bg-gray-50 dark:bg-zinc-800 rounded-2xl p-4 border border-gray-200 dark:border-zinc-700">
-                                    <div className="flex items-center gap-3">
-                                        {/* Copies Stepper */}
-                                        <div className="flex items-center bg-white dark:bg-zinc-700 rounded-full overflow-hidden border border-gray-300 dark:border-zinc-600">
-                                            <button
-                                                onClick={() => setPrintCopies(Math.max(1, printCopies - 1))}
-                                                className="w-11 h-11 flex items-center justify-center text-gray-900 dark:text-white active:bg-gray-100 dark:active:bg-zinc-600 transition-colors"
-                                            >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
-                                                </svg>
-                                            </button>
-                                            <div className="w-10 flex justify-center text-[17px] font-bold text-gray-900 dark:text-white tabular-nums">
-                                                {printCopies}
+                                {/* Print Action - Only if permitted */}
+                                {canPrint(session) && (
+                                    <div className="bg-gray-50 dark:bg-zinc-800 rounded-2xl p-4 border border-gray-200 dark:border-zinc-700">
+                                        <div className="flex items-center gap-3">
+                                            {/* Copies Stepper */}
+                                            <div className="flex items-center bg-white dark:bg-zinc-700 rounded-full overflow-hidden border border-gray-300 dark:border-zinc-600">
+                                                <button
+                                                    onClick={() => setPrintCopies(Math.max(1, printCopies - 1))}
+                                                    className="w-11 h-11 flex items-center justify-center text-gray-900 dark:text-white active:bg-gray-100 dark:active:bg-zinc-600 transition-colors"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+                                                    </svg>
+                                                </button>
+                                                <div className="w-10 flex justify-center text-[17px] font-bold text-gray-900 dark:text-white tabular-nums">
+                                                    {printCopies}
+                                                </div>
+                                                <button
+                                                    onClick={() => setPrintCopies(printCopies + 1)}
+                                                    className="w-11 h-11 flex items-center justify-center text-gray-900 dark:text-white active:bg-gray-100 dark:active:bg-zinc-600 transition-colors"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                                    </svg>
+                                                </button>
                                             </div>
+
+                                            {/* Print Button - Black */}
                                             <button
-                                                onClick={() => setPrintCopies(printCopies + 1)}
-                                                className="w-11 h-11 flex items-center justify-center text-gray-900 dark:text-white active:bg-gray-100 dark:active:bg-zinc-600 transition-colors"
+                                                onClick={handleRemotePrint}
+                                                className="flex-1 bg-gray-900 dark:bg-white text-white dark:text-black h-11 rounded-full font-semibold text-[17px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
                                             >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                                 </svg>
+                                                Imprimir
                                             </button>
                                         </div>
-
-                                        {/* Print Button - Black */}
-                                        <button
-                                            onClick={handleRemotePrint}
-                                            className="flex-1 bg-gray-900 dark:bg-white text-white dark:text-black h-11 rounded-full font-semibold text-[17px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                            </svg>
-                                            Imprimir
-                                        </button>
                                     </div>
-                                </div>
+                                )}
                             </>
                         ) : (
                             <>
@@ -1078,35 +1097,38 @@ export default function InventoryClient() {
                                     <div className="w-16"></div> {/* Spacer for centering */}
                                 </div>
 
-                                {/* Quick Count Interface */}
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {/* System Stock */}
-                                        <div className="flex flex-col items-center p-4 rounded-xl bg-gray-100 dark:bg-zinc-800">
-                                            <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Sistema</span>
-                                            <span className="text-[32px] font-bold text-gray-900 dark:text-white">{selectedProduct.stock}</span>
-                                        </div>
 
-                                        {/* Physical Count Input */}
-                                        <div className="flex flex-col items-center p-4 rounded-xl bg-white dark:bg-zinc-900 border-2 border-gray-900 dark:border-white relative">
-                                            <span className="text-[11px] font-bold text-gray-900 dark:text-white uppercase mb-1">FÃ­sico</span>
-                                            <div className="text-[32px] font-bold text-gray-900 dark:text-white leading-none">
-                                                {physicalCount || '0'}
+                                {/* Quick Count Interface - Only for users with count permission */}
+                                {canCount(session) && (
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {/* System Stock */}
+                                            <div className="flex flex-col items-center p-4 rounded-xl bg-gray-100 dark:bg-zinc-800">
+                                                <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Sistema</span>
+                                                <span className="text-[32px] font-bold text-gray-900 dark:text-white">{selectedProduct.stock}</span>
                                             </div>
-                                            {countStatus === 'matching' && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gray-900 dark:bg-white animate-pulse" />}
-                                            {countStatus === 'discrepancy' && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gray-900 dark:bg-white animate-pulse" />}
-                                        </div>
-                                    </div>
 
-                                    {/* Numeric Keypad */}
-                                    <NumericKeypad
-                                        onKeyPress={(key) => handleCountChange(physicalCount + key)}
-                                        onDelete={() => handleCountChange(physicalCount.slice(0, -1))}
-                                        onClear={() => handleCountChange('')}
-                                        onConfirm={handleConfirmCount}
-                                        isConfirmDisabled={physicalCount === '' || isUpdating}
-                                    />
-                                </div>
+                                            {/* Physical Count Input */}
+                                            <div className="flex flex-col items-center p-4 rounded-xl bg-white dark:bg-zinc-900 border-2 border-gray-900 dark:border-white relative">
+                                                <span className="text-[11px] font-bold text-gray-900 dark:text-white uppercase mb-1">Físico</span>
+                                                <div className="text-[32px] font-bold text-gray-900 dark:text-white leading-none">
+                                                    {physicalCount || '0'}
+                                                </div>
+                                                {countStatus === 'matching' && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gray-900 dark:bg-white animate-pulse" />}
+                                                {countStatus === 'discrepancy' && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gray-900 dark:bg-white animate-pulse" />}
+                                            </div>
+                                        </div>
+
+                                        {/* Numeric Keypad */}
+                                        <NumericKeypad
+                                            onKeyPress={(key) => handleCountChange(physicalCount + key)}
+                                            onDelete={() => handleCountChange(physicalCount.slice(0, -1))}
+                                            onClear={() => handleCountChange('')}
+                                            onConfirm={handleConfirmCount}
+                                            isConfirmDisabled={physicalCount === '' || isUpdating}
+                                        />
+                                    </div>
+                                )}
                             </>
                         )}
                     </div>
