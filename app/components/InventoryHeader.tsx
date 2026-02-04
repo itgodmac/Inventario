@@ -45,7 +45,7 @@ export default function InventoryHeader({
 
     return (
         <div className="hidden md:block sticky top-0 z-40 bg-[#FAFAFA] dark:bg-zinc-950 pb-4 pt-6">
-            <div className="max-w-[1450px] mx-auto px-4">
+            <div className="max-w-[1450px] 2xl:max-w-none mx-auto px-4">
                 {/* Pill Container - Super Minimal */}
                 <div className="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-2xl rounded-full px-5 py-2.5 border border-gray-200/50 dark:border-zinc-800/50 flex items-center justify-between gap-3">
 

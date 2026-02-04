@@ -460,7 +460,7 @@ export default function InventoryClient() {
 
             {/* CONTENT */}
             {isLoading && !error ? <Loading /> : (
-                <div className="md:max-w-[1400px] md:mx-auto md:px-4 sm:px-6 lg:px-8 md:mt-4 animate-in fade-in duration-500">
+                <div className="md:max-w-[1400px] 2xl:max-w-none md:mx-auto md:px-4 sm:px-6 lg:px-8 md:mt-4 animate-in fade-in duration-500">
                     {/* Excel Sheet View */}
                     {viewMode === 'excel' && (
                         <div className="hidden md:block bg-white dark:bg-zinc-900 rounded-[10px] shadow-xl border border-gray-200 dark:border-white/5 overflow-hidden">
@@ -469,7 +469,8 @@ export default function InventoryClient() {
                                     <thead className="sticky top-0 z-30 bg-[#F2F2F7]/95 dark:bg-zinc-950/95 backdrop-blur shadow-sm">
                                         <tr className="divide-x divide-gray-200 dark:divide-white/10 uppercase font-mono cursor-pointer select-none">
                                             <th className="px-3 py-2 text-[10px] font-bold text-gray-500 sticky left-0 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 w-16 text-center">ID</th>
-                                            <th onClick={() => setSortBy(sortBy === 'name-asc' ? 'name-desc' : 'name-asc')} className="px-3 py-2 text-[10px] font-bold text-gray-500 sticky left-16 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 min-w-[350px] hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors">Nombre Español</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 sticky left-16 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 w-16 text-center">Foto</th>
+                                            <th onClick={() => setSortBy(sortBy === 'name-asc' ? 'name-desc' : 'name-asc')} className="px-3 py-2 text-[10px] font-bold text-gray-500 sticky left-32 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 min-w-[350px] hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors">Nombre Español</th>
                                             <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">OEM (Item Code)</th>
                                             <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Barcode</th>
                                             <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Nombre Eng</th>
@@ -496,7 +497,16 @@ export default function InventoryClient() {
                                                 onClick={() => router.push(`/inventory/${p.photoId}`)}
                                             >
                                                 <td className="px-3 py-1 sticky left-0 z-20 bg-inherit font-mono font-bold text-blue-600 dark:text-blue-400 border-r border-gray-200 dark:border-white/10 text-center w-16 italic">{p.photoId || '-'}</td>
-                                                <td className="px-3 py-1 sticky left-16 z-20 bg-inherit font-medium text-gray-900 dark:text-zinc-100 border-r border-gray-200 dark:border-white/10 whitespace-nowrap overflow-hidden text-ellipsis max-w-[350px]" title={p.nameEs || p.name}>
+                                                <td className="px-1 py-1 sticky left-16 z-20 bg-inherit border-r border-gray-200 dark:border-white/10 text-center w-16">
+                                                    {p.image ? (
+                                                        <img src={CloudinaryPresets.thumbnail(p.image)} alt="" className="w-10 h-10 object-cover mx-auto rounded shadow-sm border border-gray-200 dark:border-white/10" />
+                                                    ) : (
+                                                        <div className="w-10 h-10 mx-auto flex items-center justify-center bg-gray-100 dark:bg-zinc-800 rounded">
+                                                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="px-3 py-1 sticky left-32 z-20 bg-inherit font-medium text-gray-900 dark:text-zinc-100 border-r border-gray-200 dark:border-white/10 whitespace-nowrap overflow-hidden text-ellipsis max-w-[350px]" title={p.nameEs || p.name}>
                                                     {searchQuery ? (
                                                         <span dangerouslySetInnerHTML={{
                                                             __html: (p.nameEs || p.name).replace(new RegExp(`(${searchQuery})`, 'gi'), '<mark class="bg-yellow-200 dark:bg-yellow-600/50 rounded-sm">$1</mark>')
@@ -688,7 +698,7 @@ export default function InventoryClient() {
                     </div>
 
                     {viewMode === 'compact' && (
-                        <div className="hidden md:grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+                        <div className="hidden md:grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 min-[1800px]:grid-cols-8 min-[2200px]:grid-cols-10 min-[2600px]:grid-cols-12 gap-3">
                             {paginatedProducts.map((product) => (
                                 <div
                                     key={product.id}
@@ -729,7 +739,7 @@ export default function InventoryClient() {
 
                     {/* Grid View - Desktop Only */}
                     {viewMode === 'grid' && (
-                        <div className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4">
+                        <div className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 min-[1800px]:grid-cols-8 min-[2200px]:grid-cols-10 min-[2600px]:grid-cols-12 gap-3 md:gap-4">
                             {paginatedProducts.map((product) => (
                                 <div
                                     key={product.id}
@@ -801,14 +811,6 @@ export default function InventoryClient() {
                 </div>
             )}
 
-            {/* Scanner Button (FAB) REMOVED as per user request */}
-            <button
-                onClick={() => setShowScanner(true)}
-                className="hidden md:flex fixed bottom-8 right-8 bg-[#007AFF] text-white rounded-xl shadow-lg shadow-blue-500/30 items-center justify-center gap-2 px-6 py-3 hover:bg-[#0056b3] transition-all hover:scale-105 active:scale-95 z-50"
-            >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h2v16H3V4zm5 0h2v16H8V4zm5 0h2v16h-2V4zm5 0h3v16h-3V4z" /></svg>
-                <span className="font-semibold">Scan Barcode</span>
-            </button>
 
             {/* Scanner Modal */}
             {showScanner && (

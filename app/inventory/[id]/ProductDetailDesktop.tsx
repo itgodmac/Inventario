@@ -78,7 +78,7 @@ export default function ProductDetailDesktop({ product, currentTheme }: Props) {
 
             {/* Main Content */}
             <main className="flex-1 ml-64 p-8 overflow-y-auto w-full">
-                <div className="max-w-5xl mx-auto space-y-8">
+                <div className="max-w-[1600px] mx-auto space-y-8">
 
                     {/* Header */}
                     <div className="flex items-start justify-between">
