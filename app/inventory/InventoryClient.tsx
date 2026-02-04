@@ -9,13 +9,13 @@ import { useSession } from 'next-auth/react';
 import { useRealtimeInventory } from '@/app/hooks/useRealtimeInventory';
 import { Product } from '@/app/lib/types';
 import NumericKeypad from '@/app/components/NumericKeypad';
+import { CloudinaryPresets } from '@/lib/cloudinary';
 import Loading from './loading';
 import toast from 'react-hot-toast';
 import { Users } from 'lucide-react';
 import ExportModal from '../components/ExportModal';
 import InventoryHeader from '../components/InventoryHeader';
 import GradualBlur from '@/app/components/GradualBlur';
-import { CloudinaryPresets } from '@/lib/cloudinary';
 import { canEdit, canPrint, canCount } from '@/lib/permissions';
 
 const BarcodeScanner = dynamic(() => import('./BarcodeScanner'), { ssr: false });
@@ -26,7 +26,328 @@ const themes = {
     default: { primary: '#1A73E8', secondary: '#5F6368', name: 'RIPODOO' }
 };
 
-export default function InventoryClient() {
+// --- STYLING UTILITIES ---
+const getStockColor = (status: string) => {
+    switch (status) {
+        case 'in-stock': return '#34C759';
+        case 'low-stock': return '#FF9500';
+        case 'out-of-stock': return '#FF3B30';
+        default: return '#8E8E93';
+    }
+};
+
+const getStockBadgeClass = (stock: number) => {
+    if (stock === 0) return 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400';
+    if (stock <= 5) return 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400';
+    return 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
+};
+
+// --- MEMOIZED VIEWS ---
+
+const MobileListView = React.memo(({ filteredProducts, isLoading, products, handleSelectProduct }: any) => {
+    return (
+        <div className="md:hidden relative">
+            <div className="bg-gray-100 dark:bg-zinc-950/50 rounded-xl p-2.5 mt-4 pb-20">
+                {(isLoading || !products || products.length === 0) && filteredProducts.length === 0 ? (
+                    Array.from({ length: 6 }).map((_, i) => (
+                        <div key={i} className="bg-white dark:bg-zinc-900 rounded-lg p-2.5 flex items-center mb-2 last:mb-0 shadow-sm border border-transparent dark:border-white/10 animate-pulse">
+                            <div className="w-20 h-20 rounded-[10px] bg-gray-200 dark:bg-zinc-800 mr-2.5 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                                <div className="h-5 bg-gray-200 dark:bg-zinc-800 rounded w-3/4 mb-2" />
+                                <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-1/2 mb-2" />
+                                <div className="flex justify-between items-center">
+                                    <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-1/3" />
+                                    <div className="h-6 bg-gray-200 dark:bg-zinc-800 rounded-xl w-20" />
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                ) : filteredProducts.length > 0 ? (
+                    filteredProducts.map((product: any) => (
+                        <div
+                            key={product.id}
+                            onClick={() => handleSelectProduct(product)}
+                            className="bg-white dark:bg-zinc-900 rounded-lg p-2.5 flex items-center mb-2 last:mb-0 active:opacity-80 active:scale-[0.99] transition-all text-foreground shadow-sm border border-transparent dark:border-white/10"
+                        >
+                            <img
+                                src={product.image ? CloudinaryPresets.thumbnail(product.image) : 'https://placehold.co/80x80.png'}
+                                alt={product.name}
+                                className="w-20 h-20 rounded-[10px] object-cover mr-2.5"
+                            />
+                            <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-center mb-[5px]">
+                                    <h3 className="text-[16px] font-semibold text-card-foreground flex-1 mr-2.5 line-clamp-2">
+                                        {product.nameEs || product.name}
+                                    </h3>
+                                    <span className="text-[16px] text-card-foreground">
+                                        ${product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+                                <p className="text-[14px] text-muted-foreground">{product.barcode || product.sku}</p>
+                                <div className="flex justify-between items-center mt-1">
+                                    <span className="text-[14px] text-muted-foreground">{product.category || 'N/A'}</span>
+                                    <div className="flex items-center">
+                                        <div className={`px-3 h-6 rounded-xl flex items-center justify-center ${getStockBadgeClass(product.stock)}`}>
+                                            <span className="text-[12px] font-medium">Stock: {product.stock}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div className="text-center py-20">
+                        <div className="w-16 h-16 bg-[#E5E5EA] dark:bg-zinc-800 rounded-full mx-auto flex items-center justify-center mb-4">
+                            <svg className="w-8 h-8 text-[#8E8E93] dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </div>
+                        <h3 className="text-[20px] font-semibold text-gray-900 dark:text-white">No hay resultados</h3>
+                        <p className="text-[15px] text-gray-500 dark:text-gray-400">Prueba con otro término de búsqueda.</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+});
+
+const ExcelView = React.memo(({ filteredProducts, searchQuery, sortBy, setSortBy, handleSelectProduct }: any) => {
+    return (
+        <div className="hidden md:block bg-white dark:bg-zinc-900 rounded-[10px] shadow-xl border border-gray-200 dark:border-white/5 overflow-hidden">
+            <div className="overflow-x-auto overflow-y-auto max-h-[70vh] relative custom-scrollbar">
+                <table className="w-full text-left border-collapse min-w-[2500px]">
+                    <thead className="sticky top-0 z-30 bg-[#F2F2F7]/95 dark:bg-zinc-950/95 backdrop-blur shadow-sm">
+                        <tr className="divide-x divide-gray-200 dark:divide-white/10 uppercase font-mono cursor-pointer select-none text-[10px] font-bold text-gray-500">
+                            <th className="px-3 py-2 sticky left-0 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 w-16 text-center">ID</th>
+                            <th className="px-3 py-2 sticky left-16 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 w-16 text-center">Foto</th>
+                            <th onClick={() => setSortBy(sortBy === 'name-asc' ? 'name-desc' : 'name-asc')} className="px-3 py-2 sticky left-32 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 min-w-[350px] hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors">Nombre Español</th>
+                            <th className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">OEM (Item Code)</th>
+                            <th className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Barcode</th>
+                            <th className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Nombre Eng</th>
+                            <th className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">UVA Nombre</th>
+                            <th className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Categoria</th>
+                            <th className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5 text-center">Rot.</th>
+                            <th onClick={() => setSortBy(sortBy === 'stock-asc' ? 'stock-desc' : 'stock-asc')} className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors">Stock</th>
+                            <th className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Sts</th>
+                            <th className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">$ ZG (Fab)</th>
+                            <th className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">$ Oth (Com)</th>
+                            <th className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">$ BM (Big)</th>
+                            <th onClick={() => setSortBy(sortBy === 'price-asc' ? 'price-desc' : 'price-asc')} className="px-3 py-2 text-white border-b border-blue-600 bg-blue-600 hover:bg-blue-700 transition-colors">PVP ($ Venta)</th>
+                            <th className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Dolar Ptj</th>
+                            <th className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Pesos Ptj</th>
+                            <th className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Rentab.</th>
+                            <th className="px-3 py-2 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Notas</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-white/5 bg-white dark:bg-zinc-900">
+                        {filteredProducts.map((p: any, idx: number) => (
+                            <tr
+                                key={p.id}
+                                className={`divide-x divide-gray-100 dark:divide-white/5 hover:bg-blue-50/50 dark:hover:bg-blue-900/30 transition-colors group text-[12px] leading-tight ${idx % 2 === 0 ? 'bg-white dark:bg-zinc-900' : 'bg-[#FAFAFA] dark:bg-zinc-900/40'}`}
+                                onClick={() => handleSelectProduct(p)}
+                            >
+                                <td className="px-3 py-1 sticky left-0 z-20 bg-inherit font-mono font-bold text-blue-600 dark:text-blue-400 border-r border-gray-200 dark:border-white/10 text-center w-16 italic">{p.photoId || '-'}</td>
+                                <td className="px-1 py-1 sticky left-16 z-20 bg-inherit border-r border-gray-200 dark:border-white/10 text-center w-16">
+                                    {p.image ? (
+                                        <img src={CloudinaryPresets.thumbnail(p.image)} alt="" className="w-10 h-10 object-cover mx-auto rounded shadow-sm border border-gray-200 dark:border-white/10" />
+                                    ) : (
+                                        <div className="w-10 h-10 mx-auto flex items-center justify-center bg-gray-100 dark:bg-zinc-800 rounded">
+                                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                        </div>
+                                    )}
+                                </td>
+                                <td className="px-3 py-1 sticky left-32 z-20 bg-inherit font-medium text-gray-900 dark:text-zinc-100 border-r border-gray-200 dark:border-white/10 whitespace-nowrap overflow-hidden text-ellipsis max-w-[350px]" title={p.nameEs || p.name}>
+                                    {searchQuery ? (
+                                        <span dangerouslySetInnerHTML={{ __html: (p.nameEs || p.name).replace(new RegExp(`(${searchQuery})`, 'gi'), '<mark class="bg-yellow-200 dark:bg-yellow-600/50 rounded-sm">$1</mark>') }} />
+                                    ) : (p.nameEs || p.name)}
+                                </td>
+                                <td className="px-3 py-1 font-mono text-blue-600 dark:text-blue-400 whitespace-nowrap">{p.itemCode}</td>
+                                <td className="px-3 py-1 text-gray-500 dark:text-gray-400 font-mono tracking-tighter">{p.barcode}</td>
+                                <td className="px-3 py-1 text-gray-500 dark:text-gray-400 italic whitespace-nowrap truncate max-w-[200px]">{p.nameEn || '-'}</td>
+                                <td className="px-3 py-1 text-gray-600 dark:text-zinc-400 whitespace-nowrap">{p.uvaNombre || '-'}</td>
+                                <td className="px-3 py-1"><span className="px-1.5 py-0 rounded bg-gray-100 dark:bg-zinc-800 text-[10px] font-semibold border border-gray-200 dark:border-white/5 uppercase">{p.category}</span></td>
+                                <td className="px-3 py-1 text-center font-bold text-gray-600 dark:text-zinc-400">{p.rotacion || '-'}</td>
+                                <td className={`px-3 py-1 text-right font-bold ${p.stock <= 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>{p.stock}</td>
+                                <td className="px-3 py-1">
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getStockColor(p.status) }}></div>
+                                        <span className="text-[10px] font-bold uppercase opacity-60">{p.status.split('-')[0]}</span>
+                                    </div>
+                                </td>
+                                <td className="px-3 py-1 text-right tabular-nums text-gray-500 bg-black/5 dark:bg-white/5 font-mono text-[11px]">
+                                    {p.priceZG ? `$${p.priceZG.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
+                                </td>
+                                <td className="px-3 py-1 text-right tabular-nums text-gray-500 bg-black/5 dark:bg-white/5 font-mono text-[11px]">
+                                    {p.priceOth ? `$${p.priceOth.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
+                                </td>
+                                <td className="px-3 py-1 text-right tabular-nums font-bold text-blue-600 dark:text-blue-400 bg-blue-50/20 dark:bg-blue-900/10 font-mono">
+                                    {p.priceBM ? `$${p.priceBM.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
+                                </td>
+                                <td className="px-3 py-1 text-right tabular-nums font-black text-white bg-[#007AFF] shadow-inner font-mono text-[13px]">
+                                    ${p.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                </td>
+                                <td className="px-3 py-1 text-right tabular-nums text-gray-400 font-mono text-[11px]">
+                                    {p.ptijDll ? `$${p.ptijDll.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
+                                </td>
+                                <td className="px-3 py-1 text-right tabular-nums text-gray-400 font-mono text-[11px]">
+                                    {p.ptijMxn ? `$${p.ptijMxn.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
+                                </td>
+                                <td className={`px-3 py-1 text-center font-black ${p.vecesG > 1 ? 'text-green-600' : 'text-orange-500'}`}>
+                                    {p.vecesG ? p.vecesG.toFixed(2) : '0.00'}
+                                </td>
+                                <td className="px-3 py-1 text-gray-400 italic max-w-xs truncate text-[11px]" title={p.notes || ''}>{p.notes || '-'}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+});
+
+const TableView = React.memo(({ paginatedProducts, handleSelectProduct }: any) => {
+    return (
+        <div className="hidden md:block bg-white dark:bg-zinc-900 rounded-[10px] shadow-sm border border-gray-200 dark:border-white/5 overflow-hidden">
+            <div className="overflow-x-auto">
+                <table className="w-full">
+                    <thead className="bg-[#F2F2F7]/50 dark:bg-white/5 border-b border-gray-200 dark:border-white/5">
+                        <tr className="text-left px-4 py-3 text-[13px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                            <th className="px-4 py-3">Product</th>
+                            <th className="px-4 py-3">Category</th>
+                            <th className="px-4 py-3">Status</th>
+                            <th className="px-4 py-3 text-right">Stock</th>
+                            <th className="px-4 py-3 text-right">Price</th>
+                            <th className="w-8"></th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-white/5">
+                        {paginatedProducts.map((product: any) => (
+                            <tr key={product.id} className="cursor-pointer hover:bg-[#F2F2F7]/50 dark:hover:bg-white/5 transition-colors group" onClick={() => handleSelectProduct(product)}>
+                                <td className="px-4 py-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-lg bg-[#F2F2F7] dark:bg-white/10 flex-shrink-0 overflow-hidden border border-gray-200 dark:border-white/5">
+                                            {product.image ? (
+                                                <img src={CloudinaryPresets.thumbnail(product.image)} alt={product.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div className="text-[14px] font-medium text-gray-900 dark:text-white">{product.nameEs || product.name}</div>
+                                            {product.nameEn && product.nameEs && <div className="text-[12px] text-gray-500 dark:text-gray-400">{product.nameEn}</div>}
+                                            <div className="text-[11px] text-gray-500 dark:text-gray-400 font-mono mt-0.5">{product.sku}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="px-4 py-3"><span className="inline-flex px-2 py-0.5 rounded-md text-[12px] font-medium bg-[#767680]/10 dark:bg-white/10 text-gray-900 dark:text-white">{product.category}</span></td>
+                                <td className="px-4 py-3">
+                                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[12px] font-medium border border-gray-200 dark:border-white/10" style={{ backgroundColor: `${getStockColor(product.status)} 20`, color: getStockColor(product.status), borderColor: `${getStockColor(product.status)} 30` }}>
+                                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getStockColor(product.status) }}></span>
+                                        {product.status === 'in-stock' ? 'In Stock' : product.status === 'low-stock' ? 'Low Stock' : 'Out'}
+                                    </span>
+                                </td>
+                                <td className="px-4 py-3 text-right"><span className="text-[14px] font-medium text-gray-900 dark:text-white">{product.stock}</span></td>
+                                <td className="px-4 py-3 text-right"><span className="text-[14px] font-medium text-gray-900 dark:text-white">${product.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></td>
+                                <td className="px-2 py-3"><svg className="w-4 h-4 text-[#C7C7CC] group-hover:text-[#007AFF] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+});
+
+const CompactGridView = React.memo(({ paginatedProducts, handleSelectProduct }: any) => {
+    return (
+        <div className="hidden md:grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 min-[1800px]:grid-cols-8 min-[2200px]:grid-cols-10 min-[2600px]:grid-cols-12 gap-3">
+            {paginatedProducts.map((product: any) => (
+                <div key={product.id} onClick={() => handleSelectProduct(product)} className="bg-white dark:bg-zinc-900 rounded-xl p-2.5 shadow-sm cursor-pointer hover:shadow-md transition-all group flex items-center gap-3 active:scale-[0.98] duration-100 border border-transparent dark:border-white/5">
+                    <div className="w-14 h-14 rounded-lg bg-[#F2F2F7] dark:bg-zinc-800 flex-shrink-0 overflow-hidden relative">
+                        {product.image ? (
+                            <img src={CloudinaryPresets.thumbnail(product.image)} alt={product.name} className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                            </div>
+                        )}
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-white rounded-tl-md flex items-center justify-center">
+                            <span className="w-1.5 h-1.5 rounded-full block" style={{ backgroundColor: getStockColor(product.status) }}></span>
+                        </div>
+                    </div>
+                    <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+                        <h3 className="text-[13px] font-semibold text-gray-900 dark:text-white leading-tight truncate" title={product.nameEs || product.name}>{product.nameEs || product.name}</h3>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 font-mono truncate">{product.sku}</p>
+                        <div className="flex items-center justify-between mt-0.5">
+                            <span className="text-[12px] font-bold text-gray-900 dark:text-white">${product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400">Stock: {product.stock}</span>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+});
+
+const StandardGridView = React.memo(({ paginatedProducts, handleSelectProduct, currentPage, totalPages, startIndex, itemsPerPage, totalItems, updatePage }: any) => {
+    return (
+        <>
+            <div className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 min-[1800px]:grid-cols-8 min-[2200px]:grid-cols-10 min-[2600px]:grid-cols-12 gap-3 md:gap-4">
+                {paginatedProducts.map((product: any) => (
+                    <div
+                        key={product.id}
+                        className="bg-white dark:bg-zinc-900 rounded-[16px] p-2.5 md:p-3 shadow-sm border border-gray-200 dark:border-white/5 cursor-pointer hover:shadow-md transition-all group relative overflow-hidden flex flex-col active:scale-[0.98] duration-100"
+                        onClick={() => handleSelectProduct(product)}
+                    >
+                        <div className="aspect-square rounded-xl bg-[#F2F2F7] dark:bg-zinc-800 mb-2.5 md:mb-3 overflow-hidden border border-gray-200 dark:border-white/5 relative">
+                            <img src={product.image ? CloudinaryPresets.small(product.image) : 'https://placehold.co/100x100?text=No+Image'} alt={product.name} className="w-full h-full object-cover" />
+                            <div className="absolute top-2 right-2 flex flex-col gap-1.5">
+                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/90 dark:bg-black/60 shadow-sm backdrop-blur-sm border border-gray-100 dark:border-white/10 text-gray-900 dark:text-white group-hover:bg-[#007AFF] group-hover:text-white transition-all">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div className="flex-1">
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                                <span className="text-[10px] font-bold text-[#8E8E93] dark:text-gray-400 uppercase tracking-widest font-mono truncate">{product.category}</span>
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getStockColor(product.status) }}></div>
+                                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight">{product.status === 'in-stock' ? 'In Stock' : 'Low'}</span>
+                                </div>
+                            </div>
+                            <h3 className="text-[13px] md:text-[14px] font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug group-hover:text-[#007AFF] transition-colors mb-1" title={product.nameEs || product.name}>{product.nameEs || product.name}</h3>
+                            <p className="text-[11px] text-[#8E8E93] dark:text-gray-500 font-mono mb-2">{product.sku}</p>
+                            <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-white/5 mt-auto">
+                                <span className="text-[15px] font-black text-gray-900 dark:text-white tabular-nums">${product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                <div className="flex items-center px-1.5 py-0.5 rounded-md bg-zinc-50 dark:bg-white/5 border border-gray-100 dark:border-white/10">
+                                    <span className={`text-[12px] font-black ${product.stock <= 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>{product.stock}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-gray-100 dark:border-white/5 pt-6 pb-12">
+                <div className="text-[13px] text-gray-500 dark:text-gray-400 tabular-nums">
+                    Showing <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span> to <span className="font-medium text-gray-900 dark:text-white">{Math.min(startIndex + itemsPerPage, totalItems)}</span> of <span className="font-medium text-gray-900 dark:text-white">{totalItems}</span> results
+                </div>
+                <div className="flex items-center gap-2">
+                    <button onClick={() => updatePage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-[13px] font-medium text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors active:scale-95">Previous</button>
+                    <div className="text-[13px] font-medium text-gray-900 dark:text-white tabular-nums">Page {currentPage} of {Math.max(1, totalPages)}</div>
+                    <button onClick={() => updatePage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages || totalPages === 0} className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-[13px] font-medium text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors active:scale-95">Next</button>
+                </div>
+            </div>
+        </>
+    );
+});
+
+export default function InventoryClient({
+    initialProductId,
+    initialProduct
+}: {
+    initialProductId?: string,
+    initialProduct?: Product
+}) {
     const { data: session } = useSession();
     const container = useRef(null);
     const router = useRouter();
@@ -47,8 +368,6 @@ export default function InventoryClient() {
         }
     }, [products?.length]);
 
-    const [filteredProductsState, setFilteredProductsState] = useState<Product[]>([]);
-
     // Calculate unique categories dynamically from products
     const uniqueCategories = useMemo(() => {
         if (!products) return [];
@@ -68,19 +387,51 @@ export default function InventoryClient() {
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
     // Mobile Product Detail Modal State
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(initialProduct || null);
+    const [isModalOpen, setIsModalOpen] = useState(!!initialProduct);
     const [printCopies, setPrintCopies] = useState(1);
 
     // Sync selectedProduct with realtime updates
     useEffect(() => {
-        if (selectedProduct && products) {
+        if (selectedProduct && products && products.length > 0) {
             const fresh = products.find(p => p.id === selectedProduct.id);
-            if (fresh && fresh !== selectedProduct) {
+            if (fresh && JSON.stringify(fresh) !== JSON.stringify(selectedProduct)) {
                 setSelectedProduct(fresh);
             }
         }
     }, [products, selectedProduct]);
+
+    // Robust Initial Open (for both ID-only and Product-provided modes)
+    const hasAutoOpened = useRef(false);
+    useEffect(() => {
+        if (hasAutoOpened.current) return;
+
+        // Mode A: Direct Product provided (Instant)
+        if (initialProduct) {
+            console.log('🎯 Deep Link (SSR): Opening provided product', initialProduct.name);
+            setSelectedProduct(initialProduct);
+            setIsModalOpen(true);
+            hasAutoOpened.current = true;
+            return;
+        }
+
+        // Mode B: Only ID provided (Wait for products)
+        if (initialProductId && products && products.length > 0) {
+            const product = products.find(p => {
+                const pid = String(p.photoId || '').trim();
+                const id = String(p.id || '').trim();
+                const target = String(initialProductId).trim();
+                return pid === target || id === target;
+            });
+
+            if (product) {
+                console.log('🎯 Deep Link (Client): Opening product', product.name);
+                setSelectedProduct(product);
+                setIsModalOpen(true);
+                hasAutoOpened.current = true;
+            }
+        }
+    }, [initialProductId, initialProduct, products]);
 
 
 
@@ -136,6 +487,42 @@ export default function InventoryClient() {
         params.set('page', page.toString());
         router.push(`${pathname}?${params.toString()} `, { scroll: false });
     };
+
+    const handleCloseModal = useCallback(() => {
+        setIsModalOpen(false);
+        setSelectedProduct(null);
+        // Clean URL without triggering Next.js unmount/remount
+        if (typeof window !== 'undefined' && window.location.pathname.includes('/inventory/')) {
+            window.history.replaceState(null, '', '/inventory');
+        }
+    }, []);
+
+    const handleSelectProduct = useCallback((product: Product) => {
+        // Pre-fetch the optimized image for the modal
+        if (product.image && typeof window !== 'undefined') {
+            const img = new window.Image();
+            img.src = CloudinaryPresets.small(product.image);
+        }
+
+        setSelectedProduct(product);
+        setIsModalOpen(true);
+        // Move to shareable URL without triggering page transition logic
+        if (typeof window !== 'undefined') {
+            window.history.pushState(null, '', `/inventory/${product.photoId || product.id}`);
+        }
+    }, []);
+
+    // Handle back button to close modal
+    useEffect(() => {
+        const handlePopState = () => {
+            if (isModalOpen) {
+                setIsModalOpen(false);
+                setSelectedProduct(null);
+            }
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [isModalOpen]);
 
     const isFirstRun = useRef(true);
     useEffect(() => {
@@ -199,25 +586,6 @@ export default function InventoryClient() {
         return ['all', ...unique];
     }, [products]);
 
-    const getStockColor = (status: string) => {
-        switch (status) {
-            case 'in-stock': return '#34C759';
-            case 'low-stock': return '#FF9500';
-            case 'out-of-stock': return '#FF3B30';
-            default: return '#8E8E93';
-        }
-    };
-
-    // Get stock badge style using Tailwind classes for Dark Mode support
-    const getStockBadgeClass = (stock: number) => {
-        if (stock === 0) {
-            return 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400';
-        }
-        if (stock <= 5) {
-            return 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400';
-        }
-        return 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
-    };
 
     // Quick Count Handlers  
     const handleCountChange = (val: string) => {
@@ -463,350 +831,50 @@ export default function InventoryClient() {
                 <div className="md:max-w-[1400px] 2xl:max-w-none md:mx-auto md:px-4 sm:px-6 lg:px-8 md:mt-4 animate-in fade-in duration-500">
                     {/* Excel Sheet View */}
                     {viewMode === 'excel' && (
-                        <div className="hidden md:block bg-white dark:bg-zinc-900 rounded-[10px] shadow-xl border border-gray-200 dark:border-white/5 overflow-hidden">
-                            <div className="overflow-x-auto overflow-y-auto max-h-[70vh] relative custom-scrollbar">
-                                <table className="w-full text-left border-collapse min-w-[2500px]">
-                                    <thead className="sticky top-0 z-30 bg-[#F2F2F7]/95 dark:bg-zinc-950/95 backdrop-blur shadow-sm">
-                                        <tr className="divide-x divide-gray-200 dark:divide-white/10 uppercase font-mono cursor-pointer select-none">
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 sticky left-0 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 w-16 text-center">ID</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 sticky left-16 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 w-16 text-center">Foto</th>
-                                            <th onClick={() => setSortBy(sortBy === 'name-asc' ? 'name-desc' : 'name-asc')} className="px-3 py-2 text-[10px] font-bold text-gray-500 sticky left-32 z-40 bg-zinc-100 dark:bg-zinc-900 border-b dark:border-white/10 min-w-[350px] hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors">Nombre Español</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">OEM (Item Code)</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Barcode</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Nombre Eng</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">UVA Nombre</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Categoria</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Rot.</th>
-                                            <th onClick={() => setSortBy(sortBy === 'stock-asc' ? 'stock-desc' : 'stock-asc')} className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-zinc-800 transition-colors">Stock</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Sts</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">$ ZG (Fab)</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">$ Oth (Com)</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">$ BM (Big)</th>
-                                            <th onClick={() => setSortBy(sortBy === 'price-asc' ? 'price-desc' : 'price-asc')} className="px-3 py-2 text-[10px] font-bold text-white border-b border-blue-600 bg-blue-600 hover:bg-blue-700 transition-colors">PVP ($ Venta)</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Dolar Ptj</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Pesos Ptj</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Rentab.</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 border-b dark:border-white/10 bg-zinc-50 dark:bg-white/5">Notas</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100 dark:divide-white/5 bg-white dark:bg-zinc-900">
-                                        {filteredProducts.map((p, idx) => (
-                                            <tr
-                                                key={p.id}
-                                                className={`divide-x divide-gray-100 dark:divide-white/5 hover:bg-blue-50/50 dark:hover:bg-blue-900/30 transition-colors group text-[12px] leading-tight ${idx % 2 === 0 ? 'bg-white dark:bg-zinc-900' : 'bg-[#FAFAFA] dark:bg-zinc-900/40'}`}
-                                                onClick={() => router.push(`/inventory/${p.photoId}`)}
-                                            >
-                                                <td className="px-3 py-1 sticky left-0 z-20 bg-inherit font-mono font-bold text-blue-600 dark:text-blue-400 border-r border-gray-200 dark:border-white/10 text-center w-16 italic">{p.photoId || '-'}</td>
-                                                <td className="px-1 py-1 sticky left-16 z-20 bg-inherit border-r border-gray-200 dark:border-white/10 text-center w-16">
-                                                    {p.image ? (
-                                                        <img src={CloudinaryPresets.thumbnail(p.image)} alt="" className="w-10 h-10 object-cover mx-auto rounded shadow-sm border border-gray-200 dark:border-white/10" />
-                                                    ) : (
-                                                        <div className="w-10 h-10 mx-auto flex items-center justify-center bg-gray-100 dark:bg-zinc-800 rounded">
-                                                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                                        </div>
-                                                    )}
-                                                </td>
-                                                <td className="px-3 py-1 sticky left-32 z-20 bg-inherit font-medium text-gray-900 dark:text-zinc-100 border-r border-gray-200 dark:border-white/10 whitespace-nowrap overflow-hidden text-ellipsis max-w-[350px]" title={p.nameEs || p.name}>
-                                                    {searchQuery ? (
-                                                        <span dangerouslySetInnerHTML={{
-                                                            __html: (p.nameEs || p.name).replace(new RegExp(`(${searchQuery})`, 'gi'), '<mark class="bg-yellow-200 dark:bg-yellow-600/50 rounded-sm">$1</mark>')
-                                                        }} />
-                                                    ) : (p.nameEs || p.name)}
-                                                </td>
-                                                <td className="px-3 py-1 font-mono text-blue-600 dark:text-blue-400 whitespace-nowrap">{p.itemCode}</td>
-                                                <td className="px-3 py-1 text-gray-500 dark:text-gray-400 font-mono tracking-tighter">{p.barcode}</td>
-                                                <td className="px-3 py-1 text-gray-500 dark:text-gray-400 italic whitespace-nowrap truncate max-w-[200px]">{p.nameEn || '-'}</td>
-                                                <td className="px-3 py-1 text-gray-600 dark:text-zinc-400 whitespace-nowrap">{p.uvaNombre || '-'}</td>
-                                                <td className="px-3 py-1"><span className="px-1.5 py-0 rounded bg-gray-100 dark:bg-zinc-800 text-[10px] font-semibold border border-gray-200 dark:border-white/5 uppercase">{p.category}</span></td>
-                                                <td className="px-3 py-1 text-center font-bold text-gray-600 dark:text-zinc-400">{p.rotacion || '-'}</td>
-                                                <td className={`px-3 py-1 text-right font-bold ${p.stock <= 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>{p.stock}</td>
-                                                <td className="px-3 py-1">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getStockColor(p.status) }}></div>
-                                                        <span className="text-[10px] font-bold uppercase opacity-60">{p.status.split('-')[0]}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-3 py-1 text-right tabular-nums text-gray-500 bg-black/5 dark:bg-white/5 font-mono text-[11px]">
-                                                    {p.priceZG ? `$${p.priceZG.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
-                                                </td>
-                                                <td className="px-3 py-1 text-right tabular-nums text-gray-500 bg-black/5 dark:bg-white/5 font-mono text-[11px]">
-                                                    {p.priceOth ? `$${p.priceOth.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
-                                                </td>
-                                                <td className="px-3 py-1 text-right tabular-nums font-bold text-blue-600 dark:text-blue-400 bg-blue-50/20 dark:bg-blue-900/10 font-mono">
-                                                    {p.priceBM ? `$${p.priceBM.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
-                                                </td>
-                                                <td className="px-3 py-1 text-right tabular-nums font-black text-white bg-[#007AFF] shadow-inner font-mono text-[13px]">
-                                                    ${p.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                                </td>
-                                                <td className="px-3 py-1 text-right tabular-nums text-gray-400 font-mono text-[11px]">
-                                                    {p.ptijDll ? `$${p.ptijDll.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
-                                                </td>
-                                                <td className="px-3 py-1 text-right tabular-nums text-gray-400 font-mono text-[11px]">
-                                                    {p.ptijMxn ? `$${p.ptijMxn.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '0.00'}
-                                                </td>
-                                                <td className={`px-3 py-1 text-center font-black ${p.vecesG > 1 ? 'text-green-600' : 'text-orange-500'}`}>
-                                                    {p.vecesG ? p.vecesG.toFixed(2) : '0.00'}
-                                                </td>
-                                                <td className="px-3 py-1 text-gray-400 italic max-w-xs truncate text-[11px]" title={p.notes || ''}>{p.notes || '-'}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                        <ExcelView
+                            filteredProducts={filteredProducts}
+                            searchQuery={searchQuery}
+                            sortBy={sortBy}
+                            setSortBy={setSortBy}
+                            handleSelectProduct={handleSelectProduct}
+                        />
                     )}
 
                     {/* Table View */}
                     {viewMode === 'table' && (
-                        <>
-                            <div className="hidden md:block bg-white dark:bg-zinc-900 rounded-[10px] shadow-sm border border-gray-200 dark:border-white/5 overflow-hidden">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full">
-                                        <thead className="bg-[#F2F2F7]/50 dark:bg-white/5 border-b border-gray-200 dark:border-white/5">
-                                            <tr>
-                                                <th className="text-left px-4 py-3 text-[13px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Product</th>
-                                                <th className="text-left px-4 py-3 text-[13px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Category</th>
-                                                <th className="text-left px-4 py-3 text-[13px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</th>
-                                                <th className="text-right px-4 py-3 text-[13px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Stock</th>
-                                                <th className="text-right px-4 py-3 text-[13px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Price</th>
-                                                <th className="w-8"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-200 dark:divide-white/5">
-                                            {paginatedProducts.map((product) => (
-                                                <tr key={product.id} className="cursor-pointer hover:bg-[#F2F2F7]/50 dark:hover:bg-white/5 transition-colors group" onClick={() => router.push(`/inventory/${product.photoId}`)}>
-                                                    <td className="px-4 py-3">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-lg bg-[#F2F2F7] dark:bg-white/10 flex-shrink-0 overflow-hidden border border-gray-200 dark:border-white/5">
-                                                                {product.image ? (
-                                                                    <img src={CloudinaryPresets.thumbnail(product.image)} alt={product.name} className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center">
-                                                                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                                                        </svg>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-[14px] font-medium text-gray-900 dark:text-white">{product.nameEs || product.name}</div>
-                                                                {product.nameEn && product.nameEs && (
-                                                                    <div className="text-[12px] text-gray-500 dark:text-gray-400">{product.nameEn}</div>
-                                                                )}
-                                                                <div className="text-[11px] text-gray-500 dark:text-gray-400 font-mono mt-0.5">{product.sku}</div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-3"><span className="inline-flex px-2 py-0.5 rounded-md text-[12px] font-medium bg-[#767680]/10 dark:bg-white/10 text-gray-900 dark:text-white">{product.category}</span></td>
-                                                    <td className="px-4 py-3">
-                                                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[12px] font-medium border border-gray-200 dark:border-white/10" style={{ backgroundColor: `${getStockColor(product.status)} 20`, color: getStockColor(product.status), borderColor: `${getStockColor(product.status)} 30` }}>
-                                                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getStockColor(product.status) }}></span>
-                                                            {product.status === 'in-stock' ? 'In Stock' : product.status === 'low-stock' ? 'Low Stock' : 'Out'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-3 text-right"><span className="text-[14px] font-medium text-gray-900 dark:text-white">{product.stock}</span></td>
-                                                    <td className="px-4 py-3 text-right"><span className="text-[14px] font-medium text-gray-900 dark:text-white">${product.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></td>
-                                                    <td className="px-2 py-3"><svg className="w-4 h-4 text-[#C7C7CC] group-hover:text-[#007AFF] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg></td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </>
+                        <TableView
+                            paginatedProducts={paginatedProducts}
+                            handleSelectProduct={handleSelectProduct}
+                        />
                     )}
 
                     {/* MOBILE VIEW - Always shown on mobile, independent of viewMode */}
-                    <div className="md:hidden relative">
-                        <div className="bg-gray-100 dark:bg-zinc-950/50 rounded-xl p-2.5 mt-4 pb-20">
-                            {(isLoading || !products || products.length === 0) && filteredProducts.length === 0 ? (
-                                // Skeleton Loading State
-                                Array.from({ length: 6 }).map((_, i) => (
-                                    <div
-                                        key={i}
-                                        className="bg-white dark:bg-zinc-900 rounded-lg p-2.5 flex items-center mb-2 last:mb-0 shadow-sm border border-transparent dark:border-white/10 animate-pulse"
-                                    >
-                                        {/* Image Skeleton */}
-                                        <div className="w-20 h-20 rounded-[10px] bg-gray-200 dark:bg-zinc-800 mr-2.5 flex-shrink-0" />
-
-                                        <div className="flex-1 min-w-0">
-                                            {/* Title Skeleton */}
-                                            <div className="h-5 bg-gray-200 dark:bg-zinc-800 rounded w-3/4 mb-2" />
-                                            {/* Subtitle Skeleton */}
-                                            <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-1/2 mb-2" />
-                                            {/* Bottom Row Skeleton */}
-                                            <div className="flex justify-between items-center">
-                                                <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded w-1/3" />
-                                                <div className="h-6 bg-gray-200 dark:bg-zinc-800 rounded-xl w-20" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : filteredProducts.length > 0 ? (
-                                filteredProducts.map((product) => (
-                                    <div
-                                        key={product.id}
-                                        onClick={() => {
-                                            setSelectedProduct(product);
-                                            setIsModalOpen(true);
-                                        }}
-                                        className="bg-white dark:bg-zinc-900 rounded-lg p-2.5 flex items-center mb-2 last:mb-0 active:opacity-80 active:scale-[0.99] transition-all text-foreground shadow-sm border border-transparent dark:border-white/10"
-                                    >
-                                        <img
-                                            src={product.image ? CloudinaryPresets.thumbnail(product.image) : 'https://placehold.co/80x80.png'}
-                                            alt={product.name}
-                                            className="w-20 h-20 rounded-[10px] object-cover mr-2.5"
-                                        />
-
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-center mb-[5px]">
-                                                <h3 className="text-[16px] font-semibold text-card-foreground flex-1 mr-2.5 line-clamp-2">
-                                                    {product.nameEs || product.name}
-                                                </h3>
-                                                <span className="text-[16px] text-card-foreground">
-                                                    ${product.price.toLocaleString('en-US', {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2
-                                                    })}
-                                                </span>
-                                            </div>
-
-                                            <p className="text-[14px] text-muted-foreground">
-                                                {product.barcode || product.sku}
-                                            </p>
-
-                                            <div className="flex justify-between items-center mt-1">
-                                                <span className="text-[14px] text-muted-foreground">
-                                                    {product.category || 'N/A'}
-                                                </span>
-                                                <div className="flex items-center">
-                                                    <div
-                                                        className={`px-3 h-6 rounded-xl flex items-center justify-center ${getStockBadgeClass(product.stock)}`}
-                                                    >
-                                                        <span className="text-[12px] font-medium">
-                                                            Stock: {product.stock}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : null}
-                        </div>
-
-                    </div>
+                    <MobileListView
+                        filteredProducts={filteredProducts}
+                        isLoading={isLoading}
+                        products={products}
+                        handleSelectProduct={handleSelectProduct}
+                    />
 
                     {viewMode === 'compact' && (
-                        <div className="hidden md:grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 min-[1800px]:grid-cols-8 min-[2200px]:grid-cols-10 min-[2600px]:grid-cols-12 gap-3">
-                            {paginatedProducts.map((product) => (
-                                <div
-                                    key={product.id}
-                                    onClick={() => router.push(`/inventory/${product.photoId}`)}
-                                    className="bg-white dark:bg-zinc-900 rounded-xl p-2.5 shadow-sm cursor-pointer hover:shadow-md transition-all group flex items-center gap-3 active:scale-[0.98] duration-100 border border-transparent dark:border-white/5"
-                                >
-                                    <div className="w-14 h-14 rounded-lg bg-[#F2F2F7] dark:bg-zinc-800 flex-shrink-0 overflow-hidden relative">
-                                        {product.image ? (
-                                            <img
-                                                src={CloudinaryPresets.thumbnail(product.image)}
-                                                alt={product.name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                                </svg>
-                                            </div>
-                                        )}
-                                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-white rounded-tl-md flex items-center justify-center">
-                                            <span className={`w - 1.5 h - 1.5 rounded - full block`} style={{ backgroundColor: getStockColor(product.status) }}></span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-                                        <h3 className="text-[13px] font-semibold text-gray-900 dark:text-white leading-tight truncate" title={product.nameEs || product.name}>{product.nameEs || product.name}</h3>
-                                        <p className="text-[11px] text-gray-500 dark:text-gray-400 font-mono truncate">{product.sku}</p>
-                                        <div className="flex items-center justify-between mt-0.5">
-                                            <span className="text-[12px] font-bold text-gray-900 dark:text-white">${product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                            <span className="text-[10px] text-gray-500 dark:text-gray-400">Stock: {product.stock}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                        <CompactGridView
+                            paginatedProducts={paginatedProducts}
+                            handleSelectProduct={handleSelectProduct}
+                        />
                     )}
 
                     {/* Grid View - Desktop Only */}
                     {viewMode === 'grid' && (
-                        <div className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 min-[1800px]:grid-cols-8 min-[2200px]:grid-cols-10 min-[2600px]:grid-cols-12 gap-3 md:gap-4">
-                            {paginatedProducts.map((product) => (
-                                <div
-                                    key={product.id}
-                                    className="bg-white dark:bg-zinc-900 rounded-[16px] p-2.5 md:p-3 shadow-sm border border-gray-200 dark:border-white/5 cursor-pointer hover:shadow-md transition-all group relative overflow-hidden flex flex-col active:scale-[0.98] duration-100"
-                                    onClick={() => router.push(`/inventory/${product.photoId}`)}
-                                >
-                                    <div className="aspect-square rounded-xl bg-[#F2F2F7] dark:bg-zinc-800 mb-2.5 md:mb-3 overflow-hidden border border-gray-200 dark:border-white/5 relative">
-                                        <img
-                                            src={product.image ? CloudinaryPresets.small(product.image) : 'https://placehold.co/100x100?text=No+Image'}
-                                            alt={product.name}
-                                            className="w-full h-full object-cover"
-                                        />
-                                        <div className="absolute top-2 right-2">
-                                            <span className={`w - 2.5 h - 2.5 rounded - full block border border - white shadow - sm`} style={{ backgroundColor: getStockColor(product.status) }}></span>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-1 flex-1 flex flex-col">
-                                        <h3 className="text-[13px] md:text-[14px] font-semibold text-gray-900 dark:text-white leading-tight line-clamp-2 h-[2.5em]">{product.name}</h3>
-                                        <p className="text-[11px] md:text-[12px] text-gray-500 dark:text-gray-400 font-medium font-mono truncate">{product.sku}</p>
-                                        <div className="flex items-center justify-between pt-2 mt-auto">
-                                            <span className="text-[14px] md:text-[15px] font-semibold text-gray-900 dark:text-white">${product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                            <span className="px-1.5 py-0.5 bg-[#767680]/10 dark:bg-white/10 rounded text-[9px] md:text-[10px] font-semibold uppercase text-gray-900 dark:text-white truncate max-w-[60px] md:max-w-[80px]">{product.category}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Empty State */}
-                    {!isLoading && products && products.length > 0 && filteredProducts.length === 0 && (
-                        <div className="text-center py-20">
-                            <div className="w-16 h-16 bg-[#E5E5EA] dark:bg-zinc-800 rounded-full mx-auto flex items-center justify-center mb-4">
-                                <svg className="w-8 h-8 text-[#8E8E93] dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                            </div>
-                            <h3 className="text-[20px] font-semibold text-gray-900 dark:text-white">No Results</h3>
-                            <p className="text-[15px] text-gray-500 dark:text-gray-400">Try a different search term.</p>
-                        </div>
-                    )}
-
-                    {/* Pagination Footer - Desktop Only */}
-                    {filteredProducts.length > 0 && (
-                        <div className="hidden md:flex px-6 py-6 mt-4 flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 dark:border-white/5">
-                            <div className="text-[13px] text-gray-500 dark:text-gray-400">
-                                Showing <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span> to <span className="font-medium text-gray-900 dark:text-white">{Math.min(startIndex + itemsPerPage, filteredProducts.length)}</span> of <span className="font-medium text-gray-900 dark:text-white">{filteredProducts.length}</span> results
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => updatePage(Math.max(1, currentPage - 1))}
-                                    disabled={currentPage === 1}
-                                    className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-[13px] font-medium text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors active:scale-95"
-                                >
-                                    Previous
-                                </button>
-                                <div className="text-[13px] font-medium text-gray-900 dark:text-white tabular-nums">
-                                    Page {currentPage} of {Math.max(1, totalPages)}
-                                </div>
-                                <button
-                                    onClick={() => updatePage(Math.min(totalPages, currentPage + 1))}
-                                    disabled={currentPage === totalPages || totalPages === 0}
-                                    className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-[13px] font-medium text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors active:scale-95"
-                                >
-                                    Next
-                                </button>
-                            </div>
-                        </div>
+                        <StandardGridView
+                            paginatedProducts={paginatedProducts}
+                            handleSelectProduct={handleSelectProduct}
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            startIndex={startIndex}
+                            itemsPerPage={itemsPerPage}
+                            totalItems={filteredProducts.length}
+                            updatePage={updatePage}
+                        />
                     )}
                 </div>
             )}
@@ -819,25 +887,20 @@ export default function InventoryClient() {
                     onScanSuccess={handleScanSuccess}
                 />
             )}
-            {/* Export Modal */}
-            <ExportModal
-                isOpen={isExportModalOpen}
-                onClose={() => setIsExportModalOpen(false)}
-            />
             {/* Mobile Product Detail Modal */}
             {isModalOpen && selectedProduct && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 md:hidden">
                     {/* Simple Black Backdrop */}
                     <div
-                        className="absolute inset-0 bg-black/70 animate-in fade-in duration-300"
-                        onClick={() => setIsModalOpen(false)}
+                        className="absolute inset-0 bg-black/70"
+                        onClick={handleCloseModal}
                     />
 
                     {/* Modal Content - Clean & Minimal */}
-                    <div className="bg-white dark:bg-zinc-900 rounded-3xl w-[90%] p-6 shadow-2xl relative animate-in zoom-in-95 duration-300 max-h-[85vh] overflow-y-auto">
+                    <div className="bg-white dark:bg-zinc-900 rounded-3xl w-[90%] p-6 shadow-2xl relative max-h-[85vh] overflow-y-auto">
                         {/* Close Button */}
                         <button
-                            onClick={() => setIsModalOpen(false)}
+                            onClick={handleCloseModal}
                             className="absolute right-4 top-4 z-10 w-8 h-8 bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-white rounded-full flex items-center justify-center active:scale-90 transition-transform"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
@@ -848,9 +911,10 @@ export default function InventoryClient() {
                         {/* Product Image */}
                         <div className="relative mb-5">
                             <img
-                                src={selectedProduct.image || 'https://placehold.co/400x400.png'}
+                                src={CloudinaryPresets.small(selectedProduct.image || 'https://placehold.co/400x400.png')}
                                 alt={selectedProduct.name}
                                 className="w-full aspect-square rounded-2xl mx-auto object-cover"
+                                loading="eager"
                             />
                             {/* Camera Button - Mobile Only */}
                             <button

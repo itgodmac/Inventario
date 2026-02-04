@@ -112,7 +112,7 @@ const SelectionOverlay = memo(({ selectedCell, isEditing, editValue, onSave, onR
     return (
         <div
             ref={overlayRef}
-            className={`absolute pointer-events-none z-30 ring-2 ring-blue-500 bg-blue-50/10 transition-[top,left,width,height] duration-75 ease-out`}
+            className={`absolute pointer-events-none z-30 ring-2 ring-blue-500 bg-blue-50/10`}
             style={{ display: 'none' }}
         >
             {isEditing && column.editable && (
@@ -404,7 +404,6 @@ export default function SpreadsheetPage() {
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                     </Link>
                     <div>
-                        <h1 className="text-sm font-bold tracking-tight uppercase text-gray-900 dark:text-white">Editor Maestro</h1>
                         <p className="text-[10px] text-gray-500 font-mono mt-0.5">{processedProducts.length - 1} PRODUCTOS</p>
                     </div>
                 </div>
@@ -429,16 +428,15 @@ export default function SpreadsheetPage() {
                         <button onClick={() => setImgSize(s => Math.min(120, s + 8))} className="p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded shadow-sm text-gray-500"><ZoomIn className="w-3.5 h-3.5" /></button>
                     </div>
 
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-medium transition-colors ${isConnected ? 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400' : 'bg-red-50 text-red-700'}`}>
-                        {isConnected ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-                        {pendingSaves.size > 0 ? 'SAVING...' : isConnected ? 'ONLINE' : 'OFFLINE'}
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-medium transition-colors bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400">
+                        {pendingSaves.size > 0 ? 'SAVING...' : ''}
                     </div>
                 </div>
             </div>
 
             <div
                 ref={tableContainerRef}
-                className="flex-1 overflow-auto relative custom-scrollbar scroll-smooth"
+                className="flex-1 overflow-auto relative custom-scrollbar"
             >
                 <div className="relative">
                     <SelectionOverlay
@@ -498,7 +496,7 @@ export default function SpreadsheetPage() {
                     <span><kbd className="font-sans border border-gray-200 dark:border-white/10 rounded px-1">Tab</kbd> Next</span>
                     <span><kbd className="font-sans border border-gray-200 dark:border-white/10 rounded px-1">Esc</kbd> Cancel</span>
                 </div>
-                <div>v2.2 • ULTRA RENDIMIENTO O(1)</div>
+                <div />
             </div>
         </div>
     );
