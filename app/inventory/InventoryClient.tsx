@@ -443,8 +443,11 @@ export default function InventoryClient({
         setCountStatus('idle');
     }, [selectedProduct, isModalOpen]);
 
-    // Block body scroll when modal is open (mobile-friendly)
+    // Block body scroll when modal is open (mobile-friendly only)
     useEffect(() => {
+        const isMobile = window.innerWidth < 768;
+        if (!isMobile) return; // Don't lock scroll on desktop
+
         if (isModalOpen) {
             // Save current scroll position
             const scrollY = window.scrollY;
@@ -582,7 +585,7 @@ export default function InventoryClient({
     // Get unique categories from products
     const categories = useMemo(() => {
         if (!products) return ['all'];
-        const unique = Array.from(new Set(products.map(p => p.category)));
+        const unique = Array.from(new Set(products.map(p => p.category).filter((c): c is string => !!c)));
         return ['all', ...unique];
     }, [products]);
 
@@ -759,47 +762,49 @@ export default function InventoryClient({
                         </div>
                     </div>
 
-                    {/* Toggleable Search Bar */}
-                    {searchVisible && (
-                        <div className="mb-3 animate-in slide-in-from-top duration-200">
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder="Buscar productos..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-4 pr-10 py-2.5 bg-white dark:bg-zinc-800 rounded-full focus:outline-none text-foreground placeholder-muted-foreground text-[15px] shadow-sm border border-gray-100 dark:border-zinc-700"
-                                    autoFocus
-                                />
-                                {searchQuery && (
-                                    <button
-                                        onClick={() => setSearchQuery('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2"
-                                    >
-                                        <svg className="w-5 h-5 text-[#8E8E93]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                )}
+                    {/* Toggleable Search Bar - MOBILE ONLY */}
+                    <div className="md:hidden">
+                        {searchVisible && (
+                            <div className="mb-3 animate-in slide-in-from-top duration-200">
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar productos..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full pl-4 pr-10 py-2.5 bg-white dark:bg-zinc-800 rounded-full focus:outline-none text-foreground placeholder-muted-foreground text-[15px] shadow-sm border border-gray-100 dark:border-zinc-700"
+                                        autoFocus
+                                    />
+                                    {searchQuery && (
+                                        <button
+                                            onClick={() => setSearchQuery('')}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2"
+                                        >
+                                            <svg className="w-5 h-5 text-[#8E8E93]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Category Filter Pills */}
-                    <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
-                        <div className="flex gap-2 pb-2">
-                            {categories.map((category) => (
-                                <button
-                                    key={category}
-                                    onClick={() => setCategoryFilter(category || 'all')}
-                                    className={`px-4 py-1.5 rounded-full text-[14px] font-medium whitespace-nowrap transition-all border border-transparent ${categoryFilter === category
-                                        ? 'bg-white text-black shadow-sm'
-                                        : 'bg-black/5 dark:bg-white/10 text-black/60 dark:text-white/80 hover:bg-black/10 dark:hover:bg-white/20'
-                                        } `}
-                                >
-                                    {category === 'all' ? 'Todo' : category}
-                                </button>
-                            ))}
+                        {/* Category Filter Pills - MOBILE ONLY */}
+                        <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
+                            <div className="flex gap-2 pb-2">
+                                {categories.map((category) => (
+                                    <button
+                                        key={category}
+                                        onClick={() => setCategoryFilter(category || 'all')}
+                                        className={`px-4 py-1.5 rounded-full text-[14px] font-medium whitespace-nowrap transition-all border border-transparent ${categoryFilter === category
+                                            ? 'bg-white text-black shadow-sm'
+                                            : 'bg-black/5 dark:bg-white/10 text-black/60 dark:text-white/80 hover:bg-black/10 dark:hover:bg-white/20'
+                                            } `}
+                                    >
+                                        {category === 'all' ? 'Todo' : category}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -815,6 +820,9 @@ export default function InventoryClient({
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
                 onExportClick={() => setIsExportModalOpen(true)}
+                categories={categories}
+                categoryFilter={categoryFilter}
+                onCategoryChange={setCategoryFilter}
             />
 
 
