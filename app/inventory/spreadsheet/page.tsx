@@ -121,13 +121,13 @@ const SelectionOverlay = memo(({ selectedCell, isEditing, editValue, onSave, onR
                         <select
                             ref={selectRef}
                             value={localValue}
-                            onChange={(e) => { setLocalValue(e.target.value); if (column.key === 'status') onSave(e.target.value); }}
+                            onChange={(e) => { setLocalValue(e.target.value); onSave(e.target.value); }}
                             onBlur={() => onSave(localValue)}
-                            className="w-full h-full bg-transparent outline-none px-3 text-[12px] appearance-none"
+                            className="w-full h-full bg-white dark:bg-zinc-800 text-gray-900 dark:text-white outline-none px-3 text-[12px] appearance-none border-none focus:ring-0"
                         >
-                            <option value="">-</option>
-                            {column.options?.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
-                            {column.autoValues && uniqueValues[column.key]?.map((val: string) => <option key={val} value={val}>{val}</option>)}
+                            <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">-</option>
+                            {column.options?.map((opt: string) => <option key={opt} value={opt} className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">{opt}</option>)}
+                            {column.autoValues && uniqueValues[column.key]?.map((val: string) => <option key={val} value={val} className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">{val}</option>)}
                         </select>
                     ) : (
                         <input
@@ -141,7 +141,7 @@ const SelectionOverlay = memo(({ selectedCell, isEditing, editValue, onSave, onR
                                 else if (e.key === 'Tab') onKeyDown(e, selectedCell.rowIndex, selectedCell.columnKey, false, true, localValue);
                                 else if (e.key === 'Escape') onRevert();
                             }}
-                            className={`w-full h-full bg-transparent outline-none px-3 text-[12px] ${column.type === 'number' ? 'text-right' : ''}`}
+                            className={`w-full h-full bg-white dark:bg-zinc-800 text-gray-900 dark:text-white outline-none px-3 text-[12px] ${column.type === 'number' ? 'text-right' : ''}`}
                         />
                     )}
                 </div>
@@ -262,7 +262,14 @@ export default function SpreadsheetPage() {
                 return sortConfig.direction === 'asc' ? compare : -compare;
             });
         } else {
-            result.sort((a, b) => (a.sku || '').localeCompare(b.sku || ''));
+            // Stable sort by SKU -> Name -> ID
+            result.sort((a, b) => {
+                const skuRes = (a.sku || '').localeCompare(b.sku || '');
+                if (skuRes !== 0) return skuRes;
+                const nameRes = (a.nameEs || a.name || '').localeCompare(b.nameEs || b.name || '');
+                if (nameRes !== 0) return nameRes;
+                return (a.id || '').localeCompare(b.id || '');
+            });
         }
 
         const phantomRow = {
