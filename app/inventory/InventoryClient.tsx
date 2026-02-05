@@ -475,7 +475,11 @@ export default function InventoryClient({
     const [physicalCount, setPhysicalCount] = useState<string>('');
     const [countStatus, setCountStatus] = useState<'idle' | 'matching' | 'discrepancy'>('idle');
     const [isUpdating, setIsUpdating] = useState(false);
-    const [modalTab, setModalTab] = useState<'info' | 'count'>('info');
+    const [modalTab, setModalTab] = useState<'info' | 'count' | 'location'>('info');
+
+    // Inline Location Editing State
+    const [isEditingLocation, setIsEditingLocation] = useState(false);
+    const [locationForm, setLocationForm] = useState({ rack: '', floor: '', activeField: 'rack' });
 
     // Pagination
     const currentPage = Number(searchParams.get('page')) || 1;
@@ -500,7 +504,48 @@ export default function InventoryClient({
         }
     }, []);
 
+    const handleSaveLocation = async () => {
+        if (!selectedProduct) return;
+
+        const toastId = toast.loading('Guardando ubicación...');
+        try {
+            const res = await fetch(`/api/inventory/${selectedProduct.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...selectedProduct,
+                    locationRack: locationForm.rack,
+                    locationFloor: locationForm.floor
+                })
+            });
+
+            if (!res.ok) throw new Error('Error al actualizar');
+
+            // Update local state is handled by re-fetch or optimistic update if needed
+            // But main list updates via SWR usually.
+            // For now, we update local selectedProduct for immediate feedback in modal
+            const updatedProduct = {
+                ...selectedProduct,
+                locationRack: locationForm.rack,
+                locationFloor: locationForm.floor
+            };
+            setSelectedProduct(updatedProduct);
+
+            setModalTab('info');
+            toast.success('Ubicación actualizada', { id: toastId });
+        } catch (error) {
+            toast.error('Error al guardar', { id: toastId });
+        }
+    };
+
     const handleSelectProduct = useCallback((product: Product) => {
+        setIsEditingLocation(false);
+        setLocationForm({
+            rack: product.locationRack || '',
+            floor: product.locationFloor || '',
+            activeField: 'rack'
+        });
+        setModalTab('info');
         // Pre-fetch the optimized image for the modal
         if (product.image && typeof window !== 'undefined') {
             const img = new window.Image();
@@ -615,7 +660,7 @@ export default function InventoryClient({
             id: selectedProduct.id,
             quantity: parseInt(physicalCount),
             difference: parseInt(physicalCount) - selectedProduct.stock,
-            auditor: 'MOBILE'
+            auditor: session?.user?.name || session?.user?.email || 'MOBILE'
         };
 
         try {
@@ -1055,6 +1100,51 @@ export default function InventoryClient({
 
                                 {/* Information List - Monochrome */}
                                 <div className="bg-gray-50 dark:bg-zinc-800 rounded-2xl overflow-hidden mb-4 border border-gray-200 dark:border-zinc-700">
+
+                                    {/* Location Section - Always show if permitted or if location exists */}
+                                    {(selectedProduct.locationRack || selectedProduct.locationFloor || canEdit(session)) && (
+                                        <>
+                                            <div
+                                                onClick={() => canEdit(session) && setModalTab('location')}
+                                                className={`flex flex-col px-4 py-3.5 transition-colors duration-200 relative group
+                                                    ${modalTab === 'location' ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-blue-50/50 dark:bg-blue-900/10'}
+                                                    ${canEdit(session) ? 'cursor-pointer hover:bg-blue-100/50 dark:hover:bg-blue-900/20 active:scale-[0.99]' : ''}
+                                                `}
+                                            >
+                                                {/* Header Row */}
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                                                            <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            </svg>
+                                                        </div>
+                                                        <span className="text-[15px] font-medium text-blue-900 dark:text-blue-100">Ubicación</span>
+                                                    </div>
+
+                                                    {/* Hint Icon for Tap to Edit */}
+                                                    {canEdit(session) && (
+                                                        <div className="bg-white/50 dark:bg-black/20 p-1 rounded-md text-blue-400 dark:text-blue-300/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                            </svg>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="text-right">
+                                                    <span className="text-[16px] font-bold text-blue-700 dark:text-blue-300 block">
+                                                        {selectedProduct.locationRack ? `Rack ${selectedProduct.locationRack}` : <span className="text-blue-400 dark:text-blue-500/50 italic font-normal">Sin Rack</span>}
+                                                        <span className="text-blue-300 dark:text-blue-700 mx-2">|</span>
+                                                        {selectedProduct.locationFloor ? `Piso ${selectedProduct.locationFloor}` : <span className="text-blue-400 dark:text-blue-500/50 italic font-normal">Sin Piso</span>}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="h-px bg-gray-200 dark:bg-zinc-700 mx-4"></div>
+                                        </>
+                                    )}
+
                                     {/* SKU/OEM */}
                                     {selectedProduct.sku && (
                                         <>
@@ -1152,6 +1242,91 @@ export default function InventoryClient({
                                     </div>
                                 )}
                             </>
+                        ) : modalTab === 'location' ? (
+                            <div className="animate-in fade-in zoom-in-95 duration-200">
+                                <button
+                                    onClick={() => {
+                                        setModalTab('info');
+                                        setIsEditingLocation(false);
+                                    }}
+                                    className="flex items-center gap-2 text-gray-500 mb-4 font-medium"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                    Volver
+                                </button>
+
+                                <div className="bg-white dark:bg-zinc-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5">
+                                    <h3 className="text-center text-lg font-bold text-gray-900 dark:text-white mb-6">Editar Ubicación</h3>
+
+                                    <div className="grid grid-cols-2 gap-4 mb-6">
+                                        {/* Rack Input */}
+                                        <div
+                                            onClick={() => setLocationForm(prev => ({ ...prev, activeField: 'rack' }))}
+                                            className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                                                // @ts-ignore
+                                                locationForm.activeField === 'rack'
+                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                                    : 'border-gray-200 dark:border-zinc-700'
+                                                }`}
+                                        >
+                                            <div className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Rack</div>
+                                            <div className={`text-3xl font-mono font-bold text-center h-10 ${!locationForm.rack ? 'text-gray-300' : 'text-gray-900 dark:text-white'}`}>
+                                                {locationForm.rack || '-'}
+                                            </div>
+                                        </div>
+
+                                        {/* Floor Input */}
+                                        <div
+                                            onClick={() => setLocationForm(prev => ({ ...prev, activeField: 'floor' }))}
+                                            className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                                                // @ts-ignore
+                                                locationForm.activeField === 'floor'
+                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                                    : 'border-gray-200 dark:border-zinc-700'
+                                                }`}
+                                        >
+                                            <div className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Piso</div>
+                                            <div className={`text-3xl font-mono font-bold text-center h-10 ${!locationForm.floor ? 'text-gray-300' : 'text-gray-900 dark:text-white'}`}>
+                                                {locationForm.floor || '-'}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <NumericKeypad
+                                        onKeyPress={(key) => {
+                                            setLocationForm(prev => {
+                                                // @ts-ignore
+                                                const field = prev.activeField || 'rack';
+                                                // @ts-ignore
+                                                const currentVal = prev[field];
+                                                // @ts-ignore
+                                                return { ...prev, [field]: currentVal + key };
+                                            });
+                                        }}
+                                        onDelete={() => {
+                                            setLocationForm(prev => {
+                                                // @ts-ignore
+                                                const field = prev.activeField || 'rack';
+                                                // @ts-ignore
+                                                const currentVal = prev[field];
+                                                // @ts-ignore
+                                                return { ...prev, [field]: currentVal.slice(0, -1) };
+                                            });
+                                        }}
+                                        onClear={() => {
+                                            setLocationForm(prev => {
+                                                // @ts-ignore
+                                                const field = prev.activeField || 'rack';
+                                                // @ts-ignore
+                                                return { ...prev, [field]: '' };
+                                            });
+                                        }}
+                                        onConfirm={async () => {
+                                            await handleSaveLocation();
+                                        }}
+                                    />
+                                </div>
+                            </div>
                         ) : (
                             <>
                                 {/* Back Button Header */}

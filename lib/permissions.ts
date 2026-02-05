@@ -69,3 +69,13 @@ export function canSeeZeroStock(session: Session | null): boolean {
     const role = (session.user as any).role;
     return role === 'admin' || role === 'auditor';
 }
+
+/**
+ * Check if user can edit prices
+ * Only admins can edit prices
+ */
+export function canEditPrice(session: Session | null): boolean {
+    if (!session?.user) return false;
+    const role = (session.user as any).role;
+    return role === 'admin';
+}

@@ -29,6 +29,10 @@ model Product {
   description String?
   image       String?
   
+  // Location
+  locationRack  String?
+  locationFloor String?
+  
   // Excel Specific (Columns N, Q, R)
   rotacion    String?
   notes       String?

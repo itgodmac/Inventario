@@ -14,6 +14,10 @@ export interface Product {
     montaje: string | null;
     tipo: string | null;
 
+    // Location
+    locationRack: string | null;
+    locationFloor: string | null;
+
     // Excel Columns N, Q, R
     rotacion: string | null;
     notes: string | null;

@@ -9,7 +9,7 @@ import ImageUpload from '@/app/components/ImageUpload';
 import NumericKeypad from '@/app/components/NumericKeypad';
 import toast from 'react-hot-toast';
 import { CloudinaryPresets } from '@/lib/cloudinary';
-import { canEdit, canPrint, canCount } from '@/lib/permissions';
+import { canEdit, canPrint, canCount, canEditPrice } from '@/lib/permissions';
 import { useRealtimeInventory } from '@/app/hooks/useRealtimeInventory';
 
 interface Product {
@@ -100,7 +100,8 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
         const fetchLogs = async () => {
             setLogsLoading(true);
             try {
-                const res = await fetch(`/api/inventory/${initialProduct.photoId}/logs`);
+                // Use initialProduct.id (UUID) instead of photoId
+                const res = await fetch(`/api/inventory/${initialProduct.id}/logs`);
                 const data = await res.json();
                 setStockLogs(data.logs || []);
             } catch (error) {
@@ -202,7 +203,7 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
             id: liveProduct.id,
             quantity: parseInt(physicalCount),
             difference: parseInt(physicalCount) - liveProduct.stock,
-            auditor: 'TEST'
+            auditor: session?.user?.name || session?.user?.email || 'DESKTOP_USER'
         };
 
         console.log("🚀 [CLIENT] Starting Write-Back", payload);
@@ -227,8 +228,8 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
                 router.refresh(); // Refresh server data
                 setPhysicalCount(''); // Clear input
 
-                // Refresh logs
-                const res = await fetch(`/api/inventory/${liveProduct.photoId}/logs`);
+                // Refresh logs using liveProduct.id
+                const res = await fetch(`/api/inventory/${liveProduct.id}/logs`);
                 const logsData = await res.json();
                 setStockLogs(logsData.logs || []);
             } else {
@@ -512,7 +513,7 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <label className="block text-[11px] text-[#8E8E93] mb-1">Competitor ($ Oth)</label>
-                                                        {isEditing ? (
+                                                        {isEditing && canEditPrice(session) ? (
                                                             <input
                                                                 type="number"
                                                                 value={(formData as any).priceOth || ''}
@@ -526,7 +527,7 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
                                                     </div>
                                                     <div>
                                                         <label className="block text-[11px] text-[#8E8E93] mb-1">Factory ($ ZG)</label>
-                                                        {isEditing ? (
+                                                        {isEditing && canEditPrice(session) ? (
                                                             <input
                                                                 type="number"
                                                                 value={(formData as any).priceZG || ''}

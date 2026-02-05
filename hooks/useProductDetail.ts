@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 
 export interface Product {
@@ -29,6 +30,7 @@ export interface Theme {
 
 export function useProductDetail(product: Product) {
     const router = useRouter();
+    const { data: session } = useSession();
     const [activeTab, setActiveTab] = useState<'general' | 'attributes' | 'sales' | 'purchase' | 'inventory' | 'accounting'>('general');
     const [isEditing, setIsEditing] = useState(false);
     const [isFavorite, setIsFavorite] = useState(true);
@@ -73,9 +75,11 @@ export function useProductDetail(product: Product) {
 
     useEffect(() => {
         const fetchLogs = async () => {
+            if (!product.id) return;
             setLogsLoading(true);
             try {
-                const res = await fetch(`/api/inventory/${product.photoId}/logs`);
+                // Use product.id (UUID) instead of photoId for querying logs
+                const res = await fetch(`/api/inventory/${product.id}/logs`);
                 const data = await res.json();
                 setStockLogs(data.logs || []);
             } catch (error) {
@@ -85,7 +89,7 @@ export function useProductDetail(product: Product) {
             }
         };
         fetchLogs();
-    }, [product.photoId]);
+    }, [product.id]);
 
     const handleChange = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -93,7 +97,7 @@ export function useProductDetail(product: Product) {
 
     const handleSave = async () => {
         try {
-            const res = await fetch(`/api/inventory/${product.photoId}`, {
+            const res = await fetch(`/api/inventory/${product.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -110,7 +114,7 @@ export function useProductDetail(product: Product) {
     const handleDelete = async () => {
         if (!confirm('Are you sure you want to delete this product? This cannot be undone.')) return;
         try {
-            const res = await fetch(`/api/inventory/${product.photoId}`, { method: 'DELETE' });
+            const res = await fetch(`/api/inventory/${product.id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Failed to delete');
             toast.success('Producto eliminado');
             router.push('/inventory');
@@ -154,7 +158,7 @@ export function useProductDetail(product: Product) {
             id: product.id,
             quantity: parseInt(physicalCount),
             difference: parseInt(physicalCount) - product.stock,
-            auditor: 'TEST'
+            auditor: session?.user?.name || session?.user?.email || 'DESKTOP_USER'
         };
 
         try {
@@ -171,8 +175,8 @@ export function useProductDetail(product: Product) {
                 router.refresh();
                 setPhysicalCount('');
 
-                // Refresh logs manually if needed, or rely on useEffect/refresh
-                const res = await fetch(`/api/inventory/${product.photoId}/logs`);
+                // Refresh logs manually using product.id
+                const res = await fetch(`/api/inventory/${product.id}/logs`);
                 const logsData = await res.json();
                 setStockLogs(logsData.logs || []);
             } else {

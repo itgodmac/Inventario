@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Users, Search, SortAsc, Grid3x3, LayoutList, LayoutGrid, Download, Table2, Plus } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 
 interface InventoryHeaderProps {
     searchQuery: string;
@@ -206,10 +206,60 @@ export default function InventoryHeader({
                                 <Plus className="w-4 h-4" />
                                 <span>Nuevo Item</span>
                             </button>
+
+                            {/* Profile Dropdown - Far Right */}
+                            <ProfileDropdown session={session} />
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    );
+}
+
+function ProfileDropdown({ session }: { session: any }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const { push } = useRouter();
+    const { signOut } = require('next-auth/react'); // Require strictly inside component if import fails, or use from top
+
+    return (
+        <div className="relative">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-zinc-700"
+            >
+                <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center text-[10px] font-bold text-white uppercase shadow-sm">
+                    {session?.user?.name?.slice(0, 2) || 'US'}
+                </div>
+                <div className="flex flex-col items-start -space-y-0.5">
+                    <span className="text-[11px] font-bold text-gray-900 dark:text-white leading-none">
+                        {session?.user?.name || 'Usuario'}
+                    </span>
+                    <span className="text-[9px] font-medium text-gray-500 dark:text-gray-400 leading-none">
+                        {(session?.user as any)?.role || 'Staff'}
+                    </span>
+                </div>
+            </button>
+
+            {isOpen && (
+                <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-gray-200 dark:border-zinc-800 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100 origin-top-right p-1.5">
+                        <div className="px-3 py-2 border-b border-gray-100 dark:border-zinc-800 mb-1">
+                            <p className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                                {session?.user?.email}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => signOut()}
+                            className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors flex items-center gap-2"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                            Cerrar Sesión
+                        </button>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

@@ -88,7 +88,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
             sku, barcode, itemCode, uniCode,
             uvaNombre, description,
             category, montaje, tipo, status, stock,
-            priceZG, priceOth, image
+            priceZG, priceOth, image,
+            locationRack, locationFloor
         } = body;
 
         console.log(`📝 [API] Updating Product ${id}:`, body);
@@ -134,6 +135,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
                 category: category || null,
                 montaje: montaje || null,
                 tipo: tipo || null,
+
+                // Location
+                // @ts-ignore
+                locationRack: locationRack || null,
+                // @ts-ignore
+                locationFloor: locationFloor || null,
 
                 status,
                 stock: parseInt(stock),

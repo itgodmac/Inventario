@@ -67,7 +67,8 @@ export async function POST(request: Request) {
             sku, barcode, itemCode, uniCode, photoId,
             uvaNombre, description,
             category, montaje, tipo, status,
-            stock, priceZG, priceOth, image
+            stock, priceZG, priceOth, image,
+            locationRack, locationFloor
         } = body;
 
         // Validation
@@ -107,6 +108,12 @@ export async function POST(request: Request) {
                 category: category || 'SIN ASIGNAR',
                 montaje: montaje || null,
                 tipo: tipo || null,
+
+                // Location
+                // @ts-ignore
+                locationRack: locationRack || null,
+                // @ts-ignore
+                locationFloor: locationFloor || null,
 
                 stock: parseInt(stock) || 0,
                 status: status || ((parseInt(stock) || 0) > 0 ? 'in-stock' : 'out-of-stock'),
