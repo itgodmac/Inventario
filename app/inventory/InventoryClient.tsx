@@ -475,7 +475,7 @@ export default function InventoryClient({
     const [physicalCount, setPhysicalCount] = useState<string>('');
     const [countStatus, setCountStatus] = useState<'idle' | 'matching' | 'discrepancy'>('idle');
     const [isUpdating, setIsUpdating] = useState(false);
-    const [modalTab, setModalTab] = useState<'info' | 'count' | 'location'>('info');
+    const [modalTab, setModalTab] = useState<'info' | 'count' | 'location' | string>('info');
 
     // Inline Location Editing State
     const [isEditingLocation, setIsEditingLocation] = useState(false);
@@ -1107,7 +1107,7 @@ export default function InventoryClient({
                                             <div
                                                 onClick={() => canEdit(session) && setModalTab('location')}
                                                 className={`flex flex-col px-4 py-3.5 transition-colors duration-200 relative group
-                                                    ${modalTab === 'location' ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-blue-50/50 dark:bg-blue-900/10'}
+                                                    ${(modalTab as string) === 'location' ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-blue-50/50 dark:bg-blue-900/10'}
                                                     ${canEdit(session) ? 'cursor-pointer hover:bg-blue-100/50 dark:hover:bg-blue-900/20 active:scale-[0.99]' : ''}
                                                 `}
                                             >
