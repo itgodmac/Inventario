@@ -75,10 +75,10 @@ export async function POST(request: Request) {
         if (redis) {
             try {
                 const event = {
-                    type: 'STOCK_UPDATE',
+                    type: 'PRODUCT_UPDATE', // Changed from STOCK_UPDATE to generic
                     payload: {
                         id: updatedProduct.id,
-                        stock: updatedProduct.stock,
+                        product: updatedProduct, // Include full product data
                         auditor: auditor,
                         timestamp: new Date().toISOString()
                     }

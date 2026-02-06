@@ -190,7 +190,13 @@ const SelectionOverlay = memo(({ selectedCell, isEditing, editValue, onSave, onC
                         const val = allOptions[selectedIndex];
                         // Tab acts as confirm + move. We delegate to parent keyDown but ensure value is passed.
                         onKeyDown(e, selectedCell.rowIndex, selectedCell.columnKey, false, true, val ?? localValue);
+                    } else {
+                        // Forward other keys (Ctrl+V, Ctrl+C, Delete, etc)
+                        onKeyDown(e, selectedCell.rowIndex, selectedCell.columnKey);
                     }
+                } else {
+                    // For non-select columns in "Navigation Mode" (overlay focused but not editing input yet)
+                    onKeyDown(e, selectedCell.rowIndex, selectedCell.columnKey);
                 }
             }}
             onBlur={(e) => {
@@ -304,8 +310,8 @@ const Row = memo(({ product, rowIndex, isPending, onSelect }: any) => {
                     <td
                         key={column.key}
                         id={`cell-${rowIndex}-${column.key}`}
-                        onClick={() => onSelect(rowIndex, column.key, value, column.type === 'select', 'click')}
-                        onDoubleClick={() => onSelect(rowIndex, column.key, value, true, 'doubleclick')}
+                        onClick={() => onSelect(product.id, column.key, value, column.type === 'select', 'click')}
+                        onDoubleClick={() => onSelect(product.id, column.key, value, true, 'doubleclick')}
                         style={{ fontSize: 'var(--font-size)' }}
                         className={`px-3 py-1.5 border-b border-gray-100 dark:border-white/5 relative outline-none truncate select-none hover:bg-blue-50/10 dark:hover:bg-blue-500/5 cursor-pointer ${column.type === 'number' ? 'text-right font-mono tabular-nums' : 'text-left'} ${cellClass}`}
                     >
@@ -322,18 +328,16 @@ const Row = memo(({ product, rowIndex, isPending, onSelect }: any) => {
             })}
         </tr>
     );
-}, (prev, next) => {
-    // IGNORE imgSize and fontSize changes, they are handled by CSS variables
-    return prev.product === next.product && prev.isPending === next.isPending;
 });
 Row.displayName = 'Row';
 
 // --- MAIN PAGE ---
 
 export default function SpreadsheetPage() {
-    const { products: dbProducts, isLoading, isConnected, refresh } = useRealtimeInventory();
+    const { products: dbProducts, isLoading, isConnected, refresh, updateProduct } = useRealtimeInventory();
 
     const [selectedCell, setSelectedCell] = useState<CellPosition | null>(null);
+    const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editStartMode, setEditStartMode] = useState<'click' | 'doubleclick' | 'type'>('click');
 
@@ -362,6 +366,7 @@ export default function SpreadsheetPage() {
     // CRITICAL: Ref-based state for callback stability
     const stateRef = useRef({
         selectedCell,
+        selectedProductId,
         editValue,
         processedProducts: [] as any[],
         isEditing,
@@ -406,12 +411,14 @@ export default function SpreadsheetPage() {
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase();
             result = result.filter(product =>
-                ['sku', 'nameEs', 'nameEn', 'category', 'barcode'].some(key => {
+                ['sku', 'nameEs', 'nameEn', 'category', 'barcode', 'itemCode', 'uniCode', 'montaje', 'tipo', 'status'].some(key => {
                     const val = (product as any)[key];
                     return val && String(val).toLowerCase().includes(query);
                 })
             );
         }
+
+
         if (sortConfig) {
             result.sort((a, b) => {
                 const valA = (a as any)[sortConfig.key];
@@ -444,14 +451,47 @@ export default function SpreadsheetPage() {
 
     const [history, setHistory] = useState<{ id: string; col: string; val: any }[]>([]);
 
+    // SELECTION RECONCILIATION: Keep selection locked to the same product when list changes
     useEffect(() => {
-        stateRef.current = { selectedCell, editValue, processedProducts, isEditing, phantomData, history };
-    }, [selectedCell, editValue, processedProducts, isEditing, phantomData, history]);
+        if (!selectedCell || !selectedProductId) return;
+
+        const newIndex = processedProducts.findIndex(p => p.id === selectedProductId);
+
+        if (newIndex !== -1 && newIndex !== selectedCell.rowIndex) {
+            // Product moved to a different index, update selection to follow it
+            setSelectedCell(prev => prev ? { ...prev, rowIndex: newIndex } : null);
+        } else if (newIndex === -1) {
+            // Product no longer in filtered list, clear selection
+            setSelectedCell(null);
+            setSelectedProductId(null);
+        }
+    }, [processedProducts, selectedProductId]); // Removed selectedCell to prevent loops
+
+    useEffect(() => {
+        stateRef.current = { selectedCell, selectedProductId, editValue, processedProducts, isEditing, phantomData, history };
+    }, [selectedCell, selectedProductId, editValue, processedProducts, isEditing, phantomData, history]);
 
     const commitSave = useCallback(async (cell: CellPosition, value: any, addToHistory = true) => {
-        const { processedProducts: prods, phantomData: pData } = stateRef.current;
-        const product = prods[cell.rowIndex];
-        if (!product) return;
+        const { processedProducts: prods, phantomData: pData, selectedProductId: currentSelectedId } = stateRef.current;
+
+        // CRITICAL FIX: Lookup product by ID to avoid rowIndex instability during sorts/filters
+        let product: any;
+        if (currentSelectedId) {
+            product = prods.find(p => p.id === currentSelectedId);
+            if (!product) {
+                console.warn('commitSave: Selected product not found in current view:', currentSelectedId);
+                toast.error('Producto no encontrado. Puede estar filtrado.');
+                return;
+            }
+        } else {
+            // Fallback for legacy calls without product ID tracking
+            product = prods[cell.rowIndex];
+            if (!product) {
+                console.warn('commitSave: No product at rowIndex', cell.rowIndex);
+                return;
+            }
+        }
+
         const column = EDITABLE_COLUMNS.find(col => col.key === cell.columnKey);
         if (!column || !column.editable) return;
 
@@ -493,9 +533,17 @@ export default function SpreadsheetPage() {
 
         setPendingSaves(prev => new Set(prev).add(product.id));
         try {
-            await fetch('/api/inventory/update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: product.id, [cell.columnKey]: newValue }) });
-            await refresh();
-            // Clear optimistic value after successful refresh
+            const res = await fetch('/api/inventory/update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: product.id, [cell.columnKey]: newValue }) });
+            const data = await res.json();
+
+            if (data.status === 'success' && data.product) {
+                // Update local cache efficiently without full re-fetch
+                updateProduct(product.id, data.product);
+            } else {
+                throw new Error(data.message || 'Update failed');
+            }
+
+            // Clear optimistic value after successful save
             setOptimisticValues(prev => {
                 const next = { ...prev };
                 if (next[product.id]) {
@@ -517,7 +565,7 @@ export default function SpreadsheetPage() {
             });
         }
         finally { setPendingSaves(prev => { const n = new Set(prev); n.delete(product.id); return n; }); }
-    }, [refresh, fetchNextIds]);
+    }, [fetchNextIds, updateProduct, selectedProductId]); // Added selectedProductId dependency
 
     const revertEdit = useCallback(() => {
         const { selectedCell: sel, processedProducts: prods } = stateRef.current;
@@ -541,8 +589,18 @@ export default function SpreadsheetPage() {
         }
     }, [commitSave]);
 
-    const handleSelect = useCallback((rowIndex: number, columnKey: string, currentValue: any, startEditing = false, mode: 'click' | 'doubleclick' | 'type' = 'click') => {
+    const handleSelect = useCallback((productId: string, columnKey: string, currentValue: any, startEditing = false, mode: 'click' | 'doubleclick' | 'type' = 'click') => {
+        const prods = stateRef.current.processedProducts;
+        const rowIndex = prods.findIndex(p => p.id === productId);
+
+        if (rowIndex === -1) {
+            console.warn('handleSelect: Product not found:', productId);
+            return;
+        }
+
+        const product = prods[rowIndex];
         setSelectedCell({ rowIndex, columnKey });
+        setSelectedProductId(productId);
         setEditValue(currentValue ?? '');
         setIsEditing(startEditing);
         if (startEditing) setEditStartMode(mode);
@@ -639,7 +697,7 @@ export default function SpreadsheetPage() {
             if (col?.editable) {
                 navigator.clipboard.readText().then(text => {
                     if (text) {
-                        commitSave({ rowIndex, columnKey }, text);
+                        commitSave({ rowIndex, columnKey }, text.trim()); // Trim whitespace
                         toast.success('Pegado');
                     }
                 }).catch(err => toast.error('Error al pegar'));

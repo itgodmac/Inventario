@@ -64,8 +64,17 @@ export function useRealtimeInventory() {
                             );
                         }, false);
                     } else if (data.type === 'PRODUCT_UPDATE') {
-                        console.log('🔄 Product Update detected: Triggering SWR refresh');
-                        mutate();
+                        if (data.payload && (data.payload as any).product) {
+                            console.log(`📝 Remote Mutation: Updating product ${data.payload.id} from stream`);
+                            const updatedProd = (data.payload as any).product;
+                            mutate(current => {
+                                if (!current) return [];
+                                return current.map(p => p.id === data.payload!.id ? { ...p, ...updatedProd } : p);
+                            }, false);
+                        } else {
+                            console.log('🔄 Product Update (Legacy): Triggering SWR refresh');
+                            mutate();
+                        }
                     } else if (data.type === 'CONNECTED') {
                         console.log('ℹ️ SSE Server Info:', data);
                     }
