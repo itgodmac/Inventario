@@ -17,9 +17,11 @@ interface CellPosition {
 const EDITABLE_COLUMNS = [
     { key: 'photoId', label: 'ID', width: 70, editable: false },
     { key: 'sku', label: 'SKU', width: 120, editable: false },
+    { key: 'itemCode', label: 'OEM', width: 120, editable: true },
+    { key: 'uniCode', label: 'Uni Code', width: 120, editable: true },
     { key: 'nameEs', label: 'Nombre Español', width: 220, editable: true },
     { key: 'nameEn', label: 'Nombre Inglés', width: 220, editable: true },
-    { key: 'barcode', label: 'Barcode', width: 130, editable: true },
+    // { key: 'barcode', label: 'Barcode', width: 130, editable: true },
     { key: 'category', label: 'Categoría', width: 140, editable: true, type: 'select', autoValues: true },
     { key: 'montaje', label: 'Montaje', width: 140, editable: true, type: 'select', autoValues: true },
     { key: 'tipo', label: 'Tipo', width: 120, editable: true, type: 'select', autoValues: true },
@@ -44,11 +46,69 @@ const EDITABLE_COLUMNS = [
 
 // --- SUB-COMPONENTS ---
 
-const SelectionOverlay = memo(({ selectedCell, isEditing, editValue, onSave, onRevert, onKeyDown, onEditValueChange, uniqueValues, containerRef, imgSize }: any) => {
+const COLOR_PALETTE = [
+    { bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-700 dark:text-red-300' },
+    { bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-300' },
+    { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-300' },
+    { bg: 'bg-yellow-50 dark:bg-yellow-900/20', text: 'text-yellow-700 dark:text-yellow-300' },
+    { bg: 'bg-lime-50 dark:bg-lime-900/20', text: 'text-lime-700 dark:text-lime-300' },
+    { bg: 'bg-green-50 dark:bg-green-900/20', text: 'text-green-700 dark:text-green-300' },
+    { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300' },
+    { bg: 'bg-teal-50 dark:bg-teal-900/20', text: 'text-teal-700 dark:text-teal-300' },
+    { bg: 'bg-cyan-50 dark:bg-cyan-900/20', text: 'text-cyan-700 dark:text-cyan-300' },
+    { bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300' },
+    { bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-700 dark:text-blue-300' },
+    { bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-300' },
+    { bg: 'bg-violet-50 dark:bg-violet-900/20', text: 'text-violet-700 dark:text-violet-300' },
+    { bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-300' },
+    { bg: 'bg-fuchsia-50 dark:bg-fuchsia-900/20', text: 'text-fuchsia-700 dark:text-fuchsia-300' },
+    { bg: 'bg-pink-50 dark:bg-pink-900/20', text: 'text-pink-700 dark:text-pink-300' },
+    { bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300' },
+];
+
+const getValueTheme = (value: string, colKey: string) => {
+    if (!value) return { bg: 'bg-transparent', text: 'text-gray-400' };
+
+    if (colKey === 'status') {
+        const lowerVal = String(value).toLowerCase();
+        // Explicit strict checks for known statuses
+        if (lowerVal === 'available' || lowerVal === 'in stock') return { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' };
+        if (lowerVal === 'out-of-stock' || lowerVal === 'out of stock' || lowerVal === 'agotado') return { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-300' };
+        if (lowerVal === 'low-stock' || lowerVal === 'low stock') return { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-800 dark:text-orange-300' };
+        // If not matched, fall through to hash logic below so it's not gray
+    }
+
+    // Deterministic hash for other columns OR unknown status values
+    let hash = 0;
+    const str = String(value);
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % COLOR_PALETTE.length;
+    return COLOR_PALETTE[index];
+};
+
+const SelectionOverlay = memo(({ selectedCell, isEditing, editValue, onSave, onConfirm, onRevert, onKeyDown, onEditValueChange, uniqueValues, containerRef, imgSizeRef }: any) => {
     const [localValue, setLocalValue] = useState(editValue);
     const overlayRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const selectRef = useRef<HTMLSelectElement>(null);
+
+    const [selectedIndex, setSelectedIndex] = useState(0);
+
+    // Combine all options: empty, fixed options, and unique values
+    const allOptions = useMemo(() => {
+        if (!selectedCell || !isEditing) return [];
+        const col = EDITABLE_COLUMNS.find(c => c.key === selectedCell.columnKey);
+        if (!col || col.type !== 'select') return [];
+
+        const opts = [
+            ...(col.options || []),
+            ...(col.autoValues && uniqueValues[col.key] ? uniqueValues[col.key] : [])
+        ];
+        // Deduplicate
+        return Array.from(new Set(opts));
+    }, [selectedCell, isEditing, uniqueValues]);
 
     useEffect(() => { setLocalValue(editValue); }, [editValue]);
 
@@ -67,10 +127,10 @@ const SelectionOverlay = memo(({ selectedCell, isEditing, editValue, onSave, onR
         overlay.style.left = `${cellDom.offsetLeft}px`;
         overlay.style.display = 'block';
 
-        // AUTO-SCROLL LOGIC: Ensure cell is in viewport of the container
+        // AUTO-SCROLL LOGIC
         const container = containerRef.current;
-        const scrollPadding = 40; // Maintain some visibility around the cell
-        const headerHeight = 40; // Approximate height of sticky header to avoid overlap
+        const scrollPadding = 40;
+        const headerHeight = 40;
 
         const cellTop = cellDom.offsetTop;
         const cellBottom = cellTop + cellDom.offsetHeight;
@@ -79,56 +139,97 @@ const SelectionOverlay = memo(({ selectedCell, isEditing, editValue, onSave, onR
 
         const viewportTop = container.scrollTop + headerHeight;
         const viewportBottom = container.scrollTop + container.clientHeight;
-        const viewportLeft = container.scrollLeft + 40 + (imgSize + 16); // Account for sticky index + image col
+        const viewportLeft = container.scrollLeft + 40 + (imgSizeRef.current + 16);
         const viewportRight = container.scrollLeft + container.clientWidth;
 
-        // Vertical scroll
-        if (cellTop < viewportTop) {
-            container.scrollTop = cellTop - headerHeight - scrollPadding;
-        } else if (cellBottom > viewportBottom) {
-            container.scrollTop = cellBottom - container.clientHeight + scrollPadding;
-        }
+        if (cellTop < viewportTop) container.scrollTop = cellTop - headerHeight - scrollPadding;
+        else if (cellBottom > viewportBottom) container.scrollTop = cellBottom - container.clientHeight + scrollPadding;
 
-        // Horizontal scroll
-        if (cellLeft < viewportLeft) {
-            container.scrollLeft = cellLeft - 40 - (imgSize + 16) - scrollPadding;
-        } else if (cellRight > viewportRight) {
-            container.scrollLeft = cellRight - container.clientWidth + scrollPadding;
-        }
+        if (cellLeft < viewportLeft) container.scrollLeft = cellLeft - 40 - (imgSizeRef.current + 16) - scrollPadding;
+        else if (cellRight > viewportRight) container.scrollLeft = cellRight - container.clientWidth + scrollPadding;
 
         if (isEditing) {
             setTimeout(() => {
                 inputRef.current?.focus();
-                selectRef.current?.focus();
+                // For custom select, we focus the container to capture keys
+                if (!inputRef.current) overlayRef.current?.focus();
             }, 0);
         }
-    }, [selectedCell, isEditing, containerRef, imgSize]);
+    }, [selectedCell, isEditing, containerRef]); // imgSizeRef excluded intentionally
 
     if (!selectedCell) return null;
 
     const column = EDITABLE_COLUMNS.find(c => c.key === selectedCell.columnKey);
     if (!column) return null;
 
+    const theme = getValueTheme(localValue, column.key);
+
     return (
         <div
             ref={overlayRef}
-            className={`absolute pointer-events-none z-30 ring-2 ring-blue-500 bg-blue-50/10`}
+            tabIndex={isEditing && column.type === 'select' ? 0 : -1}  // Make focusable for select interaction
+            className={`absolute z-50 ring-2 ring-blue-500 bg-blue-50/10 outline-none ${!isEditing ? 'pointer-events-none' : ''}`}
             style={{ display: 'none' }}
+            onKeyDown={(e) => {
+                if (column.type === 'select') {
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        setSelectedIndex(prev => Math.min(prev + 1, allOptions.length - 1));
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        setSelectedIndex(prev => Math.max(prev - 1, 0));
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const val = allOptions[selectedIndex];
+                        if (val !== undefined) onConfirm(val);
+                        else onConfirm(localValue);
+                    } else if (e.key === 'Escape') {
+                        onRevert();
+                    } else if (e.key === 'Tab') {
+                        e.preventDefault();
+                        const val = allOptions[selectedIndex];
+                        // Tab acts as confirm + move. We delegate to parent keyDown but ensure value is passed.
+                        onKeyDown(e, selectedCell.rowIndex, selectedCell.columnKey, false, true, val ?? localValue);
+                    }
+                }
+            }}
+            onBlur={(e) => {
+                // If focus moved outside, revert (cancel) because we want explicit selection via Click or Enter for selects
+                // to avoid accidental changes while scrolling/tabbing if not committed.
+                if (column.type === 'select' && !e.currentTarget.contains(e.relatedTarget)) {
+                    onRevert();
+                }
+            }}
         >
             {isEditing && column.editable && (
-                <div className="w-full h-full pointer-events-auto bg-white dark:bg-zinc-800">
+                <div className="w-full h-full relative">
                     {column.type === 'select' ? (
-                        <select
-                            ref={selectRef}
-                            value={localValue}
-                            onChange={(e) => { setLocalValue(e.target.value); onSave(e.target.value); }}
-                            onBlur={() => onSave(localValue)}
-                            className="w-full h-full bg-white dark:bg-zinc-800 text-gray-900 dark:text-white outline-none px-3 text-[12px] appearance-none border-none focus:ring-0"
-                        >
-                            <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">-</option>
-                            {column.options?.map((opt: string) => <option key={opt} value={opt} className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">{opt}</option>)}
-                            {column.autoValues && uniqueValues[column.key]?.map((val: string) => <option key={val} value={val} className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">{val}</option>)}
-                        </select>
+                        <div className="absolute top-0 left-0 min-w-[200px] max-h-[300px] overflow-y-auto bg-white dark:bg-zinc-800 shadow-2xl rounded-md border border-gray-200 dark:border-zinc-700 flex flex-col z-50 animate-in fade-in zoom-in-95 duration-75">
+                            {allOptions.length === 0 && <div className="p-2 text-xs text-gray-400">No options</div>}
+                            {allOptions.map((opt, idx) => {
+                                const optTheme = getValueTheme(opt, column.key);
+                                return (
+                                    <div
+                                        key={opt}
+                                        className={`px-3 py-2 text-xs cursor-pointer border-b border-gray-50 dark:border-white/5 last:border-0 hover:bg-gray-100 dark:hover:bg-zinc-700
+                                        ${localValue === opt ? 'bg-gray-50 dark:bg-white/5 font-bold' : ''}
+                                        ${selectedIndex === idx ? 'bg-gray-50 dark:bg-white/5' : ''}
+                                    `}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setLocalValue(opt);
+                                            onConfirm(opt);
+                                        }}
+                                        onMouseEnter={() => setSelectedIndex(idx)}
+                                    >
+                                        <span className={`px-2 py-0.5 rounded-full ${optTheme.bg} ${optTheme.text}`}>
+                                            {opt || '-'}
+                                        </span>
+                                    </div>
+                                )
+                            })}
+
+                        </div>
                     ) : (
                         <input
                             ref={inputRef}
@@ -145,25 +246,34 @@ const SelectionOverlay = memo(({ selectedCell, isEditing, editValue, onSave, onR
                         />
                     )}
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 });
 SelectionOverlay.displayName = 'SelectionOverlay';
 
-const Row = memo(({ product, rowIndex, imgSize, isPending, onSelect }: any) => {
+const Row = memo(({ product, rowIndex, isPending, onSelect }: any) => {
+    // Zebra striping logic
+    const isEven = rowIndex % 2 === 0;
+    const baseRowClass = product.isPhantom
+        ? 'bg-yellow-50/30 dark:bg-yellow-500/5'
+        : isEven
+            ? 'bg-white dark:bg-zinc-950'
+            : 'bg-gray-50/50 dark:bg-zinc-900/50';
+
     return (
         <tr
-            className={`group hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors ${product.isPhantom ? 'bg-yellow-50/30 dark:bg-yellow-500/5' : ''}`}
+            className={`group hover:bg-blue-50/30 dark:hover:bg-blue-500/5 transition-colors ${baseRowClass}`}
             style={{ opacity: isPending ? 0.6 : 1 }}
         >
-            <td className="sticky left-0 bg-white group-hover:bg-gray-50 dark:bg-zinc-900 dark:group-hover:bg-zinc-900 px-3 py-1.5 text-[10px] text-gray-400 border-b border-gray-100 dark:border-white/5 font-mono z-20 w-[40px] text-center select-none">
+            <td className={`sticky left-0 ${baseRowClass} group-hover:bg-blue-50/30 dark:group-hover:bg-blue-500/5 px-3 py-1.5 text-[10px] text-gray-400 border-b border-gray-100 dark:border-white/5 font-mono z-20 w-[40px] text-center select-none`}>
                 {product.isPhantom ? '+' : rowIndex + 1}
             </td>
 
-            <td className="sticky left-[40px] bg-white group-hover:bg-gray-50 dark:bg-zinc-900 dark:group-hover:bg-zinc-900 border-b border-gray-100 dark:border-white/5 z-20 p-1" style={{ width: imgSize + 16, minWidth: imgSize + 16 }}>
+            <td className={`sticky left-[40px] ${baseRowClass} group-hover:bg-blue-50/30 dark:group-hover:bg-blue-500/5 border-b border-gray-100 dark:border-white/5 z-20 p-1`} style={{ width: 'calc(var(--img-size) + 16px)', minWidth: 'calc(var(--img-size) + 16px)' }}>
                 {!product.isPhantom && (
-                    <div className="relative group/img" style={{ width: imgSize, height: imgSize, margin: '0 auto' }}>
+                    <div className="relative group/img" style={{ width: 'var(--img-size)', height: 'var(--img-size)', margin: '0 auto' }}>
                         {product.image ? (
                             <img src={CloudinaryPresets.thumbnail(product.image)} alt="" className="w-full h-full object-cover rounded-sm shadow-sm ring-1 ring-black/5 dark:ring-white/10" />
                         ) : (
@@ -184,22 +294,37 @@ const Row = memo(({ product, rowIndex, imgSize, isPending, onSelect }: any) => {
                     ? value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                     : (value || '');
 
+                const isSelect = column.type === 'select';
+                const theme = isSelect ? getValueTheme(String(value), column.key) : null;
+                const cellClass = theme
+                    ? `${theme.bg} ${theme.text}`
+                    : '';
+
                 return (
                     <td
                         key={column.key}
                         id={`cell-${rowIndex}-${column.key}`}
-                        onClick={() => onSelect(rowIndex, column.key, value, false, 'click')}
+                        onClick={() => onSelect(rowIndex, column.key, value, column.type === 'select', 'click')}
                         onDoubleClick={() => onSelect(rowIndex, column.key, value, true, 'doubleclick')}
-                        className={`px-3 py-1.5 text-[12px] border-b border-gray-100 dark:border-white/5 relative outline-none truncate select-none hover:bg-blue-50/10 dark:hover:bg-blue-500/5 cursor-pointer ${column.type === 'number' ? 'text-right font-mono tabular-nums' : 'text-left'}`}
+                        style={{ fontSize: 'var(--font-size)' }}
+                        className={`px-3 py-1.5 border-b border-gray-100 dark:border-white/5 relative outline-none truncate select-none hover:bg-blue-50/10 dark:hover:bg-blue-500/5 cursor-pointer ${column.type === 'number' ? 'text-right font-mono tabular-nums' : 'text-left'} ${cellClass}`}
                     >
-                        {displayValue}
+                        {isSelect && value ? (
+                            <span className={`px-2 py-0.5 rounded-full inline-block truncate max-w-full ${theme?.bg} ${theme?.text}`}>
+                                {displayValue}
+                            </span>
+                        ) : (
+                            displayValue
+                        )}
+                        {isSelect && <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[8px] opacity-20">▼</span>}
                     </td>
                 );
             })}
         </tr>
     );
 }, (prev, next) => {
-    return prev.product === next.product && prev.isPending === next.isPending && prev.imgSize === next.imgSize;
+    // IGNORE imgSize and fontSize changes, they are handled by CSS variables
+    return prev.product === next.product && prev.isPending === next.isPending;
 });
 Row.displayName = 'Row';
 
@@ -214,12 +339,35 @@ export default function SpreadsheetPage() {
 
     const [editValue, setEditValue] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
-    const [imgSize, setImgSize] = useState(32);
+    // Use Ref for zoom to avoid re-renders (Performance Critical)
+    const zoomRef = useRef(32);
     const [pendingSaves, setPendingSaves] = useState(new Set<string>());
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
 
+    // Direct DOM manipulation for instant zoom without React reconciliation
+    const handleZoom = useCallback((delta: number | 'reset') => {
+        if (!tableContainerRef.current) return;
+
+        let newSize;
+        if (delta === 'reset') newSize = 32;
+        else newSize = Math.max(20, Math.min(120, zoomRef.current + delta));
+
+        zoomRef.current = newSize;
+
+        // Update CSS variables directly
+        tableContainerRef.current.style.setProperty('--img-size', `${newSize}px`);
+        tableContainerRef.current.style.setProperty('--font-size', `${Math.max(11, 11 + (newSize - 32) / 6)}px`);
+    }, []);
+
     // CRITICAL: Ref-based state for callback stability
-    const stateRef = useRef({ selectedCell, editValue, processedProducts: [] as any[], isEditing, phantomData: {} as any });
+    const stateRef = useRef({
+        selectedCell,
+        editValue,
+        processedProducts: [] as any[],
+        isEditing,
+        phantomData: {} as any,
+        history: [] as { id: string; col: string; val: any }[]
+    });
 
     const uniqueValues = useMemo(() => {
         if (!dbProducts) return { category: [], montaje: [], tipo: [] };
@@ -228,6 +376,8 @@ export default function SpreadsheetPage() {
     }, [dbProducts]);
 
     const [phantomData, setPhantomData] = useState<any>({});
+    const [optimisticValues, setOptimisticValues] = useState<Record<string, any>>({}); // ID -> { key: value }
+
     const fetchNextIds = useCallback(async () => {
         try {
             const res = await fetch('/api/inventory/next-id');
@@ -242,6 +392,17 @@ export default function SpreadsheetPage() {
 
     const processedProducts = useMemo(() => {
         let result = dbProducts ? [...dbProducts] : [];
+
+        // 1. Apply Optimistic Updates
+        if (Object.keys(optimisticValues).length > 0) {
+            result = result.map(p => {
+                if (optimisticValues[p.id]) {
+                    return { ...p, ...optimisticValues[p.id] };
+                }
+                return p;
+            });
+        }
+
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase();
             result = result.filter(product =>
@@ -279,13 +440,15 @@ export default function SpreadsheetPage() {
             isPhantom: true
         };
         return [phantomRow, ...result];
-    }, [dbProducts, searchQuery, sortConfig, phantomData]);
+    }, [dbProducts, searchQuery, sortConfig, phantomData, optimisticValues]);
+
+    const [history, setHistory] = useState<{ id: string; col: string; val: any }[]>([]);
 
     useEffect(() => {
-        stateRef.current = { selectedCell, editValue, processedProducts, isEditing, phantomData };
-    }, [selectedCell, editValue, processedProducts, isEditing, phantomData]);
+        stateRef.current = { selectedCell, editValue, processedProducts, isEditing, phantomData, history };
+    }, [selectedCell, editValue, processedProducts, isEditing, phantomData, history]);
 
-    const commitSave = useCallback(async (cell: CellPosition, value: any) => {
+    const commitSave = useCallback(async (cell: CellPosition, value: any, addToHistory = true) => {
         const { processedProducts: prods, phantomData: pData } = stateRef.current;
         const product = prods[cell.rowIndex];
         if (!product) return;
@@ -316,11 +479,43 @@ export default function SpreadsheetPage() {
 
         if ((product as any)[cell.columnKey] === newValue) return;
 
+        // HISTORY TRACKING
+        if (addToHistory) {
+            setHistory(prev => [...prev, { id: product.id, col: cell.columnKey, val: (product as any)[cell.columnKey] }]);
+        }
+
+        // OPTIMISTIC UPDATE START
+        setOptimisticValues(prev => ({
+            ...prev,
+            [product.id]: { ...(prev[product.id] || {}), [cell.columnKey]: newValue }
+        }));
+        // OPTIMISTIC UPDATE END
+
         setPendingSaves(prev => new Set(prev).add(product.id));
         try {
             await fetch('/api/inventory/update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: product.id, [cell.columnKey]: newValue }) });
             await refresh();
-        } catch (error) { toast.error('Error al guardar'); }
+            // Clear optimistic value after successful refresh
+            setOptimisticValues(prev => {
+                const next = { ...prev };
+                if (next[product.id]) {
+                    delete next[product.id][cell.columnKey];
+                    if (Object.keys(next[product.id]).length === 0) delete next[product.id];
+                }
+                return next;
+            });
+        } catch (error) {
+            toast.error('Error al guardar');
+            // Revert optimistic on error
+            setOptimisticValues(prev => {
+                const next = { ...prev };
+                if (next[product.id]) {
+                    delete next[product.id][cell.columnKey];
+                    if (Object.keys(next[product.id]).length === 0) delete next[product.id];
+                }
+                return next;
+            });
+        }
         finally { setPendingSaves(prev => { const n = new Set(prev); n.delete(product.id); return n; }); }
     }, [refresh, fetchNextIds]);
 
@@ -331,6 +526,20 @@ export default function SpreadsheetPage() {
         if (product) setEditValue((product as any)[sel.columnKey] ?? '');
         setIsEditing(false);
     }, []);
+
+    const handleUndo = useCallback(() => {
+        const { history, processedProducts: prods } = stateRef.current;
+        if (history.length === 0) return;
+
+        const lastAction = history[history.length - 1];
+        const targetRowIndex = prods.findIndex(p => p.id === lastAction.id);
+
+        if (targetRowIndex !== -1) {
+            commitSave({ rowIndex: targetRowIndex, columnKey: lastAction.col }, lastAction.val, false);
+            setHistory(prev => prev.slice(0, -1));
+            toast.success('Deshacer');
+        }
+    }, [commitSave]);
 
     const handleSelect = useCallback((rowIndex: number, columnKey: string, currentValue: any, startEditing = false, mode: 'click' | 'doubleclick' | 'type' = 'click') => {
         setSelectedCell({ rowIndex, columnKey });
@@ -384,13 +593,65 @@ export default function SpreadsheetPage() {
             const col = EDITABLE_COLUMNS.find(c => c.key === columnKey);
             if (col?.editable) { setIsEditing(true); setEditStartMode('doubleclick'); }
         }
+        // UNDO (Ctrl+Z / Cmd+Z)
+        else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+            e.preventDefault();
+            handleUndo();
+        }
+        // DELETE (Delete / Backspace)
+        else if (e.key === 'Delete' || e.key === 'Backspace') {
+            e.preventDefault();
+            const col = EDITABLE_COLUMNS.find(c => c.key === columnKey);
+            if (col?.editable) {
+                commitSave({ rowIndex, columnKey }, '', true); // Clear and add to history
+                toast.success('Borrado');
+            }
+        }
+        // COPY (Ctrl+C / Cmd+C)
+        else if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+            e.preventDefault();
+            const { processedProducts: prods } = stateRef.current;
+            const product = prods[rowIndex];
+            const val = (product as any)[columnKey];
+            if (val != null) {
+                navigator.clipboard.writeText(String(val));
+                toast.success('Copiado');
+            }
+        }
+        // CUT (Ctrl+X / Cmd+X)
+        else if ((e.ctrlKey || e.metaKey) && e.key === 'x') {
+            e.preventDefault();
+            const { processedProducts: prods } = stateRef.current;
+            const product = prods[rowIndex];
+            const col = EDITABLE_COLUMNS.find(c => c.key === columnKey);
+            if (col?.editable) {
+                const val = (product as any)[columnKey];
+                if (val != null) navigator.clipboard.writeText(String(val));
+                commitSave({ rowIndex, columnKey }, '', true); // Save empty string and add to history
+                toast.success('Cortado');
+            }
+        }
+        // PASTE (Ctrl+V / Cmd+V)
+        else if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+            e.preventDefault();
+            const { processedProducts: prods } = stateRef.current;
+            const col = EDITABLE_COLUMNS.find(c => c.key === columnKey);
+            if (col?.editable) {
+                navigator.clipboard.readText().then(text => {
+                    if (text) {
+                        commitSave({ rowIndex, columnKey }, text);
+                        toast.success('Pegado');
+                    }
+                }).catch(err => toast.error('Error al pegar'));
+            }
+        }
         else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
             const { isEditing: isEd } = stateRef.current;
             if (isEd) return;
             const col = EDITABLE_COLUMNS.find(c => c.key === columnKey);
             if (col?.editable && col.type !== 'select') { setIsEditing(true); setEditStartMode('type'); setEditValue(e.key); }
         }
-    }, [handleSaveAndMove]);
+    }, [handleSaveAndMove, commitSave, handleUndo]);
 
     const tableContainerRef = useRef<HTMLDivElement>(null);
 
@@ -430,9 +691,9 @@ export default function SpreadsheetPage() {
                     <div className="h-4 w-px bg-gray-200 dark:bg-white/10 mx-2" />
 
                     <div className="flex bg-gray-100 dark:bg-zinc-900 rounded-md p-0.5">
-                        <button onClick={() => setImgSize(s => Math.max(20, s - 8))} className="p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded shadow-sm text-gray-500"><ZoomOut className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => setImgSize(32)} className="p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded shadow-sm text-gray-500"><RotateCcw className="w-3 h-3" /></button>
-                        <button onClick={() => setImgSize(s => Math.min(120, s + 8))} className="p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded shadow-sm text-gray-500"><ZoomIn className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => handleZoom(-8)} className="p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded shadow-sm text-gray-500"><ZoomOut className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => handleZoom('reset')} className="p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded shadow-sm text-gray-500"><RotateCcw className="w-3 h-3" /></button>
+                        <button onClick={() => handleZoom(8)} className="p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded shadow-sm text-gray-500"><ZoomIn className="w-3.5 h-3.5" /></button>
                     </div>
 
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-medium transition-colors bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400">
@@ -444,6 +705,11 @@ export default function SpreadsheetPage() {
             <div
                 ref={tableContainerRef}
                 className="flex-1 overflow-auto relative custom-scrollbar"
+                // Initial styles
+                style={{
+                    '--img-size': '32px',
+                    '--font-size': '11px'
+                } as React.CSSProperties}
             >
                 <div className="relative">
                     <SelectionOverlay
@@ -451,17 +717,18 @@ export default function SpreadsheetPage() {
                         isEditing={isEditing}
                         editValue={editValue}
                         onSave={(val: any) => commitSave(selectedCell!, val)}
+                        onConfirm={(val: any) => { commitSave(selectedCell!, val); setIsEditing(false); }}
                         onRevert={revertEdit}
                         onKeyDown={handleKeyDown}
                         uniqueValues={uniqueValues}
                         containerRef={tableContainerRef}
-                        imgSize={imgSize}
+                        imgSizeRef={zoomRef}
                     />
                     <table className="w-full border-separate border-spacing-0">
                         <thead className="sticky top-0 z-30 bg-white dark:bg-zinc-950">
                             <tr>
                                 <th className="sticky left-0 top-0 z-40 bg-white dark:bg-zinc-950 border-b border-gray-200 dark:border-white/10 px-3 py-2 w-[40px]" />
-                                <th className="sticky left-[40px] top-0 z-40 bg-white dark:bg-zinc-950 border-b border-gray-200 dark:border-white/10 px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-left" style={{ minWidth: imgSize + 16 }}>Img</th>
+                                <th className="sticky left-[40px] top-0 z-40 bg-white dark:bg-zinc-950 border-b border-gray-200 dark:border-white/10 px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-left" style={{ minWidth: 'calc(var(--img-size) + 16px)' }}>Img</th>
                                 {EDITABLE_COLUMNS.map((col) => (
                                     <th
                                         key={col.key}
@@ -486,7 +753,6 @@ export default function SpreadsheetPage() {
                                         key={product.id}
                                         product={product}
                                         rowIndex={rowIndex}
-                                        imgSize={imgSize}
                                         isPending={pendingSaves.has(product.id)}
                                         onSelect={handleSelect}
                                     />
