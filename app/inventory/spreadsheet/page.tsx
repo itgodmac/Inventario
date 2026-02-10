@@ -383,12 +383,12 @@ export default function SpreadsheetPage() {
     const [phantomData, setPhantomData] = useState<any>({});
     const [optimisticValues, setOptimisticValues] = useState<Record<string, any>>({}); // ID -> { key: value }
 
-    const fetchNextIds = useCallback(async () => {
+    const fetchNextIds = useCallback(async (shouldReset = false) => {
         try {
             const res = await fetch('/api/inventory/next-id');
             const data = await res.json();
             if (data.status === 'success') {
-                setPhantomData((prev: any) => ({ ...prev, barcode: data.nextBarcode, photoId: data.nextPhotoId }));
+                setPhantomData((prev: any) => ({ ...(shouldReset ? {} : prev), barcode: data.nextBarcode, photoId: data.nextPhotoId }));
             }
         } catch (e) { console.error("Failed to fetch next IDs", e); }
     }, []);
@@ -509,7 +509,7 @@ export default function SpreadsheetPage() {
                         toast.success('Producto Creado');
                         await refresh();
                         setPhantomData({});
-                        fetchNextIds();
+                        fetchNextIds(true);
                     }
                 } catch (e) { console.error(e); }
                 finally { setPendingSaves(prev => { const n = new Set(prev); n.delete('new-phantom'); return n; }); }
