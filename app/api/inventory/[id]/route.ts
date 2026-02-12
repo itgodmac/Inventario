@@ -143,7 +143,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
                 locationFloor: locationFloor || null,
 
                 status,
-                stock: parseInt(stock),
+                // stock: parseInt(stock), // REMOVED: Stock should ONLY be updated via inventory logs/counts
 
                 // Pricing
                 priceZG: zg,
