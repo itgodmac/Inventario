@@ -12,6 +12,10 @@ import { CloudinaryPresets } from '@/lib/cloudinary';
 import { canEdit, canPrint, canCount, canEditPrice } from '@/lib/permissions';
 import { useRealtimeInventory } from '@/app/hooks/useRealtimeInventory';
 
+const CATEGORIAS = ["Putzmeister", "Schwing", "SANY", "CIFA", "WAM", "Tuberia", "Bombeo de concreto", "Olla Revolvedora", "TRITURADORAS", "Otro"];
+const MONTAJE = ["BARRA V-ROCK", "AGITADOR V-ROCK", "SISTEMA DE BOMBEO", "HIDRAULICO", "REDUCTOR", "TANQUE DE AGUA", "TOLVA", "TUBERIA", "Sellos y retenes", "Componentes hidráulicos", "Componentes eléctricos", "Componentes estructurales y de montaje", "Sistema de bombeo de concreto", "SIN ASIGNAR"];
+const TIPO = ["ANILLOS METALICOS", "PISTONES", "EMPAQUES", "BALEROS", "ENGRANES", "RODILLOS", "CASQUILLOS", "VALVULAS", "BOMBAS", "MOTORES", "FILTROS", "CABLES", "RELAYS", "TUBOS", "VIBRADORES", "LIMPIEZA", "ACCESORIOS", "TRANSMISIONES", "SIN ASIGNAR", "Sin Asignar"];
+
 interface Product {
     id: string;
     name: string;
@@ -499,7 +503,18 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
                                             <div className="py-3.5 grid grid-cols-1 md:grid-cols-2 items-center gap-2 md:gap-4">
                                                 <label className="text-[15px] text-foreground font-medium md:font-normal">Category</label>
                                                 {isEditing ? (
-                                                    <input value={formData.category} onChange={(e) => handleChange('category', e.target.value)} className="text-right bg-transparent dark:text-white border-b border-gray-200 dark:border-white/10 outline-none focus:border-blue-500" />
+                                                    <div className="relative">
+                                                        <select
+                                                            value={formData.category || 'SIN ASIGNAR'}
+                                                            onChange={(e) => handleChange('category', e.target.value)}
+                                                            className="w-full text-right bg-transparent text-gray-900 dark:text-white border-b border-gray-200 dark:border-white/10 outline-none focus:border-blue-500 appearance-none pr-6"
+                                                        >
+                                                            {CATEGORIAS.map(opt => <option key={opt} value={opt} className="text-gray-900 dark:text-white dark:bg-zinc-900">{opt}</option>)}
+                                                        </select>
+                                                        <div className="absolute inset-y-0 right-0 flex items-center pointer-events-none text-gray-500">
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                                        </div>
+                                                    </div>
                                                 ) : (
                                                     <div className="md:text-left text-foreground text-[15px]">{liveProduct.category}</div>
                                                 )}
@@ -631,7 +646,112 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
 
                                 </div>
                             )}
-                            {activeTab !== 'general' && (
+                            {activeTab === 'attributes' && (
+                                <div className="space-y-6">
+                                    <div className="bg-white dark:bg-zinc-900 rounded-[20px] shadow-sm border border-gray-200 dark:border-white/5 overflow-hidden">
+                                        <div className="px-5 py-3 border-b border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 backdrop-blur-sm">
+                                            <h3 className="text-[16px] font-semibold text-foreground">Detailed Specification</h3>
+                                        </div>
+                                        <div className="p-5 space-y-4">
+                                            {/* Description */}
+                                            <div>
+                                                <label className="block text-[13px] font-medium text-[#8E8E93] mb-1.5 uppercase">Description</label>
+                                                {isEditing ? (
+                                                    <textarea
+                                                        value={formData.description || ''}
+                                                        onChange={(e) => handleChange('description', e.target.value)}
+                                                        rows={3}
+                                                        className="w-full bg-gray-50 dark:bg-zinc-800 border-none rounded-lg p-3 text-[15px] focus:ring-2 focus:ring-blue-500/50 outline-none resize-none"
+                                                    />
+                                                ) : (
+                                                    <p className="text-[15px] text-foreground leading-relaxed">{liveProduct.description || 'No description available.'}</p>
+                                                )}
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                {/* Mounting */}
+                                                <div>
+                                                    <label className="block text-[13px] font-medium text-[#8E8E93] mb-1.5 uppercase">Mounting</label>
+                                                    {isEditing ? (
+                                                        <div className="relative">
+                                                            <select
+                                                                value={formData.montaje || 'SIN ASIGNAR'}
+                                                                onChange={(e) => handleChange('montaje', e.target.value)}
+                                                                className="w-full bg-white dark:bg-zinc-900 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-[15px] outline-none focus:border-blue-500 appearance-none"
+                                                            >
+                                                                {MONTAJE.map(opt => <option key={opt} value={opt} className="text-gray-900 dark:text-white dark:bg-zinc-900">{opt}</option>)}
+                                                            </select>
+                                                            <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-500">
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-[15px] font-medium text-foreground p-2 bg-gray-50 dark:bg-zinc-800/50 rounded-lg border border-transparent dark:border-white/5">{liveProduct.montaje || '-'}</div>
+                                                    )}
+                                                </div>
+
+                                                {/* Type */}
+                                                <div>
+                                                    <label className="block text-[13px] font-medium text-[#8E8E93] mb-1.5 uppercase">Type</label>
+                                                    {isEditing ? (
+                                                        <div className="relative">
+                                                            <select
+                                                                value={formData.tipo || 'SIN ASIGNAR'}
+                                                                onChange={(e) => handleChange('tipo', e.target.value)}
+                                                                className="w-full bg-white dark:bg-zinc-900 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-[15px] outline-none focus:border-blue-500 appearance-none"
+                                                            >
+                                                                {TIPO.map(opt => <option key={opt} value={opt} className="text-gray-900 dark:text-white dark:bg-zinc-900">{opt}</option>)}
+                                                            </select>
+                                                            <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-500">
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-[15px] font-medium text-foreground p-2 bg-gray-50 dark:bg-zinc-800/50 rounded-lg border border-transparent dark:border-white/5">{liveProduct.tipo || '-'}</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white dark:bg-zinc-900 rounded-[20px] shadow-sm border border-gray-200 dark:border-white/5 overflow-hidden">
+                                        <div className="px-5 py-3 border-b border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 backdrop-blur-sm">
+                                            <h3 className="text-[16px] font-semibold text-foreground">References</h3>
+                                        </div>
+                                        <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {/* UVA */}
+                                            <div>
+                                                <label className="block text-[13px] font-medium text-[#8E8E93] mb-1.5 uppercase">UVA Reference</label>
+                                                {isEditing ? (
+                                                    <input
+                                                        value={formData.uvaNombre || ''}
+                                                        onChange={(e) => handleChange('uvaNombre', e.target.value)}
+                                                        className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-[15px] outline-none focus:border-blue-500 font-mono"
+                                                    />
+                                                ) : (
+                                                    <div className="text-[15px] font-mono text-foreground p-2 bg-gray-50 dark:bg-zinc-800/50 rounded-lg border border-transparent dark:border-white/5 truncate">{liveProduct.uvaNombre || '-'}</div>
+                                                )}
+                                            </div>
+
+                                            {/* Uni Code */}
+                                            <div>
+                                                <label className="block text-[13px] font-medium text-[#8E8E93] mb-1.5 uppercase">Uni Code</label>
+                                                {isEditing ? (
+                                                    <input
+                                                        value={formData.uniCode || ''}
+                                                        onChange={(e) => handleChange('uniCode', e.target.value)}
+                                                        className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-[15px] outline-none focus:border-blue-500 font-mono"
+                                                    />
+                                                ) : (
+                                                    <div className="text-[15px] font-mono text-foreground p-2 bg-gray-50 dark:bg-zinc-800/50 rounded-lg border border-transparent dark:border-white/5 truncate">{liveProduct.uniCode || '-'}</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab !== 'general' && activeTab !== 'attributes' && (
                                 <div className="flex flex-col items-center justify-center py-10 bg-white dark:bg-zinc-900 rounded-[20px] border border-gray-200 dark:border-white/5 text-center">
                                     <p className="text-[#8E8E93]">View only mode active.</p>
                                 </div>
