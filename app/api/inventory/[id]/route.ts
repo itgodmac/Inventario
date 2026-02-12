@@ -72,7 +72,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
             itemCode: valName
         };
 
-        return NextResponse.json({ status: 'success', product: layoutProduct });
+        return NextResponse.json({
+            status: 'success',
+            product: layoutProduct,
+            rawProduct: product // Unmodified data for editing/duplicating
+        });
     } catch (error: any) {
         console.error("🔥 [API] Fetch Error:", error);
         return NextResponse.json({ status: 'error', message: error.message }, { status: 500 });

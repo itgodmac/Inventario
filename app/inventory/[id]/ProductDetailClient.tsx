@@ -284,12 +284,21 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
                             </>
                         ) : null}
                         <div className="hidden md:flex items-center gap-2 mr-2">
-                            {['Update Quantity', 'Replenish', 'Print Labels'].filter(action => {
+                            {['Update Quantity', 'Replenish', 'Duplicate', 'Print Labels'].filter(action => {
                                 if (action === 'Print Labels') return canPrint(session);
                                 if (action === 'Update Quantity') return canCount(session);
                                 return true;
                             }).map((action) => (
-                                <button key={action} className="text-[13px] font-medium text-foreground hover:bg-black/5 dark:hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors">
+                                <button
+                                    key={action}
+                                    onClick={() => {
+                                        if (action === 'Duplicate') {
+                                            // API expects photoId (e.g. 2611), not UUID
+                                            router.push(`/inventory/new?duplicate_from=${liveProduct.photoId || liveProduct.id}`);
+                                        }
+                                    }}
+                                    className="text-[13px] font-medium text-foreground hover:bg-black/5 dark:hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
+                                >
                                     {action}
                                 </button>
                             ))}
