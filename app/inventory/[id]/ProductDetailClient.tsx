@@ -35,6 +35,10 @@ interface Product {
     status: string; // Simplified to string to match Prisma
     image: string | null;
     description: string | null;
+    montaje: string | null;
+    tipo: string | null;
+    uvaNombre: string | null;
+    uniCode: string | null;
 }
 
 interface Theme {
@@ -60,6 +64,7 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
     // Form State
     const [formData, setFormData] = useState({
         name: liveProduct.name,
+        nameEn: liveProduct.nameEn || '',
         nameEs: liveProduct.nameEs || '',
         sku: liveProduct.sku || '',
         itemCode: liveProduct.itemCode || '',
@@ -71,7 +76,12 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
         status: liveProduct.status,
         priceZG: liveProduct.priceZG || 0,
         priceOth: liveProduct.priceOth || 0,
-        image: liveProduct.image || ''
+        image: liveProduct.image || '',
+        description: liveProduct.description || '',
+        montaje: liveProduct.montaje || '',
+        tipo: liveProduct.tipo || '',
+        uvaNombre: liveProduct.uvaNombre || '',
+        uniCode: liveProduct.uniCode || ''
     });
 
     // Sync form with liveProduct when not editing
@@ -79,6 +89,7 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
         if (!isEditing) {
             setFormData({
                 name: liveProduct.name,
+                nameEn: liveProduct.nameEn || '',
                 nameEs: liveProduct.nameEs || '',
                 sku: liveProduct.sku || '',
                 itemCode: liveProduct.itemCode || '',
@@ -90,7 +101,12 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
                 status: liveProduct.status,
                 priceZG: liveProduct.priceZG || 0,
                 priceOth: liveProduct.priceOth || 0,
-                image: liveProduct.image || ''
+                image: liveProduct.image || '',
+                description: liveProduct.description || '',
+                montaje: liveProduct.montaje || '',
+                tipo: liveProduct.tipo || '',
+                uvaNombre: liveProduct.uvaNombre || '',
+                uniCode: liveProduct.uniCode || ''
             });
         }
     }, [liveProduct, isEditing]);
@@ -340,8 +356,11 @@ export default function ProductDetailClient({ product: initialProduct, currentTh
                                     <div>
                                         <label className="text-xs font-semibold text-gray-500 uppercase">English Name</label>
                                         <input
-                                            value={formData.name}
-                                            onChange={(e) => handleChange('name', e.target.value)}
+                                            value={formData.nameEn || ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setFormData(prev => ({ ...prev, nameEn: val, name: val }));
+                                            }}
                                             className="w-full text-2xl font-bold border-b border-gray-200 focus:border-blue-500 outline-none py-1"
                                         />
                                     </div>
