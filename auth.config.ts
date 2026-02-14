@@ -3,4 +3,5 @@ import Credentials from "next-auth/providers/credentials"
 
 export default {
     providers: [],
+    trustHost: true,
 } satisfies NextAuthConfig
