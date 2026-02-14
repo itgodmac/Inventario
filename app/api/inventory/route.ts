@@ -14,6 +14,11 @@ export async function GET() {
     try {
         const session = await auth();
 
+        // SECURITY: Require authentication
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         // Build query filter
         const where: any = {};
 
